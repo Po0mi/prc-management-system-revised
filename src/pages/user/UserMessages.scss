@@ -1,0 +1,212 @@
+@use "../../styles/variables.scss" as *;
+
+.user-messages {
+  padding: $space-xl 0;
+
+  h1 {
+    margin-bottom: $space-xl;
+  }
+
+  .messages-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: $space-lg;
+    height: 600px;
+
+    @media (max-width: $breakpoint-lg) {
+      grid-template-columns: 1fr;
+      height: auto;
+
+      .conversations-panel {
+        height: 300px;
+      }
+    }
+  }
+
+  .conversations-panel {
+    background: $white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .search-box {
+      position: relative;
+      padding: $space-lg;
+      border-bottom: 1px solid $gray-300;
+
+      input {
+        width: 100%;
+        padding: $space-md $space-xl $space-md $space-md;
+        border: 1px solid $gray-300;
+        border-radius: $radius-md;
+        font-size: $font-size-base;
+        outline: none;
+
+        &:focus {
+          border-color: $primary-red;
+          box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: $space-xl;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+    }
+
+    .conversations-list {
+      flex: 1;
+      overflow-y: auto;
+
+      .empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: $gray-500;
+      }
+
+      .conversation-item {
+        display: flex;
+        gap: $space-md;
+        padding: $space-lg;
+        border-bottom: 1px solid $gray-300;
+        cursor: pointer;
+        transition: all $transition-fast;
+
+        &:hover {
+          background: $gray-100;
+        }
+
+        &.active {
+          background: rgba($primary-red, 0.1);
+          border-left: 3px solid $primary-red;
+        }
+
+        .avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: $radius-full;
+          background: $primary-red;
+          color: $white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: $font-size-lg;
+          font-weight: $font-weight-bold;
+          flex-shrink: 0;
+        }
+
+        .conversation-info {
+          flex: 1;
+          min-width: 0;
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: $space-xs;
+
+            h4 {
+              margin: 0;
+              font-size: $font-size-base;
+              font-weight: $font-weight-semibold;
+              color: $gray-900;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            .time {
+              font-size: $font-size-xs;
+              color: $gray-500;
+              flex-shrink: 0;
+              margin-left: $space-sm;
+            }
+          }
+
+          .preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            p {
+              margin: 0;
+              font-size: $font-size-sm;
+              color: $gray-700;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              flex: 1;
+            }
+
+            .unread-badge {
+              background: $primary-red;
+              color: $white;
+              padding: 2px 8px;
+              border-radius: $radius-full;
+              font-size: $font-size-xs;
+              font-weight: $font-weight-bold;
+              margin-left: $space-sm;
+              flex-shrink: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .chat-panel {
+    .no-chat-selected {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: $white;
+      border-radius: $radius-lg;
+      box-shadow: $shadow-sm;
+      padding: $space-2xl;
+      text-align: center;
+
+      .icon {
+        font-size: 64px;
+        margin-bottom: $space-lg;
+        opacity: 0.5;
+      }
+
+      h3 {
+        color: $gray-900;
+        margin-bottom: $space-sm;
+      }
+
+      p {
+        color: $gray-700;
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Scrollbar styling
+.conversations-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversations-list::-webkit-scrollbar-track {
+  background: $gray-100;
+}
+
+.conversations-list::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: $radius-full;
+
+  &:hover {
+    background: $gray-500;
+  }
+}

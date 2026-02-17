@@ -1,0 +1,193 @@
+@use "../../styles/variables.scss" as *;
+
+.admin-dashboard {
+  .dashboard-header {
+    margin-bottom: $space-2xl;
+
+    h1 {
+      font-size: $font-size-2xl;
+      margin-bottom: $space-sm;
+    }
+
+    p {
+      color: $gray-700;
+      margin: 0;
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $space-lg;
+    margin-bottom: $space-2xl;
+
+    .stat-card {
+      background: $white;
+      padding: $space-lg;
+      border-radius: $radius-lg;
+      box-shadow: $shadow-sm;
+      display: flex;
+      align-items: center;
+      gap: $space-lg;
+      transition: all $transition-fast;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+      }
+
+      .stat-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: $radius-lg;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+
+        &.events {
+          background: rgba($info, 0.1);
+        }
+
+        &.volunteers {
+          background: rgba($success, 0.1);
+        }
+
+        &.announcements {
+          background: rgba($warning, 0.1);
+        }
+
+        &.users {
+          background: rgba($primary-red, 0.1);
+        }
+      }
+
+      .stat-content {
+        flex: 1;
+
+        h3 {
+          font-size: $font-size-2xl;
+          font-weight: $font-weight-bold;
+          margin: 0 0 $space-xs;
+          color: $gray-900;
+        }
+
+        p {
+          color: $gray-700;
+          margin: 0;
+          font-size: $font-size-sm;
+        }
+      }
+    }
+  }
+
+  .dashboard-section {
+    background: $white;
+    padding: $space-lg;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    margin-bottom: $space-xl;
+
+    h2 {
+      font-size: $font-size-xl;
+      margin-bottom: $space-lg;
+      color: $gray-900;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: $space-md;
+
+      .activity-item {
+        display: flex;
+        gap: $space-md;
+        padding: $space-md;
+        border-radius: $radius-md;
+        transition: all $transition-fast;
+
+        &:hover {
+          background: $gray-100;
+        }
+
+        .activity-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: $radius-md;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          background: $gray-100;
+
+          &.event {
+            background: rgba($info, 0.1);
+          }
+
+          &.volunteer {
+            background: rgba($success, 0.1);
+          }
+
+          &.announcement {
+            background: rgba($warning, 0.1);
+          }
+        }
+
+        .activity-content {
+          flex: 1;
+
+          h4 {
+            font-size: $font-size-base;
+            font-weight: $font-weight-semibold;
+            margin: 0 0 $space-xs;
+            color: $gray-900;
+          }
+
+          p {
+            color: $gray-700;
+            margin: 0 0 $space-xs;
+            font-size: $font-size-sm;
+          }
+
+          .activity-time {
+            font-size: $font-size-xs;
+            color: $gray-500;
+          }
+        }
+      }
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: $space-md;
+
+      .quick-action-btn {
+        padding: $space-lg;
+        background: $gray-100;
+        border-radius: $radius-md;
+        border: 2px dashed $gray-300;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: $space-sm;
+        transition: all $transition-fast;
+        color: $gray-700;
+
+        .icon {
+          font-size: 32px;
+        }
+
+        span:last-child {
+          font-weight: $font-weight-semibold;
+        }
+
+        &:hover {
+          background: rgba($primary-red, 0.1);
+          border-color: $primary-red;
+          color: $primary-red;
+        }
+      }
+    }
+  }
+}

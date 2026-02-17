@@ -1,0 +1,212 @@
+@use "./variables.scss" as *;
+
+// Reset & Base Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: $font-size-base;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: $font-family-base;
+  font-weight: $font-weight-normal;
+  line-height: 1.5;
+  color: $gray-900;
+  background-color: $gray-100;
+}
+
+// Typography
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+  margin-bottom: $space-md;
+  color: $gray-900;
+}
+
+h1 {
+  font-size: $font-size-2xl;
+}
+h2 {
+  font-size: $font-size-xl;
+}
+h3 {
+  font-size: $font-size-lg;
+}
+h4 {
+  font-size: $font-size-base;
+}
+
+p {
+  margin-bottom: $space-md;
+}
+
+a {
+  color: $primary-red;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+// Buttons
+button {
+  font-family: $font-family-base;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all $transition-fast;
+}
+
+// Inputs
+input,
+textarea,
+select {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  outline: none;
+}
+
+// Lists
+ul,
+ol {
+  list-style: none;
+}
+
+// Images
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+// Utility Classes
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 $space-lg;
+}
+
+.text-center {
+  text-align: center;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+
+.fw-normal {
+  font-weight: $font-weight-normal;
+}
+.fw-medium {
+  font-weight: $font-weight-medium;
+}
+.fw-semibold {
+  font-weight: $font-weight-semibold;
+}
+.fw-bold {
+  font-weight: $font-weight-bold;
+}
+
+.text-primary {
+  color: $primary-red;
+}
+.text-success {
+  color: $success;
+}
+.text-warning {
+  color: $warning;
+}
+.text-error {
+  color: $error;
+}
+.text-gray {
+  color: $gray-500;
+}
+
+.bg-primary {
+  background-color: $primary-red;
+}
+.bg-white {
+  background-color: $white;
+}
+.bg-gray {
+  background-color: $gray-100;
+}
+
+// Spacing utilities
+.mt-sm {
+  margin-top: $space-sm;
+}
+.mt-md {
+  margin-top: $space-md;
+}
+.mt-lg {
+  margin-top: $space-lg;
+}
+
+.mb-sm {
+  margin-bottom: $space-sm;
+}
+.mb-md {
+  margin-bottom: $space-md;
+}
+.mb-lg {
+  margin-bottom: $space-lg;
+}
+
+.p-sm {
+  padding: $space-sm;
+}
+.p-md {
+  padding: $space-md;
+}
+.p-lg {
+  padding: $space-lg;
+}
+
+// Flexbox utilities
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.gap-sm {
+  gap: $space-sm;
+}
+.gap-md {
+  gap: $space-md;
+}
+.gap-lg {
+  gap: $space-lg;
+}

@@ -1,0 +1,99 @@
+// PRC Management System - Design Variables
+
+// Brand Colors (Updated to match PRC website)
+$primary-red: #c41e3a; // PRC Red
+$primary-dark: #8b1428; // Darker Red
+$primary-light: #e63946; // Lighter Red
+
+// PRC Blue Colors (from hero section)
+$primary-blue: #003d6b; // Dark Blue
+$primary-blue-light: #1a5c8a; // Medium Blue
+$primary-blue-dark: #001f3f; // Darker Blue
+
+// Grayscale
+$gray-900: #1a1a2e; // Footer dark
+$gray-700: #2d3748;
+$gray-600: #4a5568;
+$gray-500: #718096;
+$gray-400: #a0aec0;
+$gray-300: #cbd5e0;
+$gray-200: #e2e8f0;
+$gray-100: #f7fafc;
+$white: #ffffff;
+
+// Status Colors
+$success: #4caf50;
+$warning: #ffc107;
+$error: #f44336;
+$info: #2196f3;
+
+// Accent Colors (from service cards)
+$accent-yellow: #ffd700; // Gold/Yellow highlight
+$accent-teal: #00bcd4;
+
+// Typography
+$font-family-base:
+  "Inter",
+  "Roboto",
+  -apple-system,
+  BlinkMacSystemFont,
+  "Segoe UI",
+  sans-serif;
+$font-size-base: 1rem; // 16px
+$font-size-sm: 0.875rem; // 14px
+$font-size-xs: 0.75rem; // 12px
+$font-size-lg: 1.125rem; // 18px
+$font-size-xl: 1.5rem; // 24px
+$font-size-2xl: 2rem; // 32px
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Spacing Scale
+$space-xs: 0.25rem; // 4px
+$space-sm: 0.5rem; // 8px
+$space-md: 1rem; // 16px
+$space-lg: 1.5rem; // 24px
+$space-xl: 2rem; // 32px
+$space-2xl: 3rem; // 48px
+
+// Border Radius
+$radius-sm: 0.25rem; // 4px
+$radius-md: 0.5rem; // 8px
+$radius-lg: 0.75rem; // 12px
+$radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md:
+  0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg:
+  0 10px 15px -3px rgba(0, 0, 0, 0.1),
+  0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl:
+  0 20px 25px -5px rgba(0, 0, 0, 0.1),
+  0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+// Transitions
+$transition-fast: 150ms ease-in-out;
+$transition-base: 250ms ease-in-out;
+$transition-slow: 350ms ease-in-out;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-index
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;

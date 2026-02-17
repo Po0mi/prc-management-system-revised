@@ -1,0 +1,208 @@
+@use "../../styles/variables.scss" as *;
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl;
+  overflow: hidden;
+
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $space-lg;
+    background: $primary-red;
+    color: $white;
+
+    .recipient-info {
+      display: flex;
+      align-items: center;
+      gap: $space-md;
+
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: $radius-full;
+        background: rgba($white, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+      }
+
+      .details {
+        h3 {
+          margin: 0;
+          font-size: $font-size-lg;
+          color: $white;
+        }
+
+        .status {
+          font-size: $font-size-xs;
+          opacity: 0.9;
+
+          &.online::before {
+            content: "●";
+            color: $success;
+            margin-right: $space-xs;
+          }
+        }
+      }
+    }
+
+    .close-btn {
+      background: transparent;
+      color: $white;
+      font-size: $font-size-xl;
+      padding: $space-sm;
+      border-radius: $radius-md;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba($white, 0.2);
+      }
+    }
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: $space-lg;
+    background: $gray-100;
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: $gray-500;
+      text-align: center;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: $space-md;
+
+      &.sent {
+        justify-content: flex-end;
+
+        .message-content {
+          background: $primary-red;
+          color: $white;
+          border-radius: $radius-lg $radius-lg 0 $radius-lg;
+
+          .timestamp {
+            color: rgba($white, 0.8);
+          }
+        }
+      }
+
+      &.received {
+        justify-content: flex-start;
+
+        .message-content {
+          background: $white;
+          color: $gray-900;
+          border-radius: $radius-lg $radius-lg $radius-lg 0;
+          box-shadow: $shadow-sm;
+        }
+      }
+
+      .message-content {
+        max-width: 70%;
+        padding: $space-md $space-lg;
+        position: relative;
+
+        p {
+          margin: 0 0 $space-xs;
+          word-wrap: break-word;
+        }
+
+        .timestamp {
+          font-size: $font-size-xs;
+          color: $gray-500;
+          display: block;
+        }
+      }
+    }
+  }
+
+  .chat-input {
+    display: flex;
+    padding: $space-lg;
+    background: $white;
+    border-top: 1px solid $gray-300;
+
+    input {
+      flex: 1;
+      padding: $space-md;
+      border: 1px solid $gray-300;
+      border-radius: $radius-md;
+      font-size: $font-size-base;
+      outline: none;
+
+      &:focus {
+        border-color: $primary-red;
+        box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+      }
+
+      &:disabled {
+        background: $gray-100;
+        cursor: not-allowed;
+      }
+    }
+
+    button {
+      margin-left: $space-md;
+      padding: $space-md $space-lg;
+      background: $primary-red;
+      color: $white;
+      border: none;
+      border-radius: $radius-md;
+      font-size: $font-size-xl;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover:not(:disabled) {
+        background: $primary-dark;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Scrollbar styling
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: $gray-300;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: $radius-full;
+
+  &:hover {
+    background: $gray-500;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .chat-box {
+    height: 500px;
+
+    .message .message-content {
+      max-width: 85%;
+    }
+  }
+}

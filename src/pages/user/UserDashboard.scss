@@ -1,0 +1,141 @@
+@use "../../styles/variables.scss" as *;
+
+.user-dashboard {
+  padding: $space-xl 0;
+
+  h1 {
+    font-size: $font-size-2xl;
+    margin-bottom: $space-xl;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $space-lg;
+    margin-bottom: $space-2xl;
+
+    .stat-card {
+      background: $white;
+      padding: $space-xl;
+      border-radius: $radius-lg;
+      box-shadow: $shadow-sm;
+      text-align: center;
+      transition: all $transition-fast;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+      }
+
+      h3 {
+        color: $gray-700;
+        font-size: $font-size-base;
+        font-weight: $font-weight-medium;
+        margin-bottom: $space-md;
+      }
+
+      .stat-number {
+        font-size: $font-size-2xl;
+        font-weight: $font-weight-bold;
+        color: $primary-red;
+        margin-bottom: $space-sm;
+      }
+
+      span {
+        color: $gray-500;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  .section {
+    background: $white;
+    padding: $space-xl;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    margin-bottom: $space-xl;
+
+    h2 {
+      font-size: $font-size-xl;
+      margin-bottom: $space-lg;
+    }
+
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: $space-md;
+
+      .event-card {
+        display: flex;
+        gap: $space-lg;
+        padding: $space-lg;
+        border: 1px solid $gray-300;
+        border-radius: $radius-md;
+        transition: all $transition-fast;
+
+        &:hover {
+          border-color: $primary-red;
+          box-shadow: $shadow-sm;
+        }
+
+        .event-date {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-width: 60px;
+          padding: $space-sm;
+          background: $primary-red;
+          color: $white;
+          border-radius: $radius-md;
+
+          .day {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-bold;
+            line-height: 1;
+          }
+
+          .month {
+            font-size: $font-size-sm;
+            text-transform: uppercase;
+          }
+        }
+
+        .event-details {
+          flex: 1;
+
+          h3 {
+            font-size: $font-size-lg;
+            margin-bottom: $space-sm;
+            color: $gray-900;
+          }
+
+          p {
+            color: $gray-700;
+            margin-bottom: $space-sm;
+            font-size: $font-size-sm;
+          }
+
+          .status {
+            display: inline-block;
+            padding: $space-xs $space-md;
+            border-radius: $radius-full;
+            font-size: $font-size-xs;
+            font-weight: $font-weight-semibold;
+            text-transform: uppercase;
+
+            &.registered {
+              background: rgba($success, 0.1);
+              color: $success;
+            }
+
+            &.pending {
+              background: rgba($warning, 0.1);
+              color: $warning;
+            }
+          }
+        }
+      }
+    }
+  }
+}

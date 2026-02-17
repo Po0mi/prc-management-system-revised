@@ -1,0 +1,280 @@
+@use "../../styles/variables.scss" as *;
+
+.admin-messages {
+  .messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-xl;
+
+    h1 {
+      margin: 0;
+    }
+
+    .btn-new-chat {
+      padding: $space-md $space-lg;
+      background: $primary-red;
+      color: $white;
+      border: none;
+      border-radius: $radius-md;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        background: $primary-dark;
+      }
+    }
+  }
+
+  .messages-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: $space-lg;
+    height: 600px;
+
+    @media (max-width: $breakpoint-lg) {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+  }
+
+  .conversations-panel {
+    background: $white;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .search-box {
+      position: relative;
+      padding: $space-lg;
+      border-bottom: 1px solid $gray-300;
+
+      input {
+        width: 100%;
+        padding: $space-md $space-xl $space-md $space-md;
+        border: 1px solid $gray-300;
+        border-radius: $radius-md;
+        font-size: $font-size-base;
+        outline: none;
+
+        &:focus {
+          border-color: $primary-red;
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: $space-xl;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    }
+
+    .new-chat-section {
+      padding: $space-lg;
+      background: $gray-100;
+      border-bottom: 1px solid $gray-300;
+      max-height: 300px;
+      overflow-y: auto;
+
+      h4 {
+        margin: 0 0 $space-md;
+        font-size: $font-size-sm;
+        color: $gray-700;
+        text-transform: uppercase;
+      }
+
+      .user-item {
+        display: flex;
+        gap: $space-md;
+        padding: $space-md;
+        border-radius: $radius-md;
+        cursor: pointer;
+        transition: all $transition-fast;
+
+        &:hover {
+          background: $white;
+        }
+
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: $radius-full;
+          background: $primary-red;
+          color: $white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: $font-weight-bold;
+        }
+
+        .user-info {
+          h5 {
+            margin: 0 0 $space-xs;
+            font-size: $font-size-base;
+            color: $gray-900;
+          }
+
+          .role {
+            font-size: $font-size-xs;
+            color: $gray-700;
+          }
+        }
+      }
+    }
+
+    .conversations-list {
+      flex: 1;
+      overflow-y: auto;
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: $gray-500;
+        gap: $space-md;
+
+        button {
+          padding: $space-sm $space-lg;
+          background: $primary-red;
+          color: $white;
+          border: none;
+          border-radius: $radius-md;
+          cursor: pointer;
+
+          &:hover {
+            background: $primary-dark;
+          }
+        }
+      }
+
+      .conversation-item {
+        display: flex;
+        gap: $space-md;
+        padding: $space-lg;
+        border-bottom: 1px solid $gray-300;
+        cursor: pointer;
+        transition: all $transition-fast;
+
+        &:hover {
+          background: $gray-100;
+        }
+
+        &.active {
+          background: rgba($primary-red, 0.1);
+          border-left: 3px solid $primary-red;
+        }
+
+        .avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: $radius-full;
+          background: $primary-red;
+          color: $white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: $font-size-lg;
+          font-weight: $font-weight-bold;
+          flex-shrink: 0;
+        }
+
+        .conversation-info {
+          flex: 1;
+          min-width: 0;
+
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: $space-xs;
+
+            div {
+              h4 {
+                margin: 0 0 $space-xs;
+                font-size: $font-size-base;
+                font-weight: $font-weight-semibold;
+                color: $gray-900;
+              }
+
+              .role {
+                font-size: $font-size-xs;
+                color: $gray-700;
+                padding: 2px 8px;
+                background: $gray-300;
+                border-radius: $radius-full;
+              }
+            }
+
+            .time {
+              font-size: $font-size-xs;
+              color: $gray-500;
+            }
+          }
+
+          .preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            p {
+              margin: 0;
+              font-size: $font-size-sm;
+              color: $gray-700;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              flex: 1;
+            }
+
+            .unread-badge {
+              background: $primary-red;
+              color: $white;
+              padding: 2px 8px;
+              border-radius: $radius-full;
+              font-size: $font-size-xs;
+              font-weight: $font-weight-bold;
+              margin-left: $space-sm;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .chat-panel {
+    .no-chat-selected {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: $white;
+      border-radius: $radius-lg;
+      box-shadow: $shadow-sm;
+      padding: $space-2xl;
+      text-align: center;
+
+      .icon {
+        font-size: 64px;
+        margin-bottom: $space-lg;
+        opacity: 0.5;
+      }
+
+      h3 {
+        color: $gray-900;
+        margin-bottom: $space-sm;
+      }
+
+      p {
+        color: $gray-700;
+        margin: 0;
+      }
+    }
+  }
+}
