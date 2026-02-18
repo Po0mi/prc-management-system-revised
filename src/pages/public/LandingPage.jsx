@@ -6,9 +6,18 @@ import "./LandingPage.scss";
 function LandingPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
     fetchAnnouncements();
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const fetchAnnouncements = async () => {
@@ -18,7 +27,7 @@ function LandingPage() {
       );
       const data = await response.json();
       if (data.success) {
-        setAnnouncements(data.data.slice(0, 3)); // Show only 3
+        setAnnouncements(data.data.slice(0, 3));
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
@@ -27,28 +36,58 @@ function LandingPage() {
     }
   };
 
+  const impactSlides = [
+    {
+      title: "Blood Donation Drives",
+      description:
+        "Saving lives through voluntary blood donation campaigns nationwide",
+      icon: "fa-solid fa-droplet",
+    },
+    {
+      title: "Disaster Response",
+      description:
+        "Rapid emergency response and relief operations across the Philippines",
+      icon: "fa-solid fa-truck-fast",
+    },
+    {
+      title: "Community Training",
+      description:
+        "Empowering communities with life-saving skills and knowledge",
+      icon: "fa-solid fa-graduation-cap",
+    },
+  ];
+
   return (
     <div className="landing-page">
       {/* Header */}
-      <header className="header">
+      <header className={`header ${scrolled ? "scrolled" : ""}`}>
         <div className="container">
-          <div className="header-content">
-            <div className="logo">
+          <div className="header__content">
+            <Link to="/" className="header__logo">
               <img
                 src={prcLogo}
                 alt="PRC Logo"
+                className="header__logo-img"
                 onError={(e) => (e.target.style.display = "none")}
               />
-              <div className="logo-text">
+              <div className="header__logo-text">
                 <h1>Philippine Red Cross</h1>
                 <p>Serving Humanity</p>
               </div>
-            </div>
-            <nav className="nav-buttons">
-              <Link to="/login" className="btn-login">
+            </Link>
+            <nav className="header__nav">
+              <Link
+                to="/login"
+                className="header__nav-btn header__nav-btn--login"
+              >
+                <i className="fa-solid fa-right-to-bracket"></i>
                 Login
               </Link>
-              <Link to="/register" className="btn-register">
+              <Link
+                to="/register"
+                className="header__nav-btn header__nav-btn--register"
+              >
+                <i className="fa-solid fa-user-plus"></i>
                 Register
               </Link>
             </nav>
@@ -58,40 +97,39 @@ function LandingPage() {
 
       {/* Hero Section */}
       <section className="hero">
-        <div className="hero-overlay"></div>
         <div className="container">
-          <div className="hero-content">
-            <span className="hero-badge">
-              <i className="fas fa-heart"></i> Humanitarian Excellence
+          <div className="hero__content">
+            <span className="hero__badge">
+              <i className="fa-solid fa-heart"></i>
+              Humanitarian Excellence Since 1947
             </span>
-            <h1 className="hero-title">
+            <h1 className="hero__title">
               Empowering Communities
-              <br />
-              <span className="hero-highlight">Through Compassion</span>
+              <span className="hero__title-highlight">Through Compassion</span>
             </h1>
-            <p className="hero-description">
+            <p className="hero__description">
               Join the Philippine Red Cross in our mission to alleviate human
               suffering, protect life and health, and uphold human dignity
               especially during emergencies.
             </p>
-            <div className="hero-buttons">
-              <Link to="/register" className="btn-primary">
-                Get Started <i className="fas fa-arrow-right"></i>
+            <div className="hero__buttons">
+              <Link to="/register" className="hero__btn hero__btn--primary">
+                Get Started <i className="fa-solid fa-arrow-right"></i>
               </Link>
-              <a href="#services" className="btn-secondary">
-                <i className="fas fa-play"></i> Learn More
+              <a href="#services" className="hero__btn hero__btn--secondary">
+                <i className="fa-solid fa-play"></i> Learn More
               </a>
             </div>
-            <div className="hero-stats">
-              <div className="stat">
+            <div className="hero__stats">
+              <div className="hero__stat">
                 <h3>1M+</h3>
                 <p>Lives Touched</p>
               </div>
-              <div className="stat">
+              <div className="hero__stat">
                 <h3>500+</h3>
                 <p>Communities Served</p>
               </div>
-              <div className="stat">
+              <div className="hero__stat">
                 <h3>24/7</h3>
                 <p>Emergency Response</p>
               </div>
@@ -100,28 +138,43 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Impact Carousel Section */}
+      {/* Impact Section */}
       <section className="impact">
         <div className="container">
-          <h2 className="section-title">Our Impact in Action</h2>
-          <p className="section-subtitle">
-            Witness the Philippine Red Cross making a difference across the
-            nation
+          <span className="section__badge">
+            <i className="fa-solid fa-star"></i>
+            Our Impact
+          </span>
+          <h2 className="section__title">Making a Difference Every Day</h2>
+          <p className="section__subtitle">
+            Witness the Philippine Red Cross in action across the nation
           </p>
-          <div className="impact-carousel">
-            <div className="carousel-item active">
-              <div className="carousel-image">
-                {/* Placeholder for blood donation image */}
-                <div className="image-placeholder">Blood Donation Drives</div>
+
+          <div className="impact__carousel">
+            <div className="impact__item">
+              <div className="impact__item-image">
+                <div className="image-placeholder">
+                  <i
+                    className={`fa-solid ${impactSlides[activeSlide].icon}`}
+                  ></i>
+                </div>
               </div>
-              <div className="carousel-content">
-                <h3>Blood Donation Drives</h3>
-                <p>
-                  Saving lives through voluntary blood donation campaigns
-                  nationwide
-                </p>
-                <button className="btn-carousel">Join Our Drive</button>
+              <div className="impact__item-content">
+                <h3>{impactSlides[activeSlide].title}</h3>
+                <p>{impactSlides[activeSlide].description}</p>
+                <button className="impact__item-content-btn">
+                  Join Now <i className="fa-solid fa-arrow-right"></i>
+                </button>
               </div>
+            </div>
+            <div className="impact__indicators">
+              {impactSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`impact__indicator ${index === activeSlide ? "impact__indicator--active" : ""}`}
+                  onClick={() => setActiveSlide(index)}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -130,19 +183,23 @@ function LandingPage() {
       {/* Services Section */}
       <section className="services" id="services">
         <div className="container">
-          <span className="section-badge">
-            <i className="fas fa-heart"></i> Our Services
+          <span className="section__badge">
+            <i className="fa-solid fa-heart"></i>
+            What We Do
           </span>
-          <h2 className="section-title">Comprehensive Humanitarian Aid</h2>
-          <p className="section-subtitle">
+          <h2 className="section__title">
+            Comprehensive Humanitarian Services
+          </h2>
+          <p className="section__subtitle">
             Discover how we serve humanity through our life-saving programs and
-            community initiatives
+            initiatives
           </p>
 
-          <div className="services-grid">
-            <div className="service-card">
-              <div className="service-icon health">
-                <i className="fas fa-heartbeat"></i>
+          <div className="services__grid">
+            {/* Health Services */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--health">
+                <i className="fa-solid fa-heart-pulse"></i>
               </div>
               <h3>Health Services</h3>
               <p>
@@ -150,19 +207,20 @@ function LandingPage() {
                 medical programs and health education initiatives.
               </p>
               <ul>
-                <li>✓ Community Health Programs</li>
-                <li>✓ Epidemic Control</li>
-                <li>✓ Maternal & Child Health</li>
-                <li>✓ Water & Sanitation</li>
+                <li>Community Health Programs</li>
+                <li>Epidemic Control</li>
+                <li>Maternal & Child Health</li>
+                <li>Water & Sanitation</li>
               </ul>
-              <a href="#" className="service-link">
-                Learn More →
+              <a href="#" className="services__card-link">
+                Learn More <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
-            <div className="service-card">
-              <div className="service-icon blood">
-                <i className="fas fa-tint"></i>
+            {/* Blood Services */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--blood">
+                <i className="fa-solid fa-droplet"></i>
               </div>
               <h3>Blood Services</h3>
               <p>
@@ -170,19 +228,20 @@ function LandingPage() {
                 through our nationwide blood bank network.
               </p>
               <ul>
-                <li>✓ Voluntary Blood Donation</li>
-                <li>✓ Blood Testing & Screening</li>
-                <li>✓ Emergency Blood Supply</li>
-                <li>✓ Donor Education Programs</li>
+                <li>Voluntary Blood Donation</li>
+                <li>Blood Testing & Screening</li>
+                <li>Emergency Blood Supply</li>
+                <li>Donor Education Programs</li>
               </ul>
-              <a href="#" className="service-link">
-                Donate Blood →
+              <a href="#" className="services__card-link">
+                Donate Blood <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
-            <div className="service-card">
-              <div className="service-icon training">
-                <i className="fas fa-graduation-cap"></i>
+            {/* Training Services */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--training">
+                <i className="fa-solid fa-graduation-cap"></i>
               </div>
               <h3>Training & Safety</h3>
               <p>
@@ -190,19 +249,20 @@ function LandingPage() {
                 safety courses for all skill levels.
               </p>
               <ul>
-                <li>✓ First Aid Certification</li>
-                <li>✓ CPR & Life Support</li>
-                <li>✓ Disaster Response Training</li>
-                <li>✓ Water Safety Training</li>
+                <li>First Aid Certification</li>
+                <li>CPR & Life Support</li>
+                <li>Disaster Response Training</li>
+                <li>Water Safety Training</li>
               </ul>
-              <a href="#" className="service-link">
-                Join Training →
+              <a href="#" className="services__card-link">
+                Join Training <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
-            <div className="service-card">
-              <div className="service-icon disaster">
-                <i className="fas fa-exclamation-triangle"></i>
+            {/* Disaster Services */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--disaster">
+                <i className="fa-solid fa-triangle-exclamation"></i>
               </div>
               <h3>Disaster Services</h3>
               <p>
@@ -210,19 +270,20 @@ function LandingPage() {
                 communities during natural and man-made disasters.
               </p>
               <ul>
-                <li>✓ Emergency Relief Operations</li>
-                <li>✓ Disaster Preparedness</li>
-                <li>✓ Community Response Teams</li>
-                <li>✓ Recovery Support</li>
+                <li>Emergency Relief Operations</li>
+                <li>Disaster Preparedness</li>
+                <li>Community Response Teams</li>
+                <li>Recovery Support</li>
               </ul>
-              <a href="#" className="service-link">
-                Get Involved →
+              <a href="#" className="services__card-link">
+                Get Involved <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
-            <div className="service-card">
-              <div className="service-icon welfare">
-                <i className="fas fa-hands-helping"></i>
+            {/* Welfare Services */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--welfare">
+                <i className="fa-solid fa-hand-holding-heart"></i>
               </div>
               <h3>Welfare Services</h3>
               <p>
@@ -230,33 +291,34 @@ function LandingPage() {
                 comprehensive social welfare programs.
               </p>
               <ul>
-                <li>✓ Psychosocial Support</li>
-                <li>✓ Family Assistance</li>
-                <li>✓ Elderly Care</li>
-                <li>✓ Child Protection</li>
+                <li>Psychosocial Support</li>
+                <li>Family Assistance</li>
+                <li>Elderly Care</li>
+                <li>Child Protection</li>
               </ul>
-              <a href="#" className="service-link">
-                Find Support →
+              <a href="#" className="services__card-link">
+                Find Support <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
 
-            <div className="service-card">
-              <div className="service-icon youth">
-                <i className="fas fa-users"></i>
+            {/* Red Cross Youth */}
+            <div className="services__card">
+              <div className="services__card-icon services__card-icon--youth">
+                <i className="fa-solid fa-users"></i>
               </div>
               <h3>Red Cross Youth</h3>
               <p>
-                Its mission is to educate and empower children and youth through
-                Red Cross values by providing training.
+                Educating and empowering youth through Red Cross values,
+                leadership training, and community service.
               </p>
               <ul>
-                <li>✓ Leadership Development Program</li>
-                <li>✓ HIV/AIDS Awareness Prevention education</li>
-                <li>✓ Substance Abuse Prevention Education</li>
-                <li>✓ International Educational Friendship program</li>
+                <li>Leadership Development</li>
+                <li>Peer Education</li>
+                <li>Community Service</li>
+                <li>International Friendship</li>
               </ul>
-              <a href="#" className="service-link">
-                Emergency: 143 📞
+              <a href="#" className="services__card-link">
+                Join Youth <i className="fa-solid fa-arrow-right"></i>
               </a>
             </div>
           </div>
@@ -264,27 +326,31 @@ function LandingPage() {
       </section>
 
       {/* Announcements Section */}
-      <section className="announcements">
+      <section className="announcements" id="announcements">
         <div className="container">
-          <span className="section-badge">
-            <i className="fas fa-newspaper"></i> Latest News
+          <span className="section__badge">
+            <i className="fa-regular fa-newspaper"></i>
+            Latest News
           </span>
-          <h2 className="section-title">Stay Updated</h2>
-          <p className="section-subtitle">
+          <h2 className="section__title">Stay Updated</h2>
+          <p className="section__subtitle">
             Get the latest announcements and important updates from Philippine
             Red Cross
           </p>
 
-          <div className="announcements-grid">
+          <div className="announcements__grid">
             {loading ? (
-              <div className="loading">Loading...</div>
+              <div className="announcements__loading">
+                <i className="fa-solid fa-spinner fa-spin"></i>
+                <p>Loading announcements...</p>
+              </div>
             ) : announcements.length > 0 ? (
               announcements.map((announcement) => (
                 <div
                   key={announcement.announcement_id}
-                  className="announcement-card"
+                  className="announcements__card"
                 >
-                  <div className="announcement-image">
+                  <div className="announcements__card-image">
                     {announcement.image_url ? (
                       <img
                         src={`http://localhost/prc-management-system/backend/${announcement.image_url}`}
@@ -295,12 +361,14 @@ function LandingPage() {
                         }}
                       />
                     ) : (
-                      <div className="image-placeholder">PRC Announcement</div>
+                      <div className="image-placeholder">
+                        <i className="fa-regular fa-image"></i>
+                      </div>
                     )}
                   </div>
-                  <div className="announcement-content">
-                    <span className="announcement-date">
-                      <i className="far fa-calendar"></i>{" "}
+                  <div className="announcements__card-content">
+                    <span className="announcements__card-date">
+                      <i className="fa-regular fa-calendar"></i>
                       {new Date(announcement.posted_at).toLocaleDateString(
                         "en-US",
                         {
@@ -312,14 +380,17 @@ function LandingPage() {
                     </span>
                     <h3>{announcement.title}</h3>
                     <p>{announcement.content.substring(0, 120)}...</p>
-                    <Link to="/login" className="read-more">
-                      Read More →
+                    <Link to="/login" className="announcements__card-link">
+                      Read More <i className="fa-solid fa-arrow-right"></i>
                     </Link>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="no-announcements">No announcements available.</p>
+              <div className="announcements__empty">
+                <i className="fa-regular fa-newspaper"></i>
+                <p>No announcements available at the moment.</p>
+              </div>
             )}
           </div>
         </div>
@@ -328,41 +399,40 @@ function LandingPage() {
       {/* CTA Section */}
       <section className="cta">
         <div className="container">
-          <h2>Ready to Make a Difference?</h2>
-          <p>
-            Join thousands of volunteers and humanitarian workers in serving
-            communities across the Philippines. Your compassion can save lives.
-          </p>
-          <div className="cta-buttons">
-            <Link to="/register" className="btn-cta-primary">
-              <i className="fas fa-heart"></i> Become a Volunteer
-            </Link>
-            <Link to="/login" className="btn-cta-secondary">
-              <i className="fas fa-sign-in-alt"></i> Member Login
-            </Link>
-          </div>
+          <div className="cta__content">
+            <h2>Ready to Make a Difference?</h2>
+            <p>
+              Join thousands of volunteers and humanitarian workers in serving
+              communities across the Philippines. Your compassion can save
+              lives.
+            </p>
+            <div className="cta__buttons">
+              <Link to="/register" className="cta__btn cta__btn--primary">
+                <i className="fa-solid fa-heart"></i>
+                Become a Volunteer
+              </Link>
+              <Link to="/login" className="cta__btn cta__btn--secondary">
+                <i className="fa-solid fa-right-to-bracket"></i>
+                Member Login
+              </Link>
+            </div>
 
-          <div className="cta-features">
-            <div className="feature">
-              <span className="feature-icon">
-                <i className="fas fa-phone-alt"></i>
-              </span>
-              <h4>24/7 Emergency Response</h4>
-              <p>Always ready to help when disaster strikes</p>
-            </div>
-            <div className="feature">
-              <span className="feature-icon">
-                <i className="fas fa-certificate"></i>
-              </span>
-              <h4>Professional Training</h4>
-              <p>World-class certification programs</p>
-            </div>
-            <div className="feature">
-              <span className="feature-icon">
-                <i className="fas fa-hands-helping"></i>
-              </span>
-              <h4>Community Impact</h4>
-              <p>Building resilient communities together</p>
+            <div className="cta__features">
+              <div className="cta__feature">
+                <i className="fa-solid fa-phone-volume"></i>
+                <h4>24/7 Emergency Response</h4>
+                <p>Always ready to help when disaster strikes</p>
+              </div>
+              <div className="cta__feature">
+                <i className="fa-solid fa-certificate"></i>
+                <h4>Professional Training</h4>
+                <p>World-class certification programs</p>
+              </div>
+              <div className="cta__feature">
+                <i className="fa-solid fa-hand-holding-heart"></i>
+                <h4>Community Impact</h4>
+                <p>Building resilient communities together</p>
+              </div>
             </div>
           </div>
         </div>
@@ -371,9 +441,9 @@ function LandingPage() {
       {/* Footer */}
       <footer className="footer">
         <div className="container">
-          <div className="footer-content">
-            <div className="footer-brand">
-              <div className="footer-logo">
+          <div className="footer__content">
+            <div className="footer__brand">
+              <div className="footer__brand-logo">
                 <img
                   src={prcLogo}
                   alt="PRC"
@@ -385,90 +455,106 @@ function LandingPage() {
                 The Philippine Red Cross is committed to providing humanitarian
                 services that help vulnerable communities become self-reliant.
               </p>
-              <div className="social-links">
+              <div className="footer__social">
                 <a href="#" aria-label="Facebook">
-                  <i className="fab fa-facebook-f"></i>
+                  <i className="fa-brands fa-facebook-f"></i>
                 </a>
                 <a href="#" aria-label="Twitter">
-                  <i className="fab fa-twitter"></i>
+                  <i className="fa-brands fa-twitter"></i>
                 </a>
                 <a href="#" aria-label="Instagram">
-                  <i className="fab fa-instagram"></i>
+                  <i className="fa-brands fa-instagram"></i>
                 </a>
                 <a href="#" aria-label="YouTube">
-                  <i className="fab fa-youtube"></i>
+                  <i className="fa-brands fa-youtube"></i>
                 </a>
               </div>
             </div>
 
-            <div className="footer-links">
-              <div className="footer-column">
+            <div className="footer__links">
+              <div className="footer__column">
                 <h4>Quick Access</h4>
                 <ul>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <Link to="/register">Member Portal</Link>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <Link to="/login">Join Us</Link>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Our Services</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#announcements">Events</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#announcements">Training</a>
                   </li>
                 </ul>
               </div>
 
-              <div className="footer-column">
+              <div className="footer__column">
                 <h4>Services</h4>
                 <ul>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Blood Donation</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Emergency Response</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Health Programs</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Disaster Relief</a>
                   </li>
                   <li>
+                    <i className="fa-solid fa-chevron-right"></i>
                     <a href="#services">Training Programs</a>
                   </li>
                 </ul>
               </div>
 
-              <div className="footer-column">
+              <div className="footer__column">
                 <h4>Contact</h4>
                 <ul>
                   <li>
-                    <i className="fas fa-phone"></i> 143 (Emergency Hotline)
+                    <i className="fa-solid fa-phone"></i>
+                    143 (Emergency Hotline)
                   </li>
                   <li>
-                    <i className="fas fa-envelope"></i> info@redcross.org.ph
+                    <i className="fa-solid fa-envelope"></i>
+                    info@redcross.org.ph
                   </li>
                   <li>
-                    <i className="fas fa-map-marker-alt"></i> PRC National
-                    Headquarters, Manila
+                    <i className="fa-solid fa-location-dot"></i>
+                    PRC National Headquarters, Manila
                   </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <div className="footer-bottom">
-            <p>&copy; 2025 Philippine Red Cross. All rights reserved.</p>
+          <div className="footer__bottom">
+            <p>
+              <i className="fa-regular fa-copyright"></i>
+              {new Date().getFullYear()} Philippine Red Cross. All rights
+              reserved.
+            </p>
             <button
-              className="scroll-top"
+              className="footer__scroll-top"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              <i className="fas fa-arrow-up"></i>
+              <i className="fa-solid fa-arrow-up"></i>
             </button>
           </div>
         </div>
