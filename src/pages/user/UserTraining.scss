@@ -19,6 +19,11 @@
 
   &__inner {
     color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   &__eyebrow {
@@ -45,6 +50,30 @@
     opacity: 0.9;
     margin: 0;
   }
+
+  &__request-btn {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: $primary-dark;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    i {
+      font-size: 1.1rem;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
 }
 
 // ─── BODY & LAYOUT ───────────────────────────────────────────────────────────
@@ -70,6 +99,7 @@
   gap: 1.5rem;
 }
 
+// ─── CARD ────────────────────────────────────────────────────────────────────
 .ut-card {
   background: white;
   border-radius: 12px;
@@ -163,7 +193,7 @@
       cursor: default;
     }
 
-    &--event {
+    &--session {
       font-weight: 600;
 
       &::after {
@@ -190,10 +220,9 @@
 }
 
 .ut-btn-clear-date {
-  width: 100%;
+  width: calc(100% - 2rem);
   padding: 0.75rem;
-  margin: 1rem;
-  margin-top: 0;
+  margin: 0 1rem 1rem;
   border: 2px dashed #e5e7eb;
   background: white;
   border-radius: 8px;
@@ -326,14 +355,14 @@
   }
 }
 
-// ─── EVENTS GRID ─────────────────────────────────────────────────────────────
-.ut-events-grid {
+// ─── SESSIONS GRID ───────────────────────────────────────────────────────────
+.ut-sessions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
 }
 
-.ut-event-card {
+.ut-session-card {
   background: white;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
@@ -392,18 +421,20 @@
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 1rem;
+  }
 
-    div {
-      font-size: 0.9rem;
-      color: #4b5563;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+  &__date,
+  &__time,
+  &__location {
+    font-size: 0.9rem;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 
-      i {
-        color: #9ca3af;
-        width: 16px;
-      }
+    i {
+      color: #9ca3af;
+      width: 16px;
     }
   }
 
@@ -444,18 +475,6 @@
     i {
       color: #10b981;
     }
-
-    .ut-status-pending {
-      color: #d97706;
-    }
-
-    .ut-status-approved {
-      color: #10b981;
-    }
-
-    .ut-status-rejected {
-      color: #dc2626;
-    }
   }
 
   &__btn {
@@ -489,6 +508,19 @@
       }
     }
   }
+}
+
+// ─── STATUS COLORS ───────────────────────────────────────────────────────────
+.ut-status-pending {
+  color: #d97706;
+}
+
+.ut-status-approved {
+  color: #10b981;
+}
+
+.ut-status-rejected {
+  color: #dc2626;
 }
 
 // ─── MY REGISTRATIONS ────────────────────────────────────────────────────────
@@ -555,6 +587,7 @@
     display: flex;
     gap: 1.5rem;
     margin-bottom: 0.75rem;
+    flex-wrap: wrap;
 
     div {
       font-size: 0.85rem;
@@ -625,11 +658,11 @@
 
   &--lg {
     width: 100%;
-    max-width: 700px;
+    max-width: 800px; // Slightly wider for the multi-step form
   }
 
   &__header {
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     border-bottom: 2px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
@@ -641,6 +674,10 @@
     font-weight: 700;
     color: #1f2937;
     margin-bottom: 0.5rem;
+
+    i {
+      color: $primary-dark;
+    }
   }
 
   &__meta {
@@ -649,6 +686,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
 
     i {
       color: #9ca3af;
@@ -709,7 +747,7 @@
     margin-right: 0.5rem;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #e5e7eb;
   }
 
@@ -717,6 +755,25 @@
     background: white;
     border-color: $primary-dark;
     color: $primary-dark;
+  }
+
+  &--completed {
+    background: #dcfce7;
+    border-color: #166534;
+    color: #166534;
+
+    &:hover:not(:disabled) {
+      background: #bbf7d0;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      background: #f3f4f6;
+    }
   }
 }
 
@@ -739,6 +796,10 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1.5rem;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   &__field {
@@ -776,6 +837,11 @@
 
     &--error {
       border-color: #ef4444;
+    }
+
+    &:disabled {
+      background: #f3f4f6;
+      cursor: not-allowed;
     }
   }
 
@@ -847,6 +913,52 @@
     &:hover {
       border-color: $primary-dark;
       background: #fef2f2;
+    }
+  }
+}
+
+// ─── FILE LIST ─────────────────────────────────────────────────────────────
+.ut-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    border: 1px solid #e5e7eb;
+
+    &-name {
+      color: #1f2937;
+      word-break: break-all;
+      font-size: 0.85rem;
+    }
+
+    &-remove {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1rem;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #fee2e2;
+        color: #dc2626;
+      }
     }
   }
 }

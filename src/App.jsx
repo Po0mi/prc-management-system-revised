@@ -35,6 +35,7 @@ import AdminMerchandise from "./pages/admin/AdminMerchandise";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminMessages from "./pages/admin/AdminMessages";
+import AdminTrainingRequest from "./pages/admin/AdminTrainingRequest";
 
 // Layouts
 import UserLayout from "./layouts/UserLayout";
@@ -96,6 +97,7 @@ function App() {
           <Route path="merchandise" element={<AdminMerchandise />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="messages" element={<AdminMessages />} />
+          <Route path="training-requests" element={<AdminTrainingRequest />} />
           <Route path="reports" element={<AdminReports />} />
         </Route>
 

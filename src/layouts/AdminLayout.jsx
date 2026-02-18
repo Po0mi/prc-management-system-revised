@@ -60,6 +60,12 @@ function AdminLayout() {
       permission: hasPermission("training"),
     },
     {
+      path: "/admin/training-requests",
+      icon: "📝",
+      label: "Training Requests",
+      permission: hasPermission("training-requests"),
+    },
+    {
       path: "/admin/announcements",
       icon: "📢",
       label: "Announcements",

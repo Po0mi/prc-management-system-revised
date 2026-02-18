@@ -10,6 +10,12 @@ import {
   updateTrainingSession,
   deleteTrainingSession,
 } from "../../services/trainingSessions";
+import {
+  getSessionRegistrations,
+  approveSessionRegistration,
+  rejectSessionRegistration,
+  deleteSessionRegistration,
+} from "../../services/sessionRegistrationsApi";
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const SERVICE_OPTIONS = [
@@ -370,6 +376,7 @@ function SessionModal({ session, onClose, onSaved }) {
 function RegistrationsModal({ session, onClose, onUpdate }) {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     approved: 0,
@@ -377,16 +384,27 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
     rejected: 0,
   });
 
+  const showToast = (msg, type = "success") => setToast({ msg, type });
+
   const loadRegistrations = useCallback(async () => {
     try {
-      // TODO: Replace with actual session registrations API call
-      // const { registrations: regs } = await getSessionRegistrations(session.session_id);
+      setLoading(true);
+      const { registrations: regs } = await getSessionRegistrations(
+        session.session_id,
+      );
+      setRegistrations(regs);
 
-      // Placeholder - will be replaced with actual API
-      setRegistrations([]);
-      setStats({ total: 0, approved: 0, pending: 0, rejected: 0 });
+      // Calculate stats
+      const stats = {
+        total: regs.length,
+        approved: regs.filter((r) => r.status === "approved").length,
+        pending: regs.filter((r) => r.status === "pending").length,
+        rejected: regs.filter((r) => r.status === "rejected").length,
+      };
+      setStats(stats);
     } catch (err) {
       console.error("Load registrations error:", err);
+      showToast(err.message || "Failed to load registrations", "error");
     } finally {
       setLoading(false);
     }
@@ -398,38 +416,35 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
 
   async function handleApprove(regId) {
     try {
-      // TODO: Replace with actual API call
-      // await approveSessionRegistration(regId);
-      alert("Approve functionality coming soon");
+      await approveSessionRegistration(regId);
+      showToast("Registration approved successfully");
       loadRegistrations();
       onUpdate?.();
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || "Failed to approve registration", "error");
     }
   }
 
   async function handleReject(regId) {
     try {
-      // TODO: Replace with actual API call
-      // await rejectSessionRegistration(regId);
-      alert("Reject functionality coming soon");
+      await rejectSessionRegistration(regId);
+      showToast("Registration rejected");
       loadRegistrations();
       onUpdate?.();
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || "Failed to reject registration", "error");
     }
   }
 
   async function handleDelete(regId) {
     if (!window.confirm("Delete this registration?")) return;
     try {
-      // TODO: Replace with actual API call
-      // await deleteSessionRegistration(regId);
-      alert("Delete functionality coming soon");
+      await deleteSessionRegistration(regId);
+      showToast("Registration deleted");
       loadRegistrations();
       onUpdate?.();
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || "Failed to delete registration", "error");
     }
   }
 
@@ -498,7 +513,7 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
                     <td>
                       <div className="at-reg-user">
                         <div className="at-reg-user__avatar">
-                          {reg.full_name.charAt(0).toUpperCase()}
+                          {reg.full_name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="at-reg-user__name">
@@ -527,7 +542,7 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
                     </td>
                     <td>
                       <span className={`at-status at-status--${reg.status}`}>
-                        {reg.status.toUpperCase()}
+                        {reg.status?.toUpperCase()}
                       </span>
                     </td>
                     <td>
@@ -599,6 +614,15 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
             </table>
           )}
         </div>
+
+        {/* Toast */}
+        {toast && (
+          <Toast
+            message={toast.msg}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </div>
     </div>
   );
