@@ -1,992 +1,6 @@
-// UserEvents.scss
-// Path: src/pages/UserEvents/UserEvents.scss
+@use "../../styles/variables.scss" as *;
 
-@use "../../styles/variables" as *;
-
-.ue-root {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 2rem;
-}
-
-// ─── HEADER ──────────────────────────────────────────────────────────────────
-.ue-header {
-  background: linear-gradient(135deg, $primary-dark 0%, #8b1e1e 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(196, 30, 58, 0.2);
-
-  &__inner {
-    color: white;
-  }
-
-  &__eyebrow {
-    font-size: 0.85rem;
-    font-weight: 600;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-
-    i {
-      margin-right: 0.5rem;
-    }
-  }
-
-  &__title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-  }
-
-  &__subtitle {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin: 0;
-  }
-}
-
-// ─── BODY & LAYOUT ───────────────────────────────────────────────────────────
-.ue-body {
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-.ue-layout {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 2rem;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
-.ue-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.ue-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-
-  &__header {
-    padding: 1.25rem;
-    border-bottom: 2px solid #e5e7eb;
-    font-weight: 700;
-    color: #1f2937;
-    font-size: 1.05rem;
-
-    i {
-      margin-right: 0.5rem;
-      color: $primary-dark;
-    }
-  }
-}
-
-// ─── CALENDAR ────────────────────────────────────────────────────────────────
-.ue-calendar {
-  padding: 1rem;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  &__nav {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: #f3f4f6;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #6b7280;
-    transition: all 0.2s;
-
-    &:hover {
-      background: $primary-dark;
-      color: white;
-    }
-  }
-
-  &__title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1f2937;
-  }
-
-  &__days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-  }
-
-  &__day-label {
-    text-align: center;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #9ca3af;
-    padding: 0.5rem 0;
-  }
-
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.25rem;
-  }
-
-  &__cell {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-
-    &:not(&--empty):hover {
-      background: #f3f4f6;
-    }
-
-    &--empty {
-      cursor: default;
-    }
-
-    &--event {
-      font-weight: 600;
-
-      &::after {
-        content: "";
-        position: absolute;
-        bottom: 4px;
-        width: 4px;
-        height: 4px;
-        background: $primary-dark;
-        border-radius: 50%;
-      }
-    }
-
-    &--selected {
-      background: $primary-dark;
-      color: white;
-      font-weight: 700;
-
-      &::after {
-        background: white;
-      }
-    }
-  }
-}
-
-.ue-btn-clear-date {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 1rem;
-  margin-top: 0;
-  border: 2px dashed #e5e7eb;
-  background: white;
-  border-radius: 8px;
-  color: #6b7280;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  i {
-    margin-right: 0.5rem;
-  }
-
-  &:hover {
-    border-color: $primary-dark;
-    color: $primary-dark;
-  }
-}
-
-// ─── MY STATS ────────────────────────────────────────────────────────────────
-.ue-my-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.ue-my-stat {
-  background: #f9fafb;
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-
-  &__num {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1f2937;
-  }
-
-  &__label {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 0.25rem;
-  }
-
-  &--upcoming {
-    background: #dbeafe;
-
-    .ue-my-stat__num {
-      color: #1e40af;
-    }
-  }
-
-  &--approved {
-    background: #dcfce7;
-
-    .ue-my-stat__num {
-      color: #166534;
-    }
-  }
-
-  &--pending {
-    background: #fef3c7;
-
-    .ue-my-stat__num {
-      color: #92400e;
-    }
-  }
-}
-
-// ─── MAIN ────────────────────────────────────────────────────────────────────
-.ue-main {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-// ─── SEARCH ──────────────────────────────────────────────────────────────────
-.ue-search {
-  position: relative;
-
-  &__icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-  }
-
-  &__input {
-    width: 100%;
-    padding: 1rem 1rem 1rem 3rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    font-size: 1rem;
-    background: white;
-    transition: all 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-dark;
-      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
-    }
-  }
-}
-
-// ─── SECTION ─────────────────────────────────────────────────────────────────
-.ue-section {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  &__title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-  }
-
-  &__count {
-    font-size: 0.9rem;
-    color: #6b7280;
-  }
-}
-
-// ─── EVENTS GRID ─────────────────────────────────────────────────────────────
-.ue-events-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.ue-event-card {
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.5rem;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: $primary-dark;
-    box-shadow: 0 4px 12px rgba(196, 30, 58, 0.15);
-    transform: translateY(-2px);
-  }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  &__service {
-    background: #eff6ff;
-    color: #1e40af;
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  &__fee {
-    color: #15803d;
-    font-weight: 700;
-    font-size: 1.1rem;
-  }
-
-  &__free {
-    background: #dcfce7;
-    color: #166534;
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  &__title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 1rem;
-    line-height: 1.3;
-  }
-
-  &__meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-
-    div {
-      font-size: 0.9rem;
-      color: #4b5563;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      i {
-        color: #9ca3af;
-        width: 16px;
-      }
-    }
-  }
-
-  &__desc {
-    font-size: 0.9rem;
-    color: #6b7280;
-    line-height: 1.5;
-    margin: 0 0 1rem;
-  }
-
-  &__footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  &__capacity {
-    font-size: 0.85rem;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    i {
-      color: #9ca3af;
-    }
-  }
-
-  &__registered {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-
-    i {
-      color: #10b981;
-    }
-
-    .ue-status-pending {
-      color: #d97706;
-    }
-
-    .ue-status-approved {
-      color: #10b981;
-    }
-
-    .ue-status-rejected {
-      color: #dc2626;
-    }
-  }
-
-  &__btn {
-    padding: 0.65rem 1.25rem;
-    background: linear-gradient(135deg, $primary-dark 0%, #8b1e1e 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.9rem;
-
-    i {
-      margin-right: 0.5rem;
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
-    }
-
-    &--full {
-      background: #e5e7eb;
-      color: #9ca3af;
-      cursor: not-allowed;
-
-      &:hover {
-        transform: none;
-        box-shadow: none;
-      }
-    }
-  }
-}
-
-// ─── MY REGISTRATIONS ────────────────────────────────────────────────────────
-.ue-my-regs {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.ue-my-reg {
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1.25rem;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-  }
-
-  &__title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 0.5rem;
-  }
-
-  &__service {
-    background: #eff6ff;
-    color: #1e40af;
-    padding: 0.25rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  &__status {
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-
-    &--pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    &--approved {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    &--rejected {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-  }
-
-  &__meta {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 0.75rem;
-
-    div {
-      font-size: 0.85rem;
-      color: #4b5563;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      i {
-        color: #9ca3af;
-      }
-    }
-  }
-
-  &__date {
-    font-size: 0.8rem;
-    color: #9ca3af;
-  }
-}
-
-// ─── LOADING & EMPTY ─────────────────────────────────────────────────────────
-.ue-loading,
-.ue-empty {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #9ca3af;
-
-  i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
-
-  p {
-    margin: 0;
-    font-size: 1rem;
-  }
-}
-
-.ue-loading i {
-  animation: spin 1s linear infinite;
-}
-
-// ─── MODAL ───────────────────────────────────────────────────────────────────
-.ue-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-  animation: fadeIn 0.2s;
-}
-
-.ue-modal {
-  background: white;
-  border-radius: 16px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s;
-
-  &--lg {
-    width: 100%;
-    max-width: 700px;
-  }
-
-  &__header {
-    padding: 2rem;
-    border-bottom: 2px solid #e5e7eb;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  &__title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 0.5rem;
-  }
-
-  &__meta {
-    font-size: 0.9rem;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    i {
-      color: #9ca3af;
-    }
-  }
-
-  &__free {
-    background: #dcfce7;
-    color: #166534;
-    padding: 0.25rem 0.6rem;
-    border-radius: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-  }
-
-  &__close {
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: #f3f4f6;
-    border-radius: 8px;
-    cursor: pointer;
-    color: #6b7280;
-    transition: all 0.2s;
-
-    &:hover {
-      background: #e5e7eb;
-      color: #1f2937;
-    }
-  }
-
-  &__body {
-    padding: 2rem;
-    overflow-y: auto;
-  }
-}
-
-// ─── TABS ────────────────────────────────────────────────────────────────────
-.ue-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.ue-tab {
-  flex: 1;
-  padding: 1rem;
-  background: #f3f4f6;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #6b7280;
-  transition: all 0.2s;
-
-  i {
-    margin-right: 0.5rem;
-  }
-
-  &:hover {
-    background: #e5e7eb;
-  }
-
-  &--active {
-    background: white;
-    border-color: $primary-dark;
-    color: $primary-dark;
-  }
-}
-
-// ─── FORM ────────────────────────────────────────────────────────────────────
-.ue-form {
-  &__error-banner {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  &__field {
-    margin-bottom: 1.5rem;
-  }
-
-  &__label {
-    display: block;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  &__required {
-    color: $primary-dark;
-  }
-
-  &__input,
-  &__select,
-  &__textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    font-family: inherit;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-dark;
-      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
-    }
-
-    &--error {
-      border-color: #ef4444;
-    }
-  }
-
-  &__hint {
-    display: block;
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-top: 0.25rem;
-  }
-
-  &__error-text {
-    display: block;
-    color: #dc2626;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-    font-weight: 500;
-  }
-
-  &__submit {
-    width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, $primary-dark 0%, #8b1e1e 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    i {
-      margin-right: 0.5rem;
-    }
-
-    &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(196, 30, 58, 0.3);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-}
-
-// ─── FILE UPLOAD ─────────────────────────────────────────────────────────────
-.ue-file-upload {
-  &__input {
-    display: none;
-  }
-
-  &__label {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 2px dashed #d1d5db;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #6b7280;
-
-    i {
-      font-size: 1.5rem;
-      color: $primary-dark;
-    }
-
-    &:hover {
-      border-color: $primary-dark;
-      background: #fef2f2;
-    }
-  }
-}
-
-// ─── PAYMENT OPTIONS ─────────────────────────────────────────────────────────
-.ue-payment-options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.ue-payment-option {
-  input {
-    display: none;
-
-    &:checked + .ue-payment-option__box {
-      border-color: $primary-dark;
-      background: #fef2f2;
-      color: $primary-dark;
-    }
-  }
-
-  &__box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    i {
-      font-size: 1.5rem;
-    }
-
-    span {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    &:hover {
-      border-color: $primary-dark;
-    }
-  }
-}
-
-// ─── DIVIDER ─────────────────────────────────────────────────────────────────
-.ue-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 2rem 0 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e5e7eb;
-  font-weight: 700;
-  color: #1f2937;
-  font-size: 1.05rem;
-
-  i {
-    color: $primary-dark;
-  }
-}
-
-// ─── INFO NOTICE ─────────────────────────────────────────────────────────────
-.ue-info-notice {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  i {
-    color: #1e40af;
-    font-size: 1.25rem;
-    flex-shrink: 0;
-  }
-
-  div {
-    font-size: 0.85rem;
-    color: #1e3a8a;
-    line-height: 1.5;
-  }
-}
-
-// ─── TOAST ───────────────────────────────────────────────────────────────────
-.ue-toast {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  min-width: 320px;
-  background: white;
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  z-index: 10000;
-  animation: slideIn 0.3s;
-  cursor: pointer;
-
-  i:first-child {
-    font-size: 1.25rem;
-  }
-
-  &--success {
-    border-left: 4px solid #10b981;
-
-    i:first-child {
-      color: #10b981;
-    }
-  }
-
-  &--error {
-    border-left: 4px solid #ef4444;
-
-    i:first-child {
-      color: #ef4444;
-    }
-  }
-
-  &__close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 0.25rem;
-
-    &:hover {
-      color: #4b5563;
-    }
-  }
-}
-
-// ─── ANIMATIONS ──────────────────────────────────────────────────────────────
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1021,5 +35,1306 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 2px 4px rgba($primary-red, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 2px 12px rgba($primary-red, 0.4),
+      0 0 20px rgba($primary-red, 0.2);
+  }
+}
+
+// ─── ROOT ────────────────────────────────────────────────────────────────────
+.ue-root {
+  min-height: 100vh;
+  background: $gray-100;
+  font-family: $font-family-base;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  // Scrollbar styling
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $radius-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+// ─── HEADER ──────────────────────────────────────────────────────────────────
+.ue-header {
+  background: linear-gradient(
+    135deg,
+    $primary-dark 0%,
+    $primary-red 60%,
+    $primary-light 100%
+  );
+  padding: $space-xl $space-2xl;
+  color: $white;
+  box-shadow: $shadow-lg;
+  animation: slideUp 400ms ease;
+
+  &__container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  &__eyebrow {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    opacity: 0.65;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: $space-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: $space-xs 0 0;
+    opacity: 0.7;
+    font-size: $font-size-sm;
+  }
+}
+
+// ─── BODY ────────────────────────────────────────────────────────────────────
+.ue-body {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $space-xl;
+}
+
+// ─── LAYOUT ──────────────────────────────────────────────────────────────────
+.ue-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: $space-xl;
+
+  @media (max-width: $breakpoint-lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+.ue-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+}
+
+.ue-card {
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+  transition: $transition-base;
+  animation: slideUp 400ms ease;
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  &__header {
+    padding: $space-md $space-lg;
+    border-bottom: 1px solid $gray-200;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    font-size: $font-size-base;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    background: $gray-100;
+
+    i {
+      color: $primary-red;
+      font-size: $font-size-base;
+    }
+  }
+
+  &__body {
+    padding: $space-lg;
+  }
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────────────
+.ue-calendar {
+  padding: $space-lg;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-lg;
+  }
+
+  &__nav {
+    width: 36px;
+    height: 36px;
+    border: 1px solid $gray-200;
+    background: $white;
+    border-radius: $radius-md;
+    cursor: pointer;
+    color: $gray-600;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: $font-size-sm;
+    }
+
+    &:hover {
+      background: $primary-red;
+      color: $white;
+      border-color: $primary-red;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+  }
+
+  &__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: $space-xs;
+    margin-bottom: $space-sm;
+  }
+
+  &__day-label {
+    text-align: center;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $gray-500;
+    padding: $space-xs 0;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: $space-xs;
+  }
+
+  &__cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-sm;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: $transition-fast;
+    position: relative;
+    font-weight: $font-weight-medium;
+    color: $gray-700;
+
+    &:not(&--empty):hover {
+      background: $gray-100;
+      color: $primary-red;
+    }
+
+    &--empty {
+      cursor: default;
+      color: $gray-300;
+    }
+
+    &--event {
+      font-weight: $font-weight-bold;
+      color: $primary-red;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        width: 4px;
+        height: 4px;
+        background: $primary-red;
+        border-radius: 50%;
+      }
+    }
+
+    &--selected {
+      background: $primary-red;
+      color: $white;
+      font-weight: $font-weight-bold;
+
+      &::after {
+        background: $white;
+      }
+
+      &:hover {
+        background: $primary-dark;
+        color: $white;
+      }
+    }
+  }
+}
+
+.ue-btn-clear-date {
+  width: calc(100% - #{$space-lg * 2});
+  margin: 0 $space-lg $space-lg;
+  padding: $space-sm;
+  background: $white;
+  border: 1.5px dashed $gray-300;
+  border-radius: $radius-md;
+  color: $gray-600;
+  cursor: pointer;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+  transition: $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-xs;
+
+  i {
+    font-size: $font-size-xs;
+  }
+
+  &:hover {
+    border-color: $primary-red;
+    color: $primary-red;
+    background: rgba($primary-red, 0.04);
+  }
+}
+
+// ─── MY STATS ────────────────────────────────────────────────────────────────
+.ue-my-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+  padding: $space-lg;
+}
+
+.ue-my-stat {
+  background: $gray-100;
+  padding: $space-md;
+  border-radius: $radius-md;
+  text-align: center;
+  transition: $transition-fast;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-sm;
+  }
+
+  &__num {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    line-height: 1.2;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    margin-top: $space-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  &--upcoming {
+    background: rgba($info, 0.12);
+    .ue-my-stat__num {
+      color: $info;
+    }
+  }
+
+  &--approved {
+    background: rgba($success, 0.12);
+    .ue-my-stat__num {
+      color: $success;
+    }
+  }
+
+  &--pending {
+    background: rgba($warning, 0.12);
+    .ue-my-stat__num {
+      color: $warning;
+    }
+  }
+}
+
+// ─── MAIN ────────────────────────────────────────────────────────────────────
+.ue-main {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xl;
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+.ue-search {
+  position: relative;
+  animation: slideUp 400ms ease;
+
+  &__icon {
+    position: absolute;
+    left: $space-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $gray-400;
+    font-size: $font-size-base;
+  }
+
+  &__input {
+    width: 100%;
+    padding: $space-md $space-md $space-md $space-xl * 2;
+    border: 1.5px solid $gray-200;
+    border-radius: $radius-lg;
+    font-size: $font-size-base;
+    font-family: $font-family-base;
+    color: $gray-900;
+    background: $white;
+    transition: $transition-fast;
+    box-shadow: $shadow-sm;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-red;
+      box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+    }
+
+    &::placeholder {
+      color: $gray-400;
+    }
+  }
+}
+
+// ─── SECTION ─────────────────────────────────────────────────────────────────
+.ue-section {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-xl;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  animation: slideUp 500ms ease;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-xl;
+    flex-wrap: wrap;
+    gap: $space-md;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      color: $primary-red;
+      font-size: $font-size-lg;
+      background: rgba($primary-red, 0.1);
+      padding: $space-xs;
+      border-radius: $radius-md;
+    }
+  }
+
+  &__count {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    background: $gray-100;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// ─── EVENTS GRID ─────────────────────────────────────────────────────────────
+.ue-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: $space-lg;
+}
+
+.ue-event-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  transition: $transition-base;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $primary-red, $primary-light);
+    transform: scaleX(0);
+    transition: transform $transition-base;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+    border-color: $primary-red;
+
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-md;
+  }
+
+  &__service {
+    background: rgba($primary-blue-light, 0.12);
+    color: $primary-blue-light;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: 8px;
+    }
+  }
+
+  &__fee {
+    color: $success;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-lg;
+  }
+
+  &__free {
+    background: rgba($success, 0.12);
+    color: $success;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: 8px;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin: 0 0 $space-md;
+    line-height: 1.3;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    margin-bottom: $space-md;
+
+    div {
+      font-size: $font-size-sm;
+      color: $gray-600;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      i {
+        color: $gray-400;
+        width: 16px;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  &__desc {
+    font-size: $font-size-sm;
+    color: $gray-600;
+    line-height: 1.6;
+    margin: 0 0 $space-lg;
+    flex: 1;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: $space-md;
+    border-top: 1px solid $gray-200;
+  }
+
+  &__capacity {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+    }
+  }
+
+  &__registered {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+
+    i {
+      color: $success;
+    }
+
+    .ue-status {
+      &-pending {
+        color: $warning;
+      }
+      &-approved {
+        color: $success;
+      }
+      &-rejected {
+        color: $error;
+      }
+    }
+  }
+
+  &__btn {
+    padding: $space-sm $space-lg;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    box-shadow: $shadow-sm;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &--full {
+      background: $gray-200;
+      color: $gray-500;
+      cursor: not-allowed;
+      box-shadow: none;
+
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// ─── MY REGISTRATIONS ────────────────────────────────────────────────────────
+.ue-my-regs {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.ue-my-reg {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  transition: $transition-fast;
+
+  &:hover {
+    border-color: $primary-red;
+    box-shadow: $shadow-md;
+    transform: translateX(4px);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $space-md;
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin: 0 0 $space-xs;
+  }
+
+  &__service {
+    background: rgba($primary-blue-light, 0.12);
+    color: $primary-blue-light;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: 8px;
+    }
+  }
+
+  &__status {
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: 8px;
+    }
+
+    &--pending {
+      background: rgba($warning, 0.12);
+      color: $warning;
+    }
+
+    &--approved {
+      background: rgba($success, 0.12);
+      color: $success;
+    }
+
+    &--rejected {
+      background: rgba($error, 0.12);
+      color: $error;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-lg;
+    margin-bottom: $space-sm;
+
+    div {
+      font-size: $font-size-sm;
+      color: $gray-600;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $gray-400;
+        width: 16px;
+      }
+    }
+  }
+
+  &__date {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    margin-top: $space-sm;
+    padding-top: $space-sm;
+    border-top: 1px dashed $gray-200;
+
+    i {
+      font-size: 8px;
+      color: $gray-400;
+    }
+  }
+}
+
+// ─── LOADING & EMPTY STATES ──────────────────────────────────────────────────
+.ue-loading,
+.ue-empty {
+  text-align: center;
+  padding: $space-2xl $space-xl;
+  color: $gray-400;
+  background: $white;
+  border-radius: $radius-lg;
+  border: 2px dashed $gray-200;
+
+  i {
+    font-size: $font-size-2xl;
+    margin-bottom: $space-md;
+    opacity: 0.4;
+  }
+
+  p {
+    margin: 0;
+    font-size: $font-size-base;
+    color: $gray-500;
+  }
+}
+
+.ue-loading i {
+  animation: spin 1s linear infinite;
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+.ue-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($gray-900, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+  padding: $space-md;
+  animation: fadeIn 200ms ease;
+}
+
+.ue-modal {
+  background: $white;
+  border-radius: $radius-lg;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-xl;
+  animation: slideUp 300ms ease;
+  width: 100%;
+  max-width: 700px;
+
+  &__header {
+    padding: $space-lg $space-xl;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: linear-gradient(135deg, $primary-dark, $primary-red);
+    color: $white;
+    border-radius: $radius-lg $radius-lg 0 0;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    margin: 0 0 $space-xs;
+    color: $white;
+  }
+
+  &__meta {
+    font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    color: rgba($white, 0.8);
+
+    i {
+      color: rgba($white, 0.6);
+    }
+  }
+
+  &__free {
+    background: rgba($white, 0.2);
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+    font-size: $font-size-xs;
+  }
+
+  &__close {
+    width: 36px;
+    height: 36px;
+    background: rgba($white, 0.15);
+    border: 1px solid rgba($white, 0.2);
+    border-radius: $radius-md;
+    color: $white;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: $font-size-base;
+    }
+
+    &:hover {
+      background: rgba($white, 0.3);
+    }
+  }
+
+  &__body {
+    padding: $space-xl;
+    overflow-y: auto;
+  }
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+.ue-tabs {
+  display: flex;
+  gap: $space-sm;
+  margin-bottom: $space-xl;
+}
+
+.ue-tab {
+  flex: 1;
+  padding: $space-md;
+  background: $gray-100;
+  border: 1.5px solid transparent;
+  border-radius: $radius-md;
+  cursor: pointer;
+  font-weight: $font-weight-semibold;
+  color: $gray-600;
+  transition: $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  font-size: $font-size-sm;
+  font-family: $font-family-base;
+
+  i {
+    font-size: $font-size-base;
+  }
+
+  &:hover {
+    background: $white;
+    border-color: $gray-200;
+  }
+
+  &--active {
+    background: $white;
+    border-color: $primary-red;
+    color: $primary-red;
+  }
+}
+
+// ─── FORM ────────────────────────────────────────────────────────────────────
+.ue-form {
+  &__error-banner {
+    padding: $space-md $space-lg;
+    background: rgba($error, 0.06);
+    border: 1px solid rgba($error, 0.25);
+    border-radius: $radius-md;
+    color: $error;
+    margin-bottom: $space-lg;
+    font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      font-size: $font-size-base;
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-md;
+    margin-bottom: $space-md;
+  }
+
+  &__field {
+    margin-bottom: $space-lg;
+  }
+
+  &__label {
+    display: block;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: $space-xs;
+    font-size: $font-size-sm;
+  }
+
+  &__required {
+    color: $primary-red;
+  }
+
+  &__input,
+  &__select,
+  &__textarea {
+    width: 100%;
+    padding: $space-md;
+    border: 1.5px solid $gray-200;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    color: $gray-900;
+    background: $gray-100;
+    transition: $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-red;
+      background: $white;
+      box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+    }
+
+    &--error {
+      border-color: rgba($error, 0.5);
+      background: rgba($error, 0.04);
+    }
+  }
+
+  &__hint {
+    display: block;
+    font-size: $font-size-xs;
+    color: $gray-500;
+    margin-top: $space-xs;
+  }
+
+  &__error-text {
+    display: block;
+    color: $error;
+    font-size: $font-size-xs;
+    margin-top: $space-xs;
+    font-weight: $font-weight-medium;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    i {
+      font-size: 8px;
+    }
+  }
+
+  &__submit {
+    width: 100%;
+    padding: $space-md;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm;
+    box-shadow: $shadow-sm;
+
+    i {
+      font-size: $font-size-base;
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ─── FILE UPLOAD ─────────────────────────────────────────────────────────────
+.ue-file-upload {
+  &__input {
+    display: none;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    padding: $space-md;
+    border: 2px dashed $gray-300;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: $transition-fast;
+    color: $gray-600;
+    background: $gray-100;
+
+    i {
+      font-size: $font-size-lg;
+      color: $primary-red;
+    }
+
+    &:hover {
+      border-color: $primary-red;
+      background: rgba($primary-red, 0.04);
+      color: $primary-red;
+    }
+  }
+}
+
+// ─── PAYMENT OPTIONS ─────────────────────────────────────────────────────────
+.ue-payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-md;
+}
+
+.ue-payment-option {
+  input {
+    display: none;
+
+    &:checked + .ue-payment-option__box {
+      border-color: $primary-red;
+      background: rgba($primary-red, 0.06);
+      color: $primary-red;
+    }
+  }
+
+  &__box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-md;
+    border: 1.5px solid $gray-200;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: $transition-fast;
+    background: $white;
+
+    i {
+      font-size: $font-size-xl;
+      color: $gray-500;
+    }
+
+    span {
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      color: $gray-700;
+    }
+
+    &:hover {
+      border-color: $primary-red;
+      background: rgba($primary-red, 0.02);
+    }
+  }
+}
+
+// ─── DIVIDER ─────────────────────────────────────────────────────────────────
+.ue-divider {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  margin: $space-xl 0 $space-lg;
+  color: $gray-900;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-base;
+
+  i {
+    color: $primary-red;
+  }
+
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, $gray-200, transparent);
+  }
+}
+
+// ─── INFO NOTICE ─────────────────────────────────────────────────────────────
+.ue-info-notice {
+  background: rgba($info, 0.06);
+  border: 1px solid rgba($info, 0.25);
+  border-radius: $radius-md;
+  padding: $space-md;
+  display: flex;
+  gap: $space-md;
+  margin-bottom: $space-xl;
+
+  i {
+    color: $info;
+    font-size: $font-size-lg;
+    flex-shrink: 0;
+  }
+
+  div {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.5;
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+.ue-toast {
+  position: fixed;
+  bottom: $space-lg;
+  right: $space-lg;
+  min-width: 320px;
+  max-width: 400px;
+  background: $white;
+  padding: $space-md $space-lg;
+  border-radius: $radius-md;
+  box-shadow: $shadow-lg;
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  z-index: $z-tooltip;
+  animation: slideIn 300ms ease;
+  border-left: 4px solid transparent;
+
+  i:first-child {
+    font-size: $font-size-lg;
+  }
+
+  &--success {
+    border-left-color: $success;
+    i:first-child {
+      color: $success;
+    }
+  }
+
+  &--error {
+    border-left-color: $error;
+    i:first-child {
+      color: $error;
+    }
+  }
+
+  &__message {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $gray-700;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    color: $gray-400;
+    cursor: pointer;
+    padding: $space-xs;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: $font-size-sm;
+    }
+
+    &:hover {
+      color: $gray-600;
+    }
+  }
+}
+
+// ─── RESPONSIVE ──────────────────────────────────────────────────────────────
+@media (max-width: $breakpoint-lg) {
+  .ue-header {
+    padding: $space-lg $space-xl;
+
+    &__title {
+      font-size: $font-size-xl;
+    }
+  }
+
+  .ue-body {
+    padding: $space-lg;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .ue-header {
+    padding: $space-md $space-lg;
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+  }
+
+  .ue-body {
+    padding: $space-md;
+  }
+
+  .ue-events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ue-modal {
+    &__header {
+      padding: $space-md $space-lg;
+    }
+
+    &__body {
+      padding: $space-lg;
+    }
+  }
+
+  .ue-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .ue-payment-options {
+    grid-template-columns: 1fr;
+  }
+
+  .ue-my-reg__meta {
+    flex-direction: column;
+    gap: $space-sm;
   }
 }

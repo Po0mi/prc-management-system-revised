@@ -27,77 +27,77 @@ function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
-  // Navigation items with permission checks
+  // Navigation items with permission checks and Font Awesome icons
   const navItems = [
     {
       path: "/admin/dashboard",
-      icon: "🏠",
+      icon: "fa-solid fa-chart-pie",
       label: "Dashboard",
       permission: true,
     },
     {
       path: "/admin/users",
-      icon: "👥",
+      icon: "fa-solid fa-users",
       label: "User Management",
       permission: isSuperAdmin(),
     },
     {
       path: "/admin/volunteers",
-      icon: "👷",
+      icon: "fa-solid fa-hand-peace", // Fixed: Added proper icon for volunteers
       label: "Volunteers",
       permission: hasPermission("volunteers"),
     },
     {
       path: "/admin/events",
-      icon: "📅",
+      icon: "fa-solid fa-calendar-days",
       label: "Events",
       permission: hasPermission("events"),
     },
     {
       path: "/admin/training",
-      icon: "🎓",
+      icon: "fa-solid fa-graduation-cap",
       label: "Training",
       permission: hasPermission("training"),
     },
     {
       path: "/admin/training-requests",
-      icon: "📝",
+      icon: "fa-solid fa-pen-to-square",
       label: "Training Requests",
       permission: hasPermission("training-requests"),
     },
     {
       path: "/admin/announcements",
-      icon: "📢",
+      icon: "fa-solid fa-bullhorn",
       label: "Announcements",
       permission: hasPermission("announcements"),
     },
     {
       path: "/admin/blood-bank",
-      icon: "🩸",
+      icon: "fa-solid fa-droplet",
       label: "Blood Bank",
       permission: hasPermission("blood-bank"),
     },
     {
       path: "/admin/donations",
-      icon: "💰",
+      icon: "fa-solid fa-hand-holding-heart",
       label: "Donations",
       permission: hasPermission("donations"),
     },
     {
       path: "/admin/inventory",
-      icon: "📦",
+      icon: "fa-solid fa-boxes",
       label: "Inventory",
       permission: hasPermission("inventory"),
     },
     {
       path: "/admin/merchandise",
-      icon: "🛍️",
+      icon: "fa-solid fa-shirt",
       label: "Merchandise",
       permission: isSuperAdmin(),
     },
     {
       path: "/admin/reports",
-      icon: "📊",
+      icon: "fa-solid fa-chart-line",
       label: "Reports",
       permission: true,
     },
@@ -110,42 +110,51 @@ function AdminLayout() {
       <div className="admin-layout">
         {/* Sidebar */}
         <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
-          <div className="sidebar-header">
-            <h2>🏥 PRC Admin</h2>
+          <div className="sidebar__header">
+            <h2>PRC Admin</h2>
             <button
-              className="toggle-btn"
+              className="sidebar__header-toggle"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
             >
-              {sidebarOpen ? "◄" : "►"}
+              <i
+                className={`fa-solid fa-chevron-${sidebarOpen ? "left" : "right"}`}
+              ></i>
             </button>
           </div>
 
-          <div className="admin-info">
-            <div className="admin-avatar">
+          <div className="sidebar__profile">
+            <div className="sidebar__profile-avatar">
               {user?.full_name?.charAt(0) || "A"}
             </div>
-            <div className="admin-details">
-              <p className="admin-name">{user?.full_name}</p>
-              <p className="admin-role">{getRoleLabel(userRole)}</p>
+            <div className="sidebar__profile-info">
+              <p className="sidebar__profile-info-name">{user?.full_name}</p>
+              <p className="sidebar__profile-info-role">
+                <i className="fa-solid fa-circle"></i>
+                {getRoleLabel(userRole)}
+              </p>
             </div>
           </div>
 
-          <nav className="sidebar-nav">
+          <nav className="sidebar__nav">
             {allowedNavItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`nav-item ${isActive(item.path) ? "active" : ""}`}
+                className={`sidebar__nav-item ${isActive(item.path) ? "sidebar__nav-item--active" : ""}`}
+                title={!sidebarOpen ? item.label : ""}
               >
-                <span className="nav-icon">{item.icon}</span>
-                {sidebarOpen && <span className="nav-label">{item.label}</span>}
+                <i className={item.icon}></i>
+                {sidebarOpen && (
+                  <span className="sidebar__nav-item-label">{item.label}</span>
+                )}
               </Link>
             ))}
           </nav>
 
-          <div className="sidebar-footer">
-            <button className="logout-btn" onClick={handleLogout}>
-              <span className="nav-icon">🚪</span>
+          <div className="sidebar__footer">
+            <button className="sidebar__footer-logout" onClick={handleLogout}>
+              <i className="fa-solid fa-right-from-bracket"></i>
               {sidebarOpen && <span>Logout</span>}
             </button>
           </div>
@@ -153,24 +162,30 @@ function AdminLayout() {
 
         {/* Main Content */}
         <div className="main-content">
-          <header className="top-bar">
-            <div className="breadcrumbs">
+          <header className="main-content__header">
+            <div className="main-content__header-breadcrumb">
+              <i className="fa-solid fa-house"></i>
               <span>Admin Panel</span>
-              <span className="separator">/</span>
-              <span>{location.pathname.split("/").pop()}</span>
+              <i className="fa-solid fa-chevron-right main-content__header-breadcrumb-separator"></i>
+              <span className="main-content__header-breadcrumb-current">
+                {location.pathname.split("/").pop()}
+              </span>
             </div>
 
-            <div className="top-bar-actions">
+            <div className="main-content__header-actions">
               {/* Notifications */}
               <Notifications />
 
-              <div className="user-menu">
+              <div className="main-content__header-actions-divider"></div>
+
+              <div className="main-content__header-actions-user">
+                <i className="fa-regular fa-user"></i>
                 <span>{user?.full_name}</span>
               </div>
             </div>
           </header>
 
-          <main className="content-area">
+          <main className="main-content__body">
             <Outlet />
           </main>
         </div>

@@ -98,6 +98,7 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="training-requests" element={<AdminTrainingRequest />} />
+          <Route path="/admin/training-sessions" element={<AdminTraining />} />
           <Route path="reports" element={<AdminReports />} />
         </Route>
 

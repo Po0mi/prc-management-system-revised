@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import "./UserTraining.scss";
 import { getTrainingSessions } from "../../services/trainingSessions";
+import { submitTrainingRequest } from "../../services/trainingRequestsApi";
 import {
   registerForSession,
   getMySessionRegistrations,
@@ -583,17 +584,15 @@ function TrainingRequestModal({ onClose, onSuccess }) {
       // });
 
       // Simulate success
-      setTimeout(() => {
-        onSuccess(
-          "Training request submitted successfully! We will contact you within 3-5 business days.",
-        );
-        setSubmitting(false);
-        onClose();
-      }, 1500);
+      // ✅ REAL API CALL
+      const res = await submitTrainingRequest(formData);
+      onSuccess(res.message);
+      onClose();
     } catch (err) {
       setErrors({
         _global: err.message || "Training request submission failed",
       });
+    } finally {
       setSubmitting(false);
     }
   }

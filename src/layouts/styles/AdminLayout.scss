@@ -1,12 +1,68 @@
 @use "../../styles/variables.scss" as *;
 
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 2px 4px rgba($primary-red, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 2px 8px rgba($primary-red, 0.4),
+      0 0 12px rgba($primary-red, 0.2);
+  }
+}
+
+// ─── LAYOUT ROOT ─────────────────────────────────────────────────────────────
 .admin-layout {
   display: flex;
   min-height: 100vh;
   background: $gray-100;
+  font-family: $font-family-base;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  // Scrollbar styling
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $radius-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+    &:hover {
+      background: $gray-400;
+    }
+  }
 }
 
-// Sidebar
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 .sidebar {
   width: 280px;
   background: $white;
@@ -17,58 +73,116 @@
   position: fixed;
   height: 100vh;
   z-index: $z-sticky;
+  border-right: 1px solid $gray-200;
+  overflow-x: hidden;
+  overflow-y: auto;
 
   &.closed {
     width: 80px;
 
-    .sidebar-header h2,
-    .admin-details,
-    .nav-label {
+    .sidebar__header h2,
+    .sidebar__profile-info,
+    .sidebar__nav-item-label,
+    .sidebar__footer span {
       display: none;
     }
 
-    .admin-avatar {
+    .sidebar__profile-avatar {
       margin: 0 auto;
     }
-  }
 
-  .sidebar-header {
-    padding: $space-lg;
-    border-bottom: 1px solid $gray-300;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    .sidebar__header-toggle {
+      margin: 0 auto;
 
-    h2 {
-      color: $primary-red;
-      font-size: $font-size-xl;
-      margin: 0;
+      i {
+        transform: rotate(0deg);
+      }
     }
 
-    .toggle-btn {
-      background: transparent;
-      color: $gray-700;
+    .sidebar__nav-item {
+      justify-content: center;
       padding: $space-sm;
-      border-radius: $radius-md;
-      font-size: $font-size-lg;
+      margin: 2px $space-xs;
 
-      &:hover {
-        background: $gray-100;
+      i {
+        font-size: $font-size-lg;
+        margin: 0;
+      }
+    }
+
+    .sidebar__footer-logout {
+      justify-content: center;
+      padding: $space-sm;
+
+      i {
+        margin: 0;
+        font-size: $font-size-lg;
       }
     }
   }
 
-  .admin-info {
+  &__header {
     padding: $space-lg;
-    border-bottom: 1px solid $gray-300;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-red 100%);
+    flex-shrink: 0;
+
+    h2 {
+      color: $white;
+      font-size: $font-size-xl;
+      margin: 0;
+      font-weight: $font-weight-bold;
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &-toggle {
+      width: 32px;
+      height: 32px;
+      border-radius: $radius-md;
+      background: rgba($white, 0.15);
+      border: 1px solid rgba($white, 0.2);
+      color: $white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: $transition-fast;
+      flex-shrink: 0;
+
+      i {
+        font-size: $font-size-sm;
+        transition: transform $transition-base;
+      }
+
+      &:hover {
+        background: rgba($white, 0.3);
+
+        i {
+          transform: translateX(-2px);
+        }
+      }
+    }
+  }
+
+  &__profile {
+    padding: $space-lg;
+    border-bottom: 1px solid $gray-200;
     display: flex;
     gap: $space-md;
     align-items: center;
+    background: $gray-100;
+    flex-shrink: 0;
 
-    .admin-avatar {
+    &-avatar {
       width: 48px;
       height: 48px;
-      border-radius: $radius-full;
+      border-radius: $radius-lg;
       background: linear-gradient(135deg, $primary-red, $primary-dark);
       color: $white;
       display: flex;
@@ -76,99 +190,175 @@
       justify-content: center;
       font-size: $font-size-xl;
       font-weight: $font-weight-bold;
+      box-shadow: $shadow-md;
+      border: 2px solid $white;
+      flex-shrink: 0;
     }
 
-    .admin-details {
+    &-info {
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
 
-      .admin-name {
+      &-name {
         font-weight: $font-weight-semibold;
         color: $gray-900;
-        margin: 0 0 $space-xs;
+        margin: 0 0 2px;
+        font-size: $font-size-sm;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
-      .admin-role {
-        font-size: $font-size-sm;
-        color: $gray-700;
+      &-role {
+        font-size: $font-size-xs;
+        color: $gray-600;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        i {
+          color: $primary-red;
+          font-size: 8px;
+          flex-shrink: 0;
+        }
       }
     }
   }
 
-  .sidebar-nav {
+  &__nav {
     flex: 1;
     padding: $space-md 0;
     overflow-y: auto;
+    overflow-x: hidden;
 
-    .nav-item {
+    &-item {
       display: flex;
       align-items: center;
       gap: $space-md;
-      padding: $space-md $space-lg;
+      padding: $space-sm $space-lg;
       color: $gray-700;
       text-decoration: none;
       transition: all $transition-fast;
+      margin: 2px $space-sm;
+      border-radius: $radius-md;
+      position: relative;
+      white-space: nowrap;
 
-      .nav-icon {
-        font-size: $font-size-xl;
-        min-width: 24px;
+      i {
+        font-size: $font-size-base;
+        min-width: 20px;
+        color: $gray-500;
+        transition: color $transition-fast;
+        flex-shrink: 0;
       }
 
-      .nav-label {
+      &-label {
         font-weight: $font-weight-medium;
+        font-size: $font-size-sm;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       &:hover {
         background: $gray-100;
         color: $primary-red;
+
+        i {
+          color: $primary-red;
+        }
       }
 
-      &.active {
-        background: rgba($primary-red, 0.1);
+      &--active {
+        background: rgba($primary-red, 0.08);
         color: $primary-red;
-        border-right: 3px solid $primary-red;
+
+        i {
+          color: $primary-red;
+        }
+
+        &::before {
+          content: "";
+          position: absolute;
+          left: -4px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 20px;
+          background: $primary-red;
+          border-radius: $radius-full;
+        }
       }
     }
   }
 
-  .sidebar-footer {
+  &__footer {
     padding: $space-lg;
-    border-top: 1px solid $gray-300;
+    border-top: 1px solid $gray-200;
+    flex-shrink: 0;
 
-    .logout-btn {
+    &-logout {
       width: 100%;
       display: flex;
       align-items: center;
       gap: $space-md;
-      padding: $space-md;
+      padding: $space-sm $space-md;
       background: transparent;
-      color: $error;
-      border: 1px solid $error;
+      border: 1.5px solid rgba($error, 0.2);
       border-radius: $radius-md;
+      color: $error;
       font-weight: $font-weight-medium;
-      transition: all $transition-fast;
+      font-size: $font-size-sm;
+      font-family: $font-family-base;
+      cursor: pointer;
+      transition: $transition-fast;
+      white-space: nowrap;
+
+      i {
+        font-size: $font-size-base;
+        flex-shrink: 0;
+      }
+
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       &:hover {
         background: $error;
         color: $white;
+        border-color: $error;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba($error, 0.25);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
   }
 }
 
-// Main Content
+// ─── MAIN CONTENT ────────────────────────────────────────────────────────────
 .main-content {
   flex: 1;
   margin-left: 280px;
   transition: margin-left $transition-base;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 
-  .sidebar.closed ~ & {
+  .sidebar.closed + & {
     margin-left: 80px;
   }
 
-  .top-bar {
+  &__header {
     background: $white;
-    padding: $space-lg $space-xl;
+    padding: $space-md $space-xl;
     box-shadow: $shadow-sm;
     display: flex;
     justify-content: space-between;
@@ -176,70 +366,241 @@
     position: sticky;
     top: 0;
     z-index: $z-sticky - 1;
+    border-bottom: 1px solid $gray-200;
 
-    .breadcrumbs {
+    &-breadcrumb {
       display: flex;
       align-items: center;
       gap: $space-sm;
-      color: $gray-700;
+      color: $gray-600;
       font-size: $font-size-sm;
 
-      .separator {
-        color: $gray-500;
+      i {
+        font-size: $font-size-xs;
+        color: $gray-400;
       }
 
-      span:last-child {
+      &-separator {
+        color: $gray-300;
+        font-size: 10px;
+      }
+
+      &-current {
         color: $primary-red;
         font-weight: $font-weight-semibold;
         text-transform: capitalize;
+        background: rgba($primary-red, 0.08);
+        padding: 2px $space-sm;
+        border-radius: $radius-full;
       }
     }
 
-    .top-bar-actions {
+    &-actions {
       display: flex;
       align-items: center;
-      gap: $space-lg;
+      gap: $space-md;
 
       .icon-btn {
         position: relative;
-        background: transparent;
-        font-size: $font-size-xl;
-        padding: $space-sm;
+        width: 38px;
+        height: 38px;
         border-radius: $radius-md;
+        background: $gray-100;
+        border: 1px solid $gray-200;
         color: $gray-700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: $transition-fast;
 
-        &:hover {
-          background: $gray-100;
+        i {
+          font-size: $font-size-base;
         }
 
-        .badge {
+        &:hover {
+          background: $white;
+          color: $primary-red;
+          border-color: $primary-red;
+          transform: translateY(-1px);
+          box-shadow: $shadow-sm;
+        }
+
+        &__badge {
           position: absolute;
           top: -4px;
           right: -4px;
           background: $error;
           color: $white;
-          font-size: 10px;
-          padding: 2px 6px;
+          font-size: 9px;
+          font-weight: $font-weight-bold;
+          min-width: 18px;
+          height: 18px;
           border-radius: $radius-full;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid $white;
         }
       }
 
-      .user-menu {
-        font-weight: $font-weight-medium;
-        color: $gray-900;
+      &-divider {
+        width: 1px;
+        height: 30px;
+        background: $gray-200;
+        margin: 0 $space-xs;
+      }
+
+      &-user {
+        display: flex;
+        align-items: center;
+        gap: $space-sm;
+        padding: $space-xs $space-md;
+        background: $gray-100;
+        border-radius: $radius-md;
+        border: 1px solid $gray-200;
+
+        i {
+          color: $primary-red;
+          font-size: $font-size-sm;
+        }
+
+        span {
+          font-weight: $font-weight-medium;
+          color: $gray-900;
+          font-size: $font-size-sm;
+        }
+
+        &:hover {
+          background: $white;
+          border-color: $primary-red;
+        }
       }
     }
   }
 
-  .content-area {
+  &__body {
     padding: $space-xl;
+    animation: fadeIn 300ms ease;
+
+    &-welcome {
+      margin-bottom: $space-xl;
+
+      h1 {
+        font-size: $font-size-2xl;
+        font-weight: $font-weight-bold;
+        color: $gray-900;
+        margin: 0 0 $space-xs;
+        display: flex;
+        align-items: center;
+        gap: $space-sm;
+
+        i {
+          color: $primary-red;
+          font-size: $font-size-xl;
+        }
+      }
+
+      p {
+        color: $gray-500;
+        font-size: $font-size-sm;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: $space-xs;
+
+        i {
+          font-size: $font-size-xs;
+          color: $primary-red;
+        }
+      }
+    }
   }
 }
 
-// Responsive
+// ─── NEW BADGE FOR RECENT ACTIVITY ───────────────────────────────────────────
+.activity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px $space-sm;
+  background: linear-gradient(135deg, $primary-red 0%, $primary-light 100%);
+  color: $white;
+  font-size: 9px;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.5px;
+  border-radius: $radius-full;
+  text-transform: uppercase;
+  animation: pulseGlow 2s ease-in-out infinite;
+
+  i {
+    font-size: 8px;
+  }
+}
+
+// ─── QUICK STATS CARD (Optional for dashboard preview) ───────────────────────
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $space-md;
+  margin-bottom: $space-xl;
+
+  &__card {
+    background: $white;
+    border-radius: $radius-lg;
+    padding: $space-md;
+    border: 1px solid $gray-200;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    transition: $transition-base;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+      border-color: $primary-red;
+    }
+
+    &-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: $radius-md;
+      background: rgba($primary-red, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        font-size: $font-size-xl;
+        color: $primary-red;
+      }
+    }
+
+    &-content {
+      flex: 1;
+
+      &-value {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $gray-900;
+        line-height: 1.2;
+      }
+
+      &-label {
+        font-size: $font-size-xs;
+        color: $gray-500;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+}
+
+// ─── RESPONSIVE ──────────────────────────────────────────────────────────────
 @media (max-width: $breakpoint-lg) {
   .sidebar {
     transform: translateX(-100%);
+    box-shadow: $shadow-xl;
 
     &.open {
       transform: translateX(0);
@@ -248,5 +609,38 @@
 
   .main-content {
     margin-left: 0;
+
+    &__header {
+      padding: $space-md $space-lg;
+    }
+
+    &__body {
+      padding: $space-lg;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .main-content {
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $space-md;
+
+      &-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    &__body-welcome {
+      h1 {
+        font-size: $font-size-xl;
+      }
+    }
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
   }
 }
