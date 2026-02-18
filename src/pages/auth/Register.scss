@@ -287,6 +287,111 @@
   }
 }
 
+// Non-RCY Member Notice
+.non-rcy-notice {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #fefce8;
+  border: 2px solid #eab308;
+  border-radius: $radius-lg;
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.4s ease-out;
+
+  .notice-icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+
+    i {
+      font-size: 1.5rem;
+      color: #854d0e;
+    }
+  }
+
+  .notice-content {
+    flex: 1;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: $font-weight-bold;
+      color: #713f12;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    p {
+      font-size: $font-size-sm;
+      color: #713f12;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+  }
+
+  .notice-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-find-chapter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #16a34a;
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: #15803d;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    i {
+      font-size: 0.875rem;
+    }
+  }
+
+  .btn-back-selection {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #6b7280;
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: #4b5563;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(107, 114, 128, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    i {
+      font-size: 0.875rem;
+    }
+  }
+}
+
 .error-message {
   background: linear-gradient(
     135deg,
@@ -915,7 +1020,268 @@
     }
   }
 }
+// Add to Register.scss
 
+.password-strength {
+  margin-top: 8px;
+
+  .strength-meter {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+
+    .strength-meter-fill {
+      height: 100%;
+      transition:
+        width 0.3s ease,
+        background-color 0.3s ease;
+    }
+  }
+
+  .strength-label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .strength-feedback {
+    font-size: 11px;
+    color: #6b7280;
+
+    small {
+      display: block;
+      margin: 2px 0;
+    }
+  }
+}
+
+.form-group {
+  .help-text.valid {
+    color: #10b981;
+  }
+
+  .help-text.invalid {
+    color: #c41e3a;
+  }
+
+  input.error,
+  select.error {
+    border-color: #c41e3a;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+    }
+  }
+
+  .error-message {
+    color: #c41e3a;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+
+  .service-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f3f4f6;
+      border-color: #c41e3a;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    i {
+      color: #c41e3a;
+      font-size: 14px;
+    }
+
+    span {
+      font-size: 13px;
+      color: #374151;
+    }
+  }
+}
+
+.recaptcha-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+
+  &.error {
+    border-color: #c41e3a;
+    background: #fef2f2;
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+  }
+
+  .recaptcha-logo {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    i {
+      color: #c41e3a;
+      font-size: 18px;
+    }
+
+    small {
+      font-size: 9px;
+      color: #6b7280;
+    }
+  }
+}
+
+.success-modal {
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+
+    .btn-modal {
+      flex: 1;
+
+      &.btn-outline {
+        background: white;
+        color: #c41e3a;
+        border: 1px solid #c41e3a;
+
+        &:hover {
+          background: #fef2f2;
+        }
+      }
+    }
+  }
+}
+// Add to your Register.scss
+
+// Toast Notification
+.toast {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  min-width: 320px;
+  max-width: 500px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+  cursor: pointer;
+
+  &--error {
+    border-left: 4px solid #c41e3a;
+
+    .toast__icon {
+      color: #c41e3a;
+      background: #fef2f2;
+    }
+  }
+
+  &--success {
+    border-left: 4px solid #10b981;
+
+    .toast__icon {
+      color: #10b981;
+      background: #f0fdf4;
+    }
+  }
+
+  &--info {
+    border-left: 4px solid #3b82f6;
+
+    .toast__icon {
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__message {
+    color: #1f2937;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  &__close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #4b5563;
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
 // Responsive
 @media (max-width: $breakpoint-sm) {
   .register-page {
@@ -938,6 +1304,20 @@
 
     h2 {
       font-size: 1.125rem;
+    }
+  }
+
+  .non-rcy-notice {
+    flex-direction: column;
+
+    .notice-actions {
+      flex-direction: column;
+
+      .btn-find-chapter,
+      .btn-back-selection {
+        width: 100%;
+        justify-content: center;
+      }
     }
   }
 

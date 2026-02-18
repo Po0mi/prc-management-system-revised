@@ -36,16 +36,10 @@ function AdminLayout() {
       permission: true,
     },
     {
-      path: "/admin/events",
-      icon: "📅",
-      label: "Events",
-      permission: hasPermission("events"),
-    },
-    {
-      path: "/admin/announcements",
-      icon: "📢",
-      label: "Announcements",
-      permission: hasPermission("announcements"),
+      path: "/admin/users",
+      icon: "👥",
+      label: "User Management",
+      permission: isSuperAdmin(),
     },
     {
       path: "/admin/volunteers",
@@ -54,10 +48,22 @@ function AdminLayout() {
       permission: hasPermission("volunteers"),
     },
     {
+      path: "/admin/events",
+      icon: "📅",
+      label: "Events",
+      permission: hasPermission("events"),
+    },
+    {
       path: "/admin/training",
       icon: "🎓",
       label: "Training",
       permission: hasPermission("training"),
+    },
+    {
+      path: "/admin/announcements",
+      icon: "📢",
+      label: "Announcements",
+      permission: hasPermission("announcements"),
     },
     {
       path: "/admin/blood-bank",
@@ -81,12 +87,6 @@ function AdminLayout() {
       path: "/admin/merchandise",
       icon: "🛍️",
       label: "Merchandise",
-      permission: isSuperAdmin(),
-    },
-    {
-      path: "/admin/users",
-      icon: "👥",
-      label: "User Management",
       permission: isSuperAdmin(),
     },
     {

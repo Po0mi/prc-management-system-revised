@@ -1,42 +1,62 @@
-import axios from 'axios';
+import axios from "axios";
 
-// Base API URL - your PHP backend
-const API_BASE_URL = 'http://localhost/prc-management-system/backend/api';
-
-// Create axios instance with default config
+// ── Relative baseURL — Vite proxy forwards to XAMPP, no CORS ever ─────────────
+// /auth.php      → proxy → http://localhost/prc-management-system/backend/auth.php
+// /api/users.php → proxy → http://localhost/prc-management-system/backend/api/users.php
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // For session cookies
+  baseURL: "/",
+  headers: { "Content-Type": "application/json", Accept: "application/json" },
+  withCredentials: true,
+  timeout: 30000,
 });
 
-// Request interceptor - add auth token if exists
+// ── Request interceptor ───────────────────────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (import.meta.env.DEV) {
+      console.log("🚀 API Request:", {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        params: config.params,
+      });
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
-// Response interceptor - handle errors globally
+// ── Response interceptor ──────────────────────────────────────────────────────
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+  (response) => {
+    if (import.meta.env.DEV) {
+      console.log("✅ API Response:", {
+        status: response.status,
+        url: response.config.url,
+        data: response.data,
+      });
     }
+    return response;
+  },
+  (error) => {
+    if (import.meta.env.DEV) {
+      console.error("❌ API Error:", {
+        message: error.message,
+        url: error.config?.url,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+    }
+
+    if (
+      error.response?.status === 401 &&
+      !window.location.pathname.includes("/login")
+    ) {
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
