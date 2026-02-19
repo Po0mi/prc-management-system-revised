@@ -1,0 +1,1181 @@
+@use "../../styles/variables.scss" as *;
+
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+@keyframes slideUp {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// ─── ROOT ────────────────────────────────────────────────────────────────────
+.abb-root {
+  * {
+    box-sizing: border-box;
+  }
+
+  font-family: $font-family-base;
+  min-height: 100vh;
+  background: $gray-100;
+  font-size: $font-size-base;
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid $primary-red !important;
+    outline-offset: 1px;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  tbody tr:hover td {
+    background: rgba($primary-red, 0.03) !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $radius-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+// ─── PAGE HEADER ──────────────────────────────────────────────────────────────
+.abb-header {
+  background: linear-gradient(
+    135deg,
+    $primary-dark 0%,
+    $primary-red 60%,
+    $primary-light 100%
+  );
+  padding: $space-xl $space-2xl $space-lg;
+  color: $white;
+  box-shadow: $shadow-lg;
+
+  &__inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+  }
+
+  &__eyebrow {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    opacity: 0.65;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: $space-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: $space-xs 0 0;
+    opacity: 0.7;
+    font-size: $font-size-sm;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-xl;
+    text-align: center;
+    align-items: center;
+  }
+
+  &__stat {
+    &-num {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      line-height: 1;
+    }
+    &-label {
+      font-size: $font-size-xs;
+      opacity: 0.65;
+      font-weight: $font-weight-medium;
+      margin-top: 3px;
+    }
+  }
+}
+
+// ─── PAGE BODY ────────────────────────────────────────────────────────────────
+.abb-body {
+  padding: $space-lg $space-2xl;
+}
+
+// ─── STAT CARDS ───────────────────────────────────────────────────────────────
+.abb-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: $space-md;
+  margin-bottom: $space-lg;
+}
+
+.abb-card {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-md $space-lg;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-1px);
+  }
+
+  &__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+      font-size: 18px;
+    }
+  }
+
+  &__num {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+    margin-top: 3px;
+  }
+
+  &__sub {
+    font-size: $font-size-xs;
+    color: $gray-400;
+    margin-top: 2px;
+  }
+}
+
+// ─── TOOLBAR ──────────────────────────────────────────────────────────────────
+.abb-toolbar {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-sm $space-md;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  flex-wrap: wrap;
+  margin-bottom: $space-md;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+
+  &__search {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+
+    &-icon {
+      position: absolute;
+      left: $space-md;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-400;
+      pointer-events: none;
+      font-size: $font-size-xs;
+    }
+
+    &-input {
+      width: 100%;
+      padding: $space-sm $space-md $space-sm 2.4rem;
+      border-radius: $radius-full;
+      border: 1.5px solid $gray-200;
+      font-size: $font-size-sm;
+      font-family: $font-family-base;
+      color: $gray-900;
+      background: $gray-100;
+      transition: $transition-fast;
+
+      &:focus {
+        background: $white;
+      }
+    }
+
+    &-clear {
+      position: absolute;
+      right: $space-sm;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $gray-400;
+      display: flex;
+      align-items: center;
+      padding: 0;
+
+      &:hover {
+        color: $gray-600;
+      }
+
+      i {
+        font-size: $font-size-xs;
+      }
+    }
+  }
+
+  &__filters {
+    display: flex;
+    gap: $space-xs;
+    flex-wrap: wrap;
+  }
+
+  &__filter {
+    &-btn {
+      padding: $space-xs $space-md;
+      border-radius: $radius-full;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-xs;
+      font-family: $font-family-base;
+      background: $gray-100;
+      color: $gray-600;
+      transition: $transition-fast;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      &:hover {
+        background: $gray-200;
+        color: $gray-900;
+      }
+
+      &--active {
+        background: $primary-red;
+        color: $white;
+        border-color: $primary-red;
+        &:hover {
+          background: $primary-dark;
+        }
+      }
+
+      i {
+        font-size: $font-size-xs;
+      }
+    }
+
+    &-dropdown {
+      position: relative;
+
+      &-btn {
+        padding: $space-xs $space-md;
+        border-radius: $radius-full;
+        border: 1.5px solid $gray-200;
+        cursor: pointer;
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-xs;
+        font-family: $font-family-base;
+        background: $white;
+        color: $gray-700;
+        transition: $transition-fast;
+        display: flex;
+        align-items: center;
+        gap: $space-xs;
+
+        i {
+          font-size: $font-size-xs;
+        }
+
+        &:hover {
+          background: $gray-100;
+        }
+      }
+
+      &-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: $space-xs;
+        background: $white;
+        border-radius: $radius-md;
+        border: 1px solid $gray-200;
+        box-shadow: $shadow-lg;
+        z-index: $z-dropdown;
+        min-width: 200px;
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        button {
+          width: 100%;
+          padding: $space-sm $space-md;
+          border: none;
+          background: $white;
+          color: $gray-700;
+          font-size: $font-size-sm;
+          text-align: left;
+          cursor: pointer;
+          transition: $transition-fast;
+          display: flex;
+          align-items: center;
+          gap: $space-sm;
+
+          i {
+            width: 16px;
+            font-size: $font-size-xs;
+          }
+
+          &:hover {
+            background: $gray-100;
+            color: $primary-red;
+
+            i {
+              color: $primary-red;
+            }
+          }
+
+          &.active {
+            background: rgba($primary-red, 0.08);
+            color: $primary-red;
+            font-weight: $font-weight-semibold;
+
+            i {
+              color: $primary-red;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &__create-btn {
+    margin-left: auto;
+    padding: $space-sm $space-md;
+    border-radius: $radius-md;
+    border: none;
+    background: $primary-red;
+    color: $white;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    box-shadow: 0 2px 8px rgba($primary-red, 0.28);
+    transition: $transition-fast;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover {
+      background: $primary-dark;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($primary-red, 0.35);
+    }
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// ─── TABLE PANEL ──────────────────────────────────────────────────────────────
+.abb-table-panel {
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  &__head {
+    padding: $space-sm $space-md;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-base;
+    color: $gray-900;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      color: $primary-red;
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    color: $gray-400;
+    background: $gray-100;
+    padding: 2px $space-sm;
+    border-radius: $radius-full;
+    font-weight: $font-weight-medium;
+  }
+
+  &__scroll {
+    overflow-x: auto;
+  }
+}
+
+// ─── TABLE ────────────────────────────────────────────────────────────────────
+.abb-table {
+  width: 100%;
+  font-size: $font-size-sm;
+
+  thead tr {
+    background: $gray-100;
+  }
+
+  th {
+    padding: $space-sm $space-md;
+    text-align: left;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $gray-500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid $gray-200;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: $space-sm $space-md;
+    border-bottom: 1px solid $gray-100;
+    color: $gray-700;
+    transition: background $transition-fast;
+  }
+
+  &__empty,
+  &__loading {
+    padding: $space-2xl $space-md;
+    text-align: center;
+    color: $gray-400;
+
+    i {
+      font-size: $font-size-xl;
+      display: block;
+      margin-bottom: $space-sm;
+      opacity: 0.4;
+    }
+    p {
+      margin: $space-xs 0 0;
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// ─── LOCATION CELL ────────────────────────────────────────────────────────────
+.abb-location-cell {
+  &__name {
+    font-weight: $font-weight-semibold;
+    color: $gray-900;
+    font-size: $font-size-sm;
+    margin-bottom: 2px;
+  }
+  &__address {
+    color: $gray-500;
+    font-size: $font-size-xs;
+  }
+}
+
+// ─── BADGE ────────────────────────────────────────────────────────────────────
+.abb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px $space-sm;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  i {
+    font-size: 9px;
+  }
+}
+
+// ─── UNITS ────────────────────────────────────────────────────────────────────
+.abb-units {
+  font-weight: $font-weight-bold;
+  color: $gray-900;
+  font-size: $font-size-sm;
+}
+
+// ─── CONTACT ──────────────────────────────────────────────────────────────────
+.abb-contact {
+  &__phone {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+    }
+  }
+}
+
+// ─── DATE ─────────────────────────────────────────────────────────────────────
+.abb-date {
+  font-size: $font-size-xs;
+  color: $gray-600;
+  white-space: nowrap;
+}
+
+// ─── ACTION BUTTONS ───────────────────────────────────────────────────────────
+.abb-actions {
+  display: flex;
+  gap: $space-xs;
+}
+
+.abb-action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: $radius-md;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: $transition-fast;
+
+  i {
+    font-size: 11px;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: $shadow-sm;
+  }
+
+  &--view {
+    background: rgba($success, 0.08);
+    color: $success;
+    border-color: rgba($success, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($success, 0.15);
+      border-color: rgba($success, 0.3);
+    }
+  }
+
+  &--edit {
+    background: rgba($info, 0.08);
+    color: $info;
+    border-color: rgba($info, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($info, 0.15);
+      border-color: rgba($info, 0.3);
+    }
+  }
+
+  &--delete {
+    background: rgba($error, 0.08);
+    color: $error;
+    border-color: rgba($error, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($error, 0.15);
+      border-color: rgba($error, 0.3);
+    }
+  }
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+.abb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background: rgba($gray-900, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-md;
+  animation: fadeIn 200ms ease;
+}
+
+.abb-modal {
+  background: $white;
+  border-radius: $radius-lg;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: $shadow-xl;
+  animation: slideUp 200ms ease;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+
+  &--lg {
+    max-width: 800px;
+  }
+
+  &__header {
+    padding: $space-md $space-lg;
+    border-radius: $radius-lg $radius-lg 0 0;
+    background: linear-gradient(135deg, $primary-dark, $primary-red);
+    color: $white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-base;
+    flex-shrink: 0;
+    gap: $space-sm;
+
+    i {
+      margin-right: $space-xs;
+    }
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+  }
+
+  &__close {
+    background: rgba($white, 0.15);
+    border: 1px solid rgba($white, 0.2);
+    color: $white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: $transition-fast;
+    flex-shrink: 0;
+
+    i {
+      font-size: $font-size-xs;
+      margin: 0;
+    }
+    &:hover {
+      background: rgba($white, 0.3);
+    }
+  }
+
+  &__body {
+    padding: $space-lg;
+    overflow-y: auto;
+  }
+}
+
+// ─── FORM ─────────────────────────────────────────────────────────────────────
+.abb-form {
+  &__error-banner {
+    padding: $space-sm $space-md;
+    background: rgba($error, 0.06);
+    border: 1px solid rgba($error, 0.25);
+    border-radius: $radius-md;
+    color: $error;
+    margin-bottom: $space-md;
+    font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-md;
+    margin-bottom: $space-md;
+
+    @media (max-width: $breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-xs;
+    margin-bottom: $space-md;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $primary-red;
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__required {
+    color: $primary-red;
+    margin-left: $space-xs;
+  }
+
+  &__input,
+  &__select,
+  &__textarea {
+    padding: $space-sm $space-md;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    color: $gray-900;
+    border: 1.5px solid $gray-200;
+    background: $gray-100;
+    width: 100%;
+    transition:
+      border-color $transition-fast,
+      background $transition-fast;
+
+    &:focus {
+      background: $white;
+    }
+    &--error {
+      border-color: rgba($error, 0.5) !important;
+      background: rgba($error, 0.04);
+    }
+
+    &:read-only {
+      background: $gray-200;
+      cursor: not-allowed;
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  &__error-text {
+    font-size: $font-size-xs;
+    color: $error;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    i {
+      font-size: 9px;
+    }
+  }
+
+  &__hint {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  &__submit {
+    width: 100%;
+    padding: $space-md;
+    border-radius: $radius-md;
+    background: $primary-red;
+    color: $white;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-base;
+    font-family: $font-family-base;
+    border: none;
+    cursor: pointer;
+    margin-top: $space-xs;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-sm;
+    box-shadow: 0 2px 8px rgba($primary-red, 0.25);
+
+    i {
+      font-size: $font-size-sm;
+    }
+
+    &:hover:not(:disabled) {
+      background: $primary-dark;
+      box-shadow: 0 4px 12px rgba($primary-red, 0.35);
+    }
+    &:disabled {
+      background: $gray-400;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+}
+
+// ─── VIEW MODAL ───────────────────────────────────────────────────────────────
+.abb-view {
+  &__section {
+    margin-bottom: $space-lg;
+    padding-bottom: $space-lg;
+    border-bottom: 1px solid $gray-200;
+
+    &:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    &-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin-bottom: $space-md;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      i {
+        color: $primary-red;
+      }
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+    margin-top: $space-sm;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+
+    i {
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-lg;
+    margin-bottom: $space-lg;
+  }
+
+  &__item {
+    &-label {
+      font-size: $font-size-xs;
+      color: $gray-500;
+      margin-bottom: $space-xs;
+    }
+    &-value {
+      font-size: $font-size-sm;
+      color: $gray-900;
+      font-weight: $font-weight-medium;
+      word-break: break-word;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $gray-400;
+        width: 16px;
+      }
+
+      &--clickable {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        color: $primary-red;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-md;
+    margin: $space-lg 0;
+  }
+
+  &__footer {
+    padding-top: $space-md;
+    border-top: 1px solid $gray-200;
+    color: $gray-500;
+    font-size: $font-size-xs;
+  }
+}
+
+// ─── BUTTONS ──────────────────────────────────────────────────────────────────
+.abb-btn {
+  padding: $space-sm $space-lg;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: $transition-fast;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  border: none;
+
+  i {
+    font-size: $font-size-sm;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+  }
+
+  &--secondary {
+    background: $white;
+    color: $primary-red;
+    border: 1.5px solid $primary-red;
+
+    &:hover {
+      background: rgba($primary-red, 0.04);
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+.abb-toast {
+  position: fixed;
+  bottom: $space-lg;
+  right: $space-lg;
+  z-index: $z-tooltip;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  box-shadow: $shadow-lg;
+  animation: slideUp 200ms ease;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  max-width: 360px;
+
+  i {
+    flex-shrink: 0;
+  }
+
+  &--success {
+    background: #f0fdf4;
+    color: darken($success, 12%);
+    border: 1px solid rgba($success, 0.25);
+    border-left: 4px solid $success;
+  }
+
+  &--error {
+    background: rgba($error, 0.06);
+    color: $error;
+    border: 1px solid rgba($error, 0.2);
+    border-left: 4px solid $error;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: $font-weight-bold;
+    margin-left: auto;
+    opacity: 0.5;
+    color: inherit;
+    padding: 0;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      opacity: 1;
+    }
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// ─── RESPONSIVE ───────────────────────────────────────────────────────────────
+@media (max-width: $breakpoint-lg) {
+  .abb-header {
+    padding: $space-lg $space-xl;
+
+    &__title {
+      font-size: $font-size-xl;
+    }
+
+    &__stats {
+      gap: $space-lg;
+    }
+  }
+
+  .abb-body {
+    padding: $space-lg $space-xl;
+  }
+
+  .abb-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    &__search {
+      max-width: none;
+    }
+
+    &__filters {
+      justify-content: center;
+    }
+
+    &__create-btn {
+      margin-left: 0;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .abb-table {
+    th,
+    td {
+      white-space: nowrap;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .abb-header {
+    padding: $space-md $space-lg;
+
+    &__inner {
+      flex-direction: column;
+    }
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__stats {
+      width: 100%;
+      justify-content: space-around;
+    }
+  }
+
+  .abb-body {
+    padding: $space-md $space-lg;
+  }
+
+  .abb-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .abb-toolbar {
+    &__filters {
+      flex-direction: column;
+      align-items: stretch;
+
+      .abb-toolbar__filter-dropdown {
+        width: 100%;
+
+        &-btn {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        &-menu {
+          width: 100%;
+          left: 0;
+        }
+      }
+    }
+  }
+
+  .abb-modal {
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+
+    &__header {
+      border-radius: 0;
+    }
+  }
+
+  .abb-view__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .abb-view__actions {
+    flex-direction: column;
+  }
+
+  .abb-actions {
+    flex-wrap: wrap;
+  }
+}

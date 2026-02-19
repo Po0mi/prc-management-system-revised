@@ -1,0 +1,1192 @@
+@use "../../styles/variables.scss" as *;
+
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ─── ROOT ────────────────────────────────────────────────────────────────────
+.ubm-root {
+  min-height: 100vh;
+  background: $gray-100;
+  font-family: $font-family-base;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  // Scrollbar styling
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $radius-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+// ─── HEADER ──────────────────────────────────────────────────────────────────
+.ubm-header {
+  background: linear-gradient(
+    135deg,
+    $primary-dark 0%,
+    $primary-red 60%,
+    $primary-light 100%
+  );
+  padding: $space-xl $space-2xl;
+  color: $white;
+  box-shadow: $shadow-lg;
+  animation: slideUp 400ms ease;
+
+  &__content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-lg;
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  &__eyebrow {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    opacity: 0.65;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: $space-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: $space-xs 0 0;
+    opacity: 0.7;
+    font-size: $font-size-sm;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-xl;
+    text-align: center;
+  }
+
+  &__stat {
+    &-num {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      line-height: 1;
+    }
+    &-label {
+      font-size: $font-size-xs;
+      opacity: 0.65;
+      font-weight: $font-weight-medium;
+      margin-top: 3px;
+      white-space: nowrap;
+    }
+  }
+}
+
+// ─── MAIN CONTENT ─────────────────────────────────────────────────────────────
+.ubm-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $space-xl;
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────────
+.ubm-filters {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  margin-bottom: $space-xl;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  animation: slideUp 400ms ease;
+
+  &__search {
+    position: relative;
+    margin-bottom: $space-lg;
+
+    &-icon {
+      position: absolute;
+      left: $space-md;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $gray-400;
+      font-size: $font-size-sm;
+    }
+
+    &-input {
+      width: 100%;
+      padding: $space-md $space-md $space-md $space-xl * 2;
+      border: 1.5px solid $gray-200;
+      border-radius: $radius-lg;
+      font-size: $font-size-base;
+      font-family: $font-family-base;
+      color: $gray-900;
+      background: $gray-100;
+      transition: $transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-red;
+        background: $white;
+        box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+      }
+
+      &::placeholder {
+        color: $gray-400;
+      }
+    }
+
+    &-clear {
+      position: absolute;
+      right: $space-md;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $gray-400;
+      display: flex;
+      align-items: center;
+      padding: 0;
+
+      &:hover {
+        color: $gray-600;
+      }
+
+      i {
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  &__blood-types {
+    margin-bottom: $space-md;
+  }
+
+  &__label {
+    display: block;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: $space-sm;
+
+    i {
+      color: $primary-red;
+      margin-right: $space-xs;
+    }
+  }
+
+  &__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+  }
+
+  &__clear {
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    border: 1.5px solid $gray-200;
+    background: $white;
+    color: $gray-600;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-xs;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover {
+      background: $gray-100;
+      color: $error;
+      border-color: $error;
+    }
+  }
+}
+
+// ─── FILTER BUTTON ────────────────────────────────────────────────────────────
+.ubm-filter-btn {
+  padding: $space-xs $space-md;
+  border-radius: $radius-full;
+  border: 1.5px solid transparent;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-xs;
+  cursor: pointer;
+  transition: $transition-fast;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+
+  i {
+    font-size: $font-size-xs;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-sm;
+  }
+
+  &--selected {
+    box-shadow: $shadow-sm;
+  }
+}
+
+// ─── CONTENT LAYOUT ───────────────────────────────────────────────────────────
+.ubm-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: $space-xl;
+  height: 700px;
+
+  @media (max-width: $breakpoint-lg) {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+.ubm-sidebar {
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    padding: $space-md $space-lg;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $primary-red;
+      }
+    }
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    background: $gray-100;
+    padding: 2px $space-sm;
+    border-radius: $radius-full;
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: $space-md;
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+  }
+}
+
+// ─── LOCATION CARD ────────────────────────────────────────────────────────────
+.ubm-location-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $space-md;
+  transition: $transition-base;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+    border-color: $primary-red;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-sm;
+
+    h3 {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $primary-red;
+        font-size: $font-size-xs;
+      }
+    }
+  }
+
+  &__status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-md;
+    margin-bottom: $space-sm;
+  }
+
+  &__stat {
+    flex: 1;
+
+    &-label {
+      font-size: $font-size-xs;
+      color: $gray-500;
+      display: block;
+    }
+
+    &-value {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+    }
+  }
+
+  &__blood-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs;
+    margin-bottom: $space-md;
+  }
+
+  &__blood-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px $space-xs;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+
+    small {
+      font-size: 9px;
+      opacity: 0.8;
+      margin-left: 2px;
+    }
+  }
+
+  &__blood-type-more {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    padding: 2px $space-xs;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: $space-xs;
+    background: $gray-100;
+    border: 1px solid $gray-200;
+    border-radius: $radius-md;
+    color: $gray-700;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-xs;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-xs;
+      transition: transform $transition-fast;
+    }
+
+    &:hover {
+      background: $primary-red;
+      color: $white;
+      border-color: $primary-red;
+
+      i {
+        transform: translateX(4px);
+      }
+    }
+  }
+}
+
+// ─── MAP CONTAINER ────────────────────────────────────────────────────────────
+.ubm-map-container {
+  height: 100%;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+
+  @media (max-width: $breakpoint-lg) {
+    height: 500px;
+  }
+}
+
+.ubm-map-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  color: $gray-500;
+}
+
+// ─── INFO WINDOW ──────────────────────────────────────────────────────────────
+.ubm-info-window {
+  max-width: 250px;
+  padding: $space-xs;
+
+  h4 {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $space-xs;
+  }
+
+  &__address {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    margin-bottom: $space-xs;
+    line-height: 1.4;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-sm;
+    margin-bottom: $space-xs;
+  }
+
+  &__stat {
+    font-size: $font-size-xs;
+    color: $gray-700;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    i {
+      color: $primary-red;
+    }
+  }
+
+  &__blood-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: $space-xs;
+  }
+
+  &__blood-type {
+    padding: 2px $space-xs;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: $space-xs;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// ─── LEGEND ───────────────────────────────────────────────────────────────────
+.ubm-legend {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-md $space-lg;
+  margin-top: $space-xl;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  display: flex;
+  align-items: center;
+  gap: $space-xl;
+  flex-wrap: wrap;
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $primary-red;
+    }
+  }
+
+  &__items {
+    display: flex;
+    gap: $space-lg;
+    flex-wrap: wrap;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-size: $font-size-xs;
+    color: $gray-600;
+  }
+
+  &__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+.ubm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($gray-900, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal-backdrop;
+  padding: $space-md;
+  animation: fadeIn 200ms ease;
+}
+
+.ubm-modal {
+  background: $white;
+  border-radius: $radius-lg;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-xl;
+  animation: slideUp 300ms ease;
+  width: 100%;
+  max-width: 600px;
+
+  &__header {
+    padding: $space-md $space-lg;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, $primary-dark, $primary-red);
+    color: $white;
+    border-radius: $radius-lg $radius-lg 0 0;
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      font-size: $font-size-base;
+    }
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    background: rgba($white, 0.15);
+    border: 1px solid rgba($white, 0.2);
+    border-radius: $radius-md;
+    color: $white;
+    cursor: pointer;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: $font-size-sm;
+    }
+
+    &:hover {
+      background: rgba($white, 0.3);
+    }
+  }
+
+  &__body {
+    padding: $space-xl;
+    overflow-y: auto;
+  }
+
+  &__section {
+    margin-bottom: $space-xl;
+
+    h3 {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin-bottom: $space-md;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $primary-red;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+  }
+
+  &__footer {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    padding-top: $space-md;
+    border-top: 1px solid $gray-200;
+  }
+}
+
+// ─── BLOOD GRID ───────────────────────────────────────────────────────────────
+.ubm-blood-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: $space-sm;
+}
+
+.ubm-blood-card {
+  border: 1.5px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $space-sm;
+  text-align: center;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-sm;
+  }
+
+  &--selected {
+    border-width: 2px;
+  }
+
+  &__type {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    margin-bottom: $space-xs;
+  }
+
+  &__units {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $space-xs;
+  }
+
+  &__status {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    padding: 2px $space-xs;
+    border-radius: $radius-full;
+    display: inline-block;
+  }
+}
+
+// ─── CONTACT INFO ─────────────────────────────────────────────────────────────
+.ubm-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+}
+
+.ubm-contact-item {
+  display: flex;
+  gap: $space-sm;
+  padding: $space-xs;
+
+  i {
+    color: $gray-500;
+    width: 20px;
+    margin-top: 2px;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    flex-wrap: wrap;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    min-width: 50px;
+  }
+
+  &__value {
+    font-size: $font-size-sm;
+    color: $gray-900;
+
+    &--clickable {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: $primary-red;
+      font-family: inherit;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__copy {
+    background: none;
+    border: none;
+    color: $gray-400;
+    cursor: pointer;
+    padding: $space-xs;
+    transition: $transition-fast;
+
+    &:hover {
+      color: $primary-red;
+    }
+
+    i {
+      font-size: $font-size-xs;
+      margin: 0;
+    }
+  }
+}
+
+// ─── BUTTONS ──────────────────────────────────────────────────────────────────
+.ubm-btn {
+  flex: 1;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  border: none;
+
+  i {
+    font-size: $font-size-sm;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+  }
+
+  &--secondary {
+    background: $white;
+    color: $primary-red;
+    border: 1.5px solid $primary-red;
+
+    &:hover {
+      background: rgba($primary-red, 0.04);
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// ─── LOADING & EMPTY STATES ──────────────────────────────────────────────────
+.ubm-loading,
+.ubm-empty {
+  text-align: center;
+  padding: $space-2xl $space-md;
+  color: $gray-400;
+
+  i {
+    font-size: $font-size-2xl;
+    margin-bottom: $space-md;
+    opacity: 0.4;
+  }
+
+  h3 {
+    font-size: $font-size-base;
+    color: $gray-700;
+    margin-bottom: $space-xs;
+  }
+
+  p {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $gray-500;
+  }
+}
+
+.ubm-loading i {
+  animation: spin 1s linear infinite;
+}
+// ─── LEAFLET MAP ─────────────────────────────────────────────────────────────
+.ubm-leaflet-map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+// Custom marker styles
+.custom-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: #c41e3a;
+  position: relative;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  i {
+    transform: rotate(45deg);
+    color: white;
+    font-size: 14px;
+  }
+
+  &::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    position: absolute;
+    top: 4px;
+    left: 4px;
+  }
+}
+
+// Popup styles
+.ubm-popup {
+  min-width: 200px;
+  padding: $space-xs;
+
+  h4 {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $space-xs;
+    padding-right: $space-sm;
+  }
+
+  &__address {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    margin-bottom: $space-xs;
+    line-height: 1.4;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-sm;
+    margin-bottom: $space-xs;
+  }
+
+  &__stat {
+    font-size: $font-size-xs;
+    color: $gray-700;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    i {
+      color: $primary-red;
+    }
+  }
+
+  &__blood-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: $space-xs;
+  }
+
+  &__blood-type {
+    padding: 2px $space-xs;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: $space-xs;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// Fix Leaflet container z-index issues
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1 !important;
+}
+
+.leaflet-popup {
+  z-index: 2 !important;
+}
+
+// Map container
+.ubm-map-container {
+  height: 100%;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  position: relative;
+
+  @media (max-width: $breakpoint-lg) {
+    height: 500px;
+  }
+}
+// Add to UserBloodMap.scss
+.ubm-location-total {
+  margin-top: $space-md;
+  padding-top: $space-md;
+  border-top: 1px solid $gray-200;
+  text-align: right;
+  font-size: $font-size-sm;
+
+  strong {
+    color: $gray-700;
+    margin-right: $space-xs;
+  }
+}
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+.ubm-toast {
+  position: fixed;
+  bottom: $space-lg;
+  right: $space-lg;
+  z-index: $z-tooltip;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  box-shadow: $shadow-lg;
+  animation: slideIn 300ms ease;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  max-width: 360px;
+
+  i {
+    flex-shrink: 0;
+  }
+
+  &--success {
+    background: #f0fdf4;
+    color: darken($success, 12%);
+    border: 1px solid rgba($success, 0.25);
+    border-left: 4px solid $success;
+  }
+
+  &--error {
+    background: rgba($error, 0.06);
+    color: $error;
+    border: 1px solid rgba($error, 0.2);
+    border-left: 4px solid $error;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: $font-weight-bold;
+    margin-left: auto;
+    opacity: 0.5;
+    color: inherit;
+    padding: 0;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      opacity: 1;
+    }
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// ─── RESPONSIVE ──────────────────────────────────────────────────────────────
+@media (max-width: $breakpoint-lg) {
+  .ubm-header {
+    padding: $space-lg $space-xl;
+
+    &__title {
+      font-size: $font-size-xl;
+    }
+  }
+
+  .ubm-main {
+    padding: $space-lg;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .ubm-header {
+    padding: $space-md $space-lg;
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__stats {
+      gap: $space-md;
+    }
+  }
+
+  .ubm-main {
+    padding: $space-md;
+  }
+
+  .ubm-filters {
+    &__buttons {
+      flex-direction: column;
+
+      .ubm-filter-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  .ubm-blood-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ubm-modal__actions {
+    flex-direction: column;
+  }
+
+  .ubm-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $space-md;
+  }
+}

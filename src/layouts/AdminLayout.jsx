@@ -70,11 +70,6 @@ function AdminLayout() {
       label: "Blood Bank",
     },
     {
-      path: "/admin/donations",
-      icon: "fa-solid fa-hand-holding-heart",
-      label: "Donations",
-    },
-    {
       path: "/admin/inventory",
       icon: "fa-solid fa-boxes",
       label: "Inventory",

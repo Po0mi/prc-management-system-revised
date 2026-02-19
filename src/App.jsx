@@ -29,7 +29,6 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminVolunteers from "./pages/admin/AdminVolunteers";
 import AdminTraining from "./pages/admin/AdminTraining";
 import AdminBloodBank from "./pages/admin/AdminBloodBank";
-import AdminDonations from "./pages/admin/AdminDonations";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminMerchandise from "./pages/admin/AdminMerchandise";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -92,7 +91,6 @@ function App() {
           <Route path="volunteers" element={<AdminVolunteers />} />
           <Route path="training" element={<AdminTraining />} />
           <Route path="blood-bank" element={<AdminBloodBank />} />
-          <Route path="donations" element={<AdminDonations />} />
           <Route path="inventory" element={<AdminInventory />} />
           <Route path="merchandise" element={<AdminMerchandise />} />
           <Route path="users" element={<AdminUsers />} />
