@@ -583,13 +583,27 @@ export default function AdminVolunteers() {
     total: 0,
     by_status: { current: 0, graduated: 0 },
     by_service: {},
+    location_stats: {
+      by_city: {},
+      by_municipality: {},
+      by_barangay: {},
+    },
   });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState({
+    city: "",
+    municipality: "",
+    barangay: "",
+  });
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [showMunicipalityDropdown, setShowMunicipalityDropdown] =
+    useState(false);
+  const [showBarangayDropdown, setShowBarangayDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
@@ -606,6 +620,10 @@ export default function AdminVolunteers() {
       if (search) filters.search = search;
       if (serviceFilter) filters.service = serviceFilter;
       if (statusFilter) filters.status = statusFilter;
+      if (locationFilter.city) filters.city = locationFilter.city;
+      if (locationFilter.municipality)
+        filters.municipality = locationFilter.municipality;
+      if (locationFilter.barangay) filters.barangay = locationFilter.barangay;
 
       const response = await getVolunteers(filters);
       setVolunteers(response.data);
@@ -615,7 +633,7 @@ export default function AdminVolunteers() {
     } finally {
       setLoading(false);
     }
-  }, [search, serviceFilter, statusFilter]);
+  }, [search, serviceFilter, statusFilter, locationFilter]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -624,6 +642,29 @@ export default function AdminVolunteers() {
 
     return () => clearTimeout(debounceTimer);
   }, [fetchVolunteers]);
+
+  // Extract unique locations from volunteers data
+  const [locationOptions, setLocationOptions] = useState({
+    cities: [],
+    municipalities: [],
+    barangays: [],
+  });
+
+  useEffect(() => {
+    if (volunteers.length > 0) {
+      const cities = [
+        ...new Set(volunteers.map((v) => v.city).filter(Boolean)),
+      ].sort();
+      const municipalities = [
+        ...new Set(volunteers.map((v) => v.municipality).filter(Boolean)),
+      ].sort();
+      const barangays = [
+        ...new Set(volunteers.map((v) => v.barangay).filter(Boolean)),
+      ].sort();
+
+      setLocationOptions({ cities, municipalities, barangays });
+    }
+  }, [volunteers]);
 
   const handleCreate = () => {
     setSelectedVolunteer(null);
@@ -666,6 +707,11 @@ export default function AdminVolunteers() {
   const clearFilters = () => {
     setServiceFilter("");
     setStatusFilter("");
+    setLocationFilter({ city: "", municipality: "", barangay: "" });
+  };
+
+  const clearLocationFilter = () => {
+    setLocationFilter({ city: "", municipality: "", barangay: "" });
   };
 
   const getInitials = (name) => {
@@ -680,6 +726,17 @@ export default function AdminVolunteers() {
   const getServiceIcon = (service) => {
     const option = SERVICE_OPTIONS.find((opt) => opt.value === service);
     return option ? option.icon : "fa-solid fa-hand";
+  };
+
+  // Get active filter count
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (serviceFilter) count++;
+    if (statusFilter) count++;
+    if (locationFilter.city) count++;
+    if (locationFilter.municipality) count++;
+    if (locationFilter.barangay) count++;
+    return count;
   };
 
   return (
@@ -792,6 +849,147 @@ export default function AdminVolunteers() {
           </div>
 
           <div className="av-toolbar__filters">
+            {/* City Filter Dropdown */}
+            {locationOptions.cities.length > 0 && (
+              <div className="av-toolbar__filter-dropdown">
+                <button
+                  className="av-toolbar__filter-dropdown-btn"
+                  onClick={() => setShowCityDropdown(!showCityDropdown)}
+                >
+                  <i className="fa-solid fa-city" />
+                  {locationFilter.city || "All Cities"}
+                  <i className="fa-solid fa-chevron-down" />
+                </button>
+                {showCityDropdown && (
+                  <div className="av-toolbar__filter-dropdown-menu">
+                    <button
+                      onClick={() => {
+                        setLocationFilter({ ...locationFilter, city: "" });
+                        setShowCityDropdown(false);
+                      }}
+                      className={!locationFilter.city ? "active" : ""}
+                    >
+                      All Cities
+                    </button>
+                    {locationOptions.cities.map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => {
+                          setLocationFilter({
+                            ...locationFilter,
+                            city,
+                            municipality: "",
+                            barangay: "",
+                          });
+                          setShowCityDropdown(false);
+                        }}
+                        className={locationFilter.city === city ? "active" : ""}
+                      >
+                        <i className="fa-solid fa-city" />
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Municipality Filter Dropdown */}
+            {locationOptions.municipalities.length > 0 && (
+              <div className="av-toolbar__filter-dropdown">
+                <button
+                  className="av-toolbar__filter-dropdown-btn"
+                  onClick={() =>
+                    setShowMunicipalityDropdown(!showMunicipalityDropdown)
+                  }
+                >
+                  <i className="fa-solid fa-map-pin" />
+                  {locationFilter.municipality || "All Municipalities"}
+                  <i className="fa-solid fa-chevron-down" />
+                </button>
+                {showMunicipalityDropdown && (
+                  <div className="av-toolbar__filter-dropdown-menu">
+                    <button
+                      onClick={() => {
+                        setLocationFilter({
+                          ...locationFilter,
+                          municipality: "",
+                          barangay: "",
+                        });
+                        setShowMunicipalityDropdown(false);
+                      }}
+                      className={!locationFilter.municipality ? "active" : ""}
+                    >
+                      All Municipalities
+                    </button>
+                    {locationOptions.municipalities.map((municipality) => (
+                      <button
+                        key={municipality}
+                        onClick={() => {
+                          setLocationFilter({
+                            ...locationFilter,
+                            municipality,
+                            barangay: "",
+                          });
+                          setShowMunicipalityDropdown(false);
+                        }}
+                        className={
+                          locationFilter.municipality === municipality
+                            ? "active"
+                            : ""
+                        }
+                      >
+                        <i className="fa-solid fa-map-pin" />
+                        {municipality}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Barangay Filter Dropdown */}
+            {locationOptions.barangays.length > 0 && (
+              <div className="av-toolbar__filter-dropdown">
+                <button
+                  className="av-toolbar__filter-dropdown-btn"
+                  onClick={() => setShowBarangayDropdown(!showBarangayDropdown)}
+                >
+                  <i className="fa-solid fa-location-dot" />
+                  {locationFilter.barangay || "All Barangays"}
+                  <i className="fa-solid fa-chevron-down" />
+                </button>
+                {showBarangayDropdown && (
+                  <div className="av-toolbar__filter-dropdown-menu">
+                    <button
+                      onClick={() => {
+                        setLocationFilter({ ...locationFilter, barangay: "" });
+                        setShowBarangayDropdown(false);
+                      }}
+                      className={!locationFilter.barangay ? "active" : ""}
+                    >
+                      All Barangays
+                    </button>
+                    {locationOptions.barangays.map((barangay) => (
+                      <button
+                        key={barangay}
+                        onClick={() => {
+                          setLocationFilter({ ...locationFilter, barangay });
+                          setShowBarangayDropdown(false);
+                        }}
+                        className={
+                          locationFilter.barangay === barangay ? "active" : ""
+                        }
+                      >
+                        <i className="fa-solid fa-location-dot" />
+                        {barangay}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Service Filter Dropdown */}
             <div className="av-toolbar__filter-dropdown">
               <button
@@ -868,10 +1066,10 @@ export default function AdminVolunteers() {
               )}
             </div>
 
-            {(serviceFilter || statusFilter) && (
+            {getActiveFilterCount() > 0 && (
               <button className="av-toolbar__filter-btn" onClick={clearFilters}>
                 <i className="fa-solid fa-xmark" />
-                Clear Filters
+                Clear Filters ({getActiveFilterCount()})
               </button>
             )}
           </div>

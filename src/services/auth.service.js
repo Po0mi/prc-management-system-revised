@@ -104,7 +104,21 @@ const authService = {
 
   isAdmin() {
     const user = this.getCurrentUser();
-    return user?.role === "admin" || user?.is_admin === 1;
+    // Check for any admin role (super_admin, safety_admin, welfare_admin, etc.)
+    return user?.role?.includes("_admin") || user?.is_admin === 1;
+  },
+
+  // ── NEW: Get admin role type ─────────────────────────────────────────────────
+  getAdminRole() {
+    const user = this.getCurrentUser();
+    if (!this.isAdmin()) return null;
+    return user?.role;
+  },
+
+  // ── NEW: Check if super admin ────────────────────────────────────────────────
+  isSuperAdmin() {
+    const user = this.getCurrentUser();
+    return user?.role === "super_admin";
   },
 };
 

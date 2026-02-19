@@ -769,7 +769,7 @@
       border-color: $primary-red;
 
       .announcements__card-image img {
-        transform: scale(1.1);
+        transform: scale(1.05);
       }
     }
 
@@ -777,23 +777,42 @@
       height: 250px;
       overflow: hidden;
       position: relative;
+      background: $gray-200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
         transition: transform $transition-slow;
       }
 
       .image-placeholder {
+        width: 100%;
         height: 100%;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         background: linear-gradient(135deg, $primary-red, $primary-dark);
         color: $white;
         font-size: $font-size-lg;
         font-weight: $font-weight-semibold;
+        gap: $space-sm;
+
+        i {
+          font-size: $font-size-2xl;
+          margin-bottom: $space-xs;
+        }
+
+        span {
+          font-size: $font-size-sm;
+          opacity: 0.9;
+        }
       }
     }
 

@@ -11,44 +11,55 @@ import {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const ROLE_CONFIG = {
-  super: { label: "SUPER", color: "#c41e3a", bg: "#fef2f2", icon: "fa-bolt" },
-  admin: {
-    label: "ADMIN",
-    color: "#1d4ed8",
-    bg: "#eff6ff",
-    icon: "fa-shield-halved",
+  super_admin: {
+    label: "SUPER ADMIN",
+    color: "#c41e3a",
+    bg: "#fef2f2",
+    icon: "fa-crown",
+    canSee: "all",
   },
-  safety: {
-    label: "SAFETY",
+  safety_admin: {
+    label: "SAFETY ADMIN",
     color: "#15803d",
     bg: "#f0fdf4",
     icon: "fa-shield",
+    canSee: ["safety"],
   },
-  welfare: {
-    label: "WELFARE",
+  welfare_admin: {
+    label: "WELFARE ADMIN",
     color: "#7c3aed",
     bg: "#faf5ff",
     icon: "fa-hands-holding",
+    canSee: ["welfare"],
   },
-  health: {
-    label: "HEALTH",
+  health_admin: {
+    label: "HEALTH ADMIN",
     color: "#c41e3a",
     bg: "#fff1f2",
     icon: "fa-heart-pulse",
+    canSee: ["health"],
   },
-  disaster: {
-    label: "DISASTER",
+  disaster_admin: {
+    label: "DISASTER ADMIN",
     color: "#c2410c",
     bg: "#fff7ed",
     icon: "fa-triangle-exclamation",
+    canSee: ["disaster_management"],
   },
-  youth: {
-    label: "YOUTH",
+  youth_admin: {
+    label: "YOUTH ADMIN",
     color: "#003d6b",
     bg: "#f0f9ff",
     icon: "fa-people-group",
+    canSee: ["red_cross_youth"],
   },
-  user: { label: "USER", color: "#4a5568", bg: "#f7fafc", icon: "fa-user" },
+  user: {
+    label: "USER",
+    color: "#4a5568",
+    bg: "#f7fafc",
+    icon: "fa-user",
+    canSee: "none",
+  },
 };
 
 const SERVICE_OPTIONS = [
@@ -70,7 +81,6 @@ const EMPTY_FORM = {
   first_name: "",
   last_name: "",
   role: "user",
-  admin_role: "",
   email: "",
   phone: "",
   gender: "",
@@ -437,12 +447,12 @@ function UserModal({ user, onClose, onSaved }) {
               >
                 <option value="user">User</option>
                 <optgroup label="Administrators">
-                  <option value="admin">Administrator</option>
-                  <option value="safety">Safety Admin</option>
-                  <option value="welfare">Welfare Admin</option>
-                  <option value="health">Health Admin</option>
-                  <option value="disaster">Disaster Admin</option>
-                  <option value="youth">Youth Admin</option>
+                  <option value="super_admin">Super Administrator</option>
+                  <option value="safety_admin">Safety Admin</option>
+                  <option value="welfare_admin">Welfare Admin</option>
+                  <option value="health_admin">Health Admin</option>
+                  <option value="disaster_admin">Disaster Admin</option>
+                  <option value="youth_admin">Youth Admin</option>
                 </optgroup>
               </select>
             </div>
@@ -582,7 +592,6 @@ export default function AdminUsers() {
       setStats(stats);
     } catch (err) {
       console.error("Stats error:", err);
-      // Non-fatal — don't show toast, stats just show fallback counts
     }
   }, []);
 
@@ -637,9 +646,9 @@ export default function AdminUsers() {
   // ── DERIVED COUNTS ─────────────────────────────────────────────────────────
   const totalUsers = stats?.total ?? users.length;
   const admins =
-    stats?.admins ?? users.filter((u) => u.role === "admin").length;
+    stats?.admins ?? users.filter((u) => u.role.includes("admin")).length;
   const regularUsers =
-    stats?.users ?? users.filter((u) => u.role !== "admin").length;
+    stats?.users ?? users.filter((u) => u.role === "user").length;
   const rcyMembers =
     stats?.rcy_members ??
     users.filter((u) => u.user_type === "rcy_member").length;
@@ -916,7 +925,9 @@ export default function AdminUsers() {
                             title="Delete User"
                             className="au-action-btn au-action-btn--delete"
                             onClick={() => handleDelete(u)}
-                            disabled={u.user_id === 1}
+                            disabled={
+                              u.user_id === 1 || u.role === "super_admin"
+                            }
                           >
                             <i className="fas fa-trash" />
                           </button>

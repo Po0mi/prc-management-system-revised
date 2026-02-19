@@ -17,7 +17,7 @@ import UserEventDetails from "./pages/user/UserEventDetails";
 import UserProfile from "./pages/user/UserProfile";
 import UserTraining from "./pages/user/UserTraining";
 import UserMerch from "./pages/user/UserMech";
-import UserAnnouncement from "./pages/user/UserAnnouncment";
+import UserAnnouncement from "./pages/user/UserAnnouncement";
 import UserDonate from "./pages/user/UserDonate";
 import UserBloodMap from "./pages/user/UserBloodMap";
 import UserMessages from "./pages/user/UserMessages";

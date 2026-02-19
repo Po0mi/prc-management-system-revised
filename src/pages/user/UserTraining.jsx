@@ -40,6 +40,15 @@ const URGENCY_LEVELS = ["low", "normal", "high", "urgent"];
 const TRAINING_TYPES = ["single_day", "multi_day", "workshop", "certification"];
 const NOTIFICATION_METHODS = ["email", "sms", "phone"];
 
+// Service colors mapping
+const SERVICE_COLORS = {
+  "Health Service": "#c41e3a",
+  "Safety Service": "#15803d",
+  "Welfare Service": "#7c3aed",
+  "Disaster Management Service": "#c2410c",
+  "Red Cross Youth": "#003d6b",
+};
+
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -577,13 +586,6 @@ function TrainingRequestModal({ onClose, onSuccess }) {
         formData.append(`additional_docs[${index}]`, doc); // Column: additional_docs_paths
       });
 
-      // API call would go here
-      // const response = await fetch('/api/training-requests', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-
-      // Simulate success
       // ✅ REAL API CALL
       const res = await submitTrainingRequest(formData);
       onSuccess(res.message);
@@ -1887,19 +1889,37 @@ export default function UserTrainings() {
                     const myReg = myRegistrations.find(
                       (r) => r.session_id === evt.session_id,
                     );
+                    const serviceColor =
+                      SERVICE_COLORS[evt.major_service] || "#6b7280";
 
                     return (
                       <div key={evt.session_id} className="ut-session-card">
                         <div className="ut-session-card__header">
-                          <span className="ut-session-card__service">
-                            {evt.major_service}
+                          <span
+                            className="ut-session-card__service"
+                            style={{
+                              background: `${serviceColor}15`,
+                              color: serviceColor,
+                              border: `1px solid ${serviceColor}33`,
+                            }}
+                          >
+                            <i className="fas fa-tag" /> {evt.major_service}
                           </span>
                           {evt.fee > 0 ? (
                             <span className="ut-session-card__fee">
                               ₱{parseFloat(evt.fee).toFixed(2)}
                             </span>
                           ) : (
-                            <span className="ut-session-card__free">FREE</span>
+                            <span
+                              className="ut-session-card__free"
+                              style={{
+                                background: "rgba(16, 185, 129, 0.12)",
+                                color: "#10b981",
+                                border: "1px solid rgba(16, 185, 129, 0.15)",
+                              }}
+                            >
+                              <i className="fas fa-gift" /> FREE
+                            </span>
                           )}
                         </div>
 
@@ -1907,7 +1927,10 @@ export default function UserTrainings() {
 
                         <div className="ut-session-card__meta">
                           <div className="ut-session-card__date">
-                            <i className="fas fa-calendar" />
+                            <i
+                              className="fas fa-calendar"
+                              style={{ color: serviceColor }}
+                            />
                             {new Date(evt.session_date).toLocaleDateString(
                               "en-US",
                               {
@@ -1919,8 +1942,7 @@ export default function UserTrainings() {
                             {evt.session_end_date &&
                               evt.session_end_date !== evt.session_date && (
                                 <>
-                                  {" "}
-                                  -{" "}
+                                  {" - "}
                                   {new Date(
                                     evt.session_end_date,
                                   ).toLocaleDateString("en-US", {
@@ -1931,34 +1953,85 @@ export default function UserTrainings() {
                               )}
                           </div>
                           <div className="ut-session-card__time">
-                            <i className="fas fa-clock" />
+                            <i
+                              className="fas fa-clock"
+                              style={{ color: serviceColor }}
+                            />
                             {evt.start_time?.slice(0, 5)} -{" "}
                             {evt.end_time?.slice(0, 5)}
                           </div>
                           <div className="ut-session-card__location">
-                            <i className="fas fa-map-marker-alt" />
-                            {evt.location?.split("\n")[0]}
+                            <i
+                              className="fas fa-map-marker-alt"
+                              style={{ color: serviceColor }}
+                            />
+                            {evt.venue?.split("\n")[0] ||
+                              evt.location?.split("\n")[0]}
                           </div>
+                          {evt.instructor && (
+                            <div className="ut-session-card__instructor">
+                              <i
+                                className="fas fa-chalkboard-teacher"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                <strong>Instructor:</strong> {evt.instructor}
+                                {evt.instructor_credentials && (
+                                  <small> • {evt.instructor_credentials}</small>
+                                )}
+                              </span>
+                            </div>
+                          )}
+                          {evt.duration_days > 1 && (
+                            <div className="ut-session-card__duration">
+                              <i
+                                className="fas fa-calendar-week"
+                                style={{ color: serviceColor }}
+                              />
+                              {evt.duration_days} days
+                            </div>
+                          )}
                         </div>
 
                         {evt.description && (
-                          <p className="ut-session-card__desc">
-                            {evt.description.length > 120
-                              ? evt.description.slice(0, 120) + "..."
-                              : evt.description}
-                          </p>
+                          <div className="ut-session-card__desc">
+                            <p>{evt.description}</p>
+                          </div>
+                        )}
+
+                        {evt.requirements && (
+                          <div className="ut-session-card__requirements">
+                            <i
+                              className="fas fa-clipboard-list"
+                              style={{ color: serviceColor }}
+                            />
+                            <small>{evt.requirements}</small>
+                          </div>
                         )}
 
                         <div className="ut-session-card__footer">
                           <div className="ut-session-card__capacity">
-                            <i className="fas fa-users" />
-                            {evt.approved_count}/
-                            {evt.capacity > 0 ? evt.capacity : "∞"}
+                            <i
+                              className="fas fa-users"
+                              style={{ color: serviceColor }}
+                            />
+                            <span>
+                              {evt.approved_count} /{" "}
+                              {evt.capacity > 0 ? evt.capacity : "∞"}
+                            </span>
+                            {evt.pending_count > 0 && (
+                              <span className="ut-session-card__pending">
+                                ({evt.pending_count} pending)
+                              </span>
+                            )}
                           </div>
 
                           {isRegistered ? (
                             <div className="ut-session-card__registered">
-                              <i className="fas fa-check-circle" />
+                              <i
+                                className="fas fa-check-circle"
+                                style={{ color: "#10b981" }}
+                              />
                               <span className={`ut-status-${myReg.status}`}>
                                 {myReg.status.toUpperCase()}
                               </span>
@@ -1974,6 +2047,9 @@ export default function UserTrainings() {
                             <button
                               className="ut-session-card__btn"
                               onClick={() => setRegisterTraining(evt)}
+                              style={{
+                                background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
+                              }}
                             >
                               <i className="fas fa-user-plus" /> Register Now
                             </button>

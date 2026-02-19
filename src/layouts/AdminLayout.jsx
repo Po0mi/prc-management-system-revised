@@ -27,83 +27,69 @@ function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
-  // Navigation items with permission checks and Font Awesome icons
+  // Navigation items with Font Awesome icons - ALL ADMINS SEE EVERYTHING
   const navItems = [
     {
       path: "/admin/dashboard",
       icon: "fa-solid fa-chart-pie",
       label: "Dashboard",
-      permission: true,
     },
     {
       path: "/admin/users",
       icon: "fa-solid fa-users",
       label: "User Management",
-      permission: isSuperAdmin(),
     },
     {
       path: "/admin/volunteers",
-      icon: "fa-solid fa-hand-peace", // Fixed: Added proper icon for volunteers
+      icon: "fa-solid fa-hand-peace",
       label: "Volunteers",
-      permission: hasPermission("volunteers"),
     },
     {
       path: "/admin/events",
       icon: "fa-solid fa-calendar-days",
       label: "Events",
-      permission: hasPermission("events"),
     },
     {
       path: "/admin/training",
       icon: "fa-solid fa-graduation-cap",
       label: "Training",
-      permission: hasPermission("training"),
     },
     {
       path: "/admin/training-requests",
       icon: "fa-solid fa-pen-to-square",
       label: "Training Requests",
-      permission: hasPermission("training-requests"),
     },
     {
       path: "/admin/announcements",
       icon: "fa-solid fa-bullhorn",
       label: "Announcements",
-      permission: hasPermission("announcements"),
     },
     {
       path: "/admin/blood-bank",
       icon: "fa-solid fa-droplet",
       label: "Blood Bank",
-      permission: hasPermission("blood-bank"),
     },
     {
       path: "/admin/donations",
       icon: "fa-solid fa-hand-holding-heart",
       label: "Donations",
-      permission: hasPermission("donations"),
     },
     {
       path: "/admin/inventory",
       icon: "fa-solid fa-boxes",
       label: "Inventory",
-      permission: hasPermission("inventory"),
     },
     {
       path: "/admin/merchandise",
       icon: "fa-solid fa-shirt",
       label: "Merchandise",
-      permission: isSuperAdmin(),
     },
     {
       path: "/admin/reports",
       icon: "fa-solid fa-chart-line",
       label: "Reports",
-      permission: true,
     },
   ];
-
-  const allowedNavItems = navItems.filter((item) => item.permission);
 
   return (
     <>
@@ -137,7 +123,7 @@ function AdminLayout() {
           </div>
 
           <nav className="sidebar__nav">
-            {allowedNavItems.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}

@@ -21,20 +21,8 @@
   }
 }
 
-@keyframes pulseGlow {
-  0%,
-  100% {
-    box-shadow: 0 2px 4px rgba($primary-red, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 2px 12px rgba($primary-red, 0.4),
-      0 0 20px rgba($primary-red, 0.2);
-  }
-}
-
 // ─── ROOT ────────────────────────────────────────────────────────────────────
-.av-root {
+.aa-root {
   * {
     box-sizing: border-box;
   }
@@ -77,7 +65,7 @@
 }
 
 // ─── PAGE HEADER ──────────────────────────────────────────────────────────────
-.av-header {
+.aa-header {
   background: linear-gradient(
     135deg,
     $primary-dark 0%,
@@ -148,19 +136,19 @@
 }
 
 // ─── PAGE BODY ────────────────────────────────────────────────────────────────
-.av-body {
+.aa-body {
   padding: $space-lg $space-2xl;
 }
 
 // ─── STAT CARDS ───────────────────────────────────────────────────────────────
-.av-cards {
+.aa-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: $space-md;
   margin-bottom: $space-lg;
 }
 
-.av-card {
+.aa-card {
   background: $white;
   border-radius: $radius-lg;
   padding: $space-md $space-lg;
@@ -188,31 +176,6 @@
     i {
       font-size: 18px;
     }
-
-    &--total {
-      background: rgba($primary-red, 0.12);
-      i {
-        color: $primary-red;
-      }
-    }
-    &--current {
-      background: rgba($success, 0.12);
-      i {
-        color: $success;
-      }
-    }
-    &--graduated {
-      background: rgba($info, 0.12);
-      i {
-        color: $info;
-      }
-    }
-    &--services {
-      background: rgba($warning, 0.12);
-      i {
-        color: $warning;
-      }
-    }
   }
 
   &__num {
@@ -230,7 +193,7 @@
 }
 
 // ─── TOOLBAR ──────────────────────────────────────────────────────────────────
-.av-toolbar {
+.aa-toolbar {
   background: $white;
   border-radius: $radius-lg;
   padding: $space-sm $space-md;
@@ -375,7 +338,7 @@
         border: 1px solid $gray-200;
         box-shadow: $shadow-lg;
         z-index: $z-dropdown;
-        min-width: 180px;
+        min-width: 200px;
         max-height: 300px;
         overflow-y: auto;
         overflow-x: hidden;
@@ -397,7 +360,6 @@
           i {
             width: 16px;
             font-size: $font-size-xs;
-            color: $gray-400;
           }
 
           &:hover {
@@ -456,7 +418,7 @@
 }
 
 // ─── TABLE PANEL ──────────────────────────────────────────────────────────────
-.av-table-panel {
+.aa-table-panel {
   background: $white;
   border-radius: $radius-lg;
   border: 1px solid $gray-200;
@@ -500,7 +462,7 @@
 }
 
 // ─── TABLE ────────────────────────────────────────────────────────────────────
-.av-table {
+.aa-table {
   width: 100%;
   font-size: $font-size-sm;
 
@@ -546,112 +508,22 @@
   }
 }
 
-// ─── VOLUNTEER CELL ───────────────────────────────────────────────────────────
-.av-volunteer-cell {
-  display: flex;
-  align-items: center;
-  gap: $space-sm;
-
-  &__avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, $primary-red, $primary-dark);
-    color: $white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: $font-weight-bold;
-    font-size: $font-size-xs;
-    flex-shrink: 0;
-  }
-
-  &__info {
-    &-name {
-      font-weight: $font-weight-semibold;
-      color: $gray-900;
-      font-size: $font-size-sm;
-    }
-    &-age {
-      color: $gray-400;
-      font-size: $font-size-xs;
-      margin-top: 1px;
-    }
-  }
-}
-
-// ─── LOCATION CELL ────────────────────────────────────────────────────────────
-.av-location {
-  &__main {
-    font-size: $font-size-sm;
+// ─── TITLE CELL ───────────────────────────────────────────────────────────────
+.aa-title-cell {
+  &__title {
+    font-weight: $font-weight-semibold;
     color: $gray-900;
+    font-size: $font-size-sm;
     margin-bottom: 2px;
   }
-  &__detail {
+  &__id {
+    color: $gray-400;
     font-size: $font-size-xs;
-    color: $gray-500;
-    display: flex;
-    align-items: center;
-    gap: $space-xs;
-
-    i {
-      color: $gray-400;
-      font-size: 8px;
-    }
   }
 }
 
-// ─── SERVICE BADGE ────────────────────────────────────────────────────────────
-.av-service {
-  &-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 2px $space-sm;
-    border-radius: $radius-full;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
-    white-space: nowrap;
-
-    i {
-      font-size: 9px;
-    }
-
-    &--first_aid {
-      background: rgba($info, 0.12);
-      color: $info;
-      border: 1px solid rgba($info, 0.2);
-    }
-    &--disaster_response {
-      background: rgba($warning, 0.12);
-      color: $warning;
-      border: 1px solid rgba($warning, 0.2);
-    }
-    &--blood_services {
-      background: rgba($error, 0.12);
-      color: $error;
-      border: 1px solid rgba($error, 0.2);
-    }
-    &--safety_services {
-      background: rgba($success, 0.12);
-      color: $success;
-      border: 1px solid rgba($success, 0.2);
-    }
-    &--youth_services {
-      background: rgba($accent-teal, 0.12);
-      color: $accent-teal;
-      border: 1px solid rgba($accent-teal, 0.2);
-    }
-    &--welfare_services {
-      background: rgba($primary-blue-light, 0.12);
-      color: $primary-blue-light;
-      border: 1px solid rgba($primary-blue-light, 0.2);
-    }
-  }
-}
-
-// ─── STATUS BADGE ─────────────────────────────────────────────────────────────
-.av-status {
+// ─── BADGE ────────────────────────────────────────────────────────────────────
+.aa-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -659,51 +531,22 @@
   border-radius: $radius-full;
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  white-space: nowrap;
 
   i {
-    font-size: 8px;
-  }
-
-  &--current {
-    background: rgba($success, 0.12);
-    color: $success;
-  }
-  &--graduated {
-    background: rgba($info, 0.12);
-    color: $info;
+    font-size: 9px;
   }
 }
 
-// ─── CONTACT CELL ─────────────────────────────────────────────────────────────
-.av-contact {
-  &__email,
-  &__phone {
-    font-size: $font-size-xs;
-    display: flex;
-    align-items: center;
-    gap: $space-xs;
-
-    i {
-      color: $gray-400;
-      font-size: 10px;
-      width: 12px;
-      flex-shrink: 0;
-    }
-  }
-
-  &__email {
-    color: $gray-700;
-    margin-bottom: 3px;
-  }
-  &__phone {
-    color: $gray-500;
-  }
+// ─── DATE ─────────────────────────────────────────────────────────────────────
+.aa-date {
+  font-size: $font-size-xs;
+  color: $gray-600;
+  white-space: nowrap;
 }
 
-// ─── NOTES CELL ───────────────────────────────────────────────────────────────
-.av-notes {
+// ─── PREVIEW ──────────────────────────────────────────────────────────────────
+.aa-preview {
   max-width: 200px;
   font-size: $font-size-xs;
   color: $gray-600;
@@ -713,12 +556,12 @@
 }
 
 // ─── ACTION BUTTONS ───────────────────────────────────────────────────────────
-.av-actions {
+.aa-actions {
   display: flex;
   gap: $space-xs;
 }
 
-.av-action-btn {
+.aa-action-btn {
   width: 30px;
   height: 30px;
   border-radius: $radius-md;
@@ -743,24 +586,6 @@
     box-shadow: $shadow-sm;
   }
 
-  &--edit {
-    background: rgba($info, 0.08);
-    color: $info;
-    border-color: rgba($info, 0.15);
-    &:not(:disabled):hover {
-      background: rgba($info, 0.15);
-      border-color: rgba($info, 0.3);
-    }
-  }
-  &--delete {
-    background: rgba($error, 0.08);
-    color: $error;
-    border-color: rgba($error, 0.15);
-    &:not(:disabled):hover {
-      background: rgba($error, 0.15);
-      border-color: rgba($error, 0.3);
-    }
-  }
   &--view {
     background: rgba($success, 0.08);
     color: $success;
@@ -770,10 +595,50 @@
       border-color: rgba($success, 0.3);
     }
   }
+
+  &--edit {
+    background: rgba($info, 0.08);
+    color: $info;
+    border-color: rgba($info, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($info, 0.15);
+      border-color: rgba($info, 0.3);
+    }
+  }
+
+  &--archive {
+    background: rgba($warning, 0.08);
+    color: $warning;
+    border-color: rgba($warning, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($warning, 0.15);
+      border-color: rgba($warning, 0.3);
+    }
+  }
+
+  &--restore {
+    background: rgba($success, 0.08);
+    color: $success;
+    border-color: rgba($success, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($success, 0.15);
+      border-color: rgba($success, 0.3);
+    }
+  }
+
+  &--delete {
+    background: rgba($error, 0.08);
+    color: $error;
+    border-color: rgba($error, 0.15);
+    &:not(:disabled):hover {
+      background: rgba($error, 0.15);
+      border-color: rgba($error, 0.3);
+    }
+  }
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
-.av-overlay {
+.aa-overlay {
   position: fixed;
   inset: 0;
   z-index: $z-modal-backdrop;
@@ -786,7 +651,7 @@
   animation: fadeIn 200ms ease;
 }
 
-.av-modal {
+.aa-modal {
   background: $white;
   border-radius: $radius-lg;
   width: 100%;
@@ -796,6 +661,10 @@
   max-height: 92vh;
   display: flex;
   flex-direction: column;
+
+  &--lg {
+    max-width: 800px;
+  }
 
   &__header {
     padding: $space-md $space-lg;
@@ -850,7 +719,7 @@
 }
 
 // ─── FORM ─────────────────────────────────────────────────────────────────────
-.av-form {
+.aa-form {
   &__error-banner {
     padding: $space-sm $space-md;
     background: rgba($error, 0.06);
@@ -946,6 +815,12 @@
     }
   }
 
+  &__hint {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    margin-top: 2px;
+  }
+
   &__submit {
     width: 100%;
     padding: $space-md;
@@ -981,8 +856,94 @@
   }
 }
 
+// ─── FILE UPLOAD ──────────────────────────────────────────────────────────────
+.aa-file-upload {
+  &__input {
+    display: none;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    padding: $space-md;
+    border: 2px dashed $gray-300;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: $transition-fast;
+    color: $gray-600;
+    background: $gray-100;
+
+    i {
+      font-size: $font-size-lg;
+      color: $primary-red;
+    }
+
+    &:hover {
+      border-color: $primary-red;
+      background: rgba($primary-red, 0.04);
+      color: $primary-red;
+    }
+  }
+}
+
+// ─── IMAGE PREVIEW ────────────────────────────────────────────────────────────
+.aa-image-preview {
+  position: relative;
+  margin-top: $space-sm;
+  border-radius: $radius-md;
+  overflow: hidden;
+  max-width: 200px;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid $gray-200;
+    border-radius: $radius-md;
+  }
+
+  &__remove {
+    position: absolute;
+    top: $space-xs;
+    right: $space-xs;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba($error, 0.9);
+    border: none;
+    color: $white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: $transition-fast;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover {
+      background: $error;
+    }
+  }
+}
+
 // ─── VIEW MODAL ───────────────────────────────────────────────────────────────
-.av-view {
+.aa-view {
+  &__image {
+    margin-bottom: $space-lg;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    max-height: 300px;
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+  }
+
   &__section {
     margin-bottom: $space-lg;
     padding-bottom: $space-lg;
@@ -1010,6 +971,44 @@
     }
   }
 
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+    margin-bottom: $space-lg;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+
+    i {
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__content {
+    background: $gray-100;
+    padding: $space-md;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.6;
+    white-space: pre-wrap;
+
+    p {
+      margin: 0 0 $space-sm;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1029,79 +1028,10 @@
       word-break: break-word;
     }
   }
-
-  &__full {
-    grid-column: 1 / -1;
-  }
-
-  &__status {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-xs;
-    padding: $space-xs $space-md;
-    border-radius: $radius-full;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
-    text-transform: uppercase;
-
-    &--current {
-      background: rgba($success, 0.12);
-      color: $success;
-    }
-    &--graduated {
-      background: rgba($info, 0.12);
-      color: $info;
-    }
-  }
-
-  &__service {
-    display: inline-flex;
-    align-items: center;
-    gap: $space-xs;
-    padding: $space-xs $space-md;
-    border-radius: $radius-full;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
-
-    &--first_aid {
-      background: rgba($info, 0.12);
-      color: $info;
-    }
-    &--disaster_response {
-      background: rgba($warning, 0.12);
-      color: $warning;
-    }
-    &--blood_services {
-      background: rgba($error, 0.12);
-      color: $error;
-    }
-    &--safety_services {
-      background: rgba($success, 0.12);
-      color: $success;
-    }
-    &--youth_services {
-      background: rgba($accent-teal, 0.12);
-      color: $accent-teal;
-    }
-    &--welfare_services {
-      background: rgba($primary-blue-light, 0.12);
-      color: $primary-blue-light;
-    }
-  }
-
-  &__notes {
-    background: $gray-100;
-    padding: $space-md;
-    border-radius: $radius-md;
-    font-size: $font-size-sm;
-    color: $gray-700;
-    line-height: 1.6;
-    white-space: pre-wrap;
-  }
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
-.av-toast {
+.aa-toast {
   position: fixed;
   bottom: $space-lg;
   right: $space-lg;
@@ -1158,7 +1088,7 @@
 
 // ─── RESPONSIVE ───────────────────────────────────────────────────────────────
 @media (max-width: $breakpoint-lg) {
-  .av-header {
+  .aa-header {
     padding: $space-lg $space-xl;
 
     &__title {
@@ -1170,11 +1100,11 @@
     }
   }
 
-  .av-body {
+  .aa-body {
     padding: $space-lg $space-xl;
   }
 
-  .av-toolbar {
+  .aa-toolbar {
     flex-direction: column;
     align-items: stretch;
 
@@ -1193,7 +1123,7 @@
     }
   }
 
-  .av-table {
+  .aa-table {
     th,
     td {
       white-space: nowrap;
@@ -1202,7 +1132,7 @@
 }
 
 @media (max-width: $breakpoint-md) {
-  .av-header {
+  .aa-header {
     padding: $space-md $space-lg;
 
     &__inner {
@@ -1219,20 +1149,20 @@
     }
   }
 
-  .av-body {
+  .aa-body {
     padding: $space-md $space-lg;
   }
 
-  .av-cards {
+  .aa-cards {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .av-toolbar {
+  .aa-toolbar {
     &__filters {
       flex-direction: column;
       align-items: stretch;
 
-      .av-toolbar__filter-dropdown {
+      .aa-toolbar__filter-dropdown {
         width: 100%;
 
         &-btn {
@@ -1248,7 +1178,7 @@
     }
   }
 
-  .av-modal {
+  .aa-modal {
     max-width: 100%;
     height: 100%;
     max-height: 100%;
@@ -1259,11 +1189,11 @@
     }
   }
 
-  .av-view__grid {
+  .aa-view__grid {
     grid-template-columns: 1fr;
   }
 
-  .av-actions {
+  .aa-actions {
     flex-wrap: wrap;
   }
 }

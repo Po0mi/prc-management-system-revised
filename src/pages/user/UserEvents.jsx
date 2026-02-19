@@ -27,6 +27,15 @@ const MONTHS = [
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+// Service colors mapping
+const SERVICE_COLORS = {
+  "Health Service": "#c41e3a",
+  "Safety Service": "#15803d",
+  "Welfare Service": "#7c3aed",
+  "Disaster Management Service": "#c2410c",
+  "Red Cross Youth": "#003d6b",
+};
+
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -699,19 +708,37 @@ export default function UserEvents() {
                     const myReg = myRegistrations.find(
                       (r) => r.event_id === evt.event_id,
                     );
+                    const serviceColor =
+                      SERVICE_COLORS[evt.major_service] || "#6b7280";
 
                     return (
                       <div key={evt.event_id} className="ue-event-card">
                         <div className="ue-event-card__header">
-                          <span className="ue-event-card__service">
-                            {evt.major_service}
+                          <span
+                            className="ue-event-card__service"
+                            style={{
+                              background: `${serviceColor}15`,
+                              color: serviceColor,
+                              border: `1px solid ${serviceColor}33`,
+                            }}
+                          >
+                            <i className="fas fa-tag" /> {evt.major_service}
                           </span>
                           {evt.fee > 0 ? (
                             <span className="ue-event-card__fee">
                               ₱{parseFloat(evt.fee).toFixed(2)}
                             </span>
                           ) : (
-                            <span className="ue-event-card__free">FREE</span>
+                            <span
+                              className="ue-event-card__free"
+                              style={{
+                                background: "rgba(16, 185, 129, 0.12)",
+                                color: "#10b981",
+                                border: "1px solid rgba(16, 185, 129, 0.15)",
+                              }}
+                            >
+                              <i className="fas fa-gift" /> FREE
+                            </span>
                           )}
                         </div>
 
@@ -719,7 +746,10 @@ export default function UserEvents() {
 
                         <div className="ue-event-card__meta">
                           <div className="ue-event-card__date">
-                            <i className="fas fa-calendar" />
+                            <i
+                              className="fas fa-calendar"
+                              style={{ color: serviceColor }}
+                            />
                             {new Date(evt.event_date).toLocaleDateString(
                               "en-US",
                               {
@@ -731,8 +761,7 @@ export default function UserEvents() {
                             {evt.event_end_date &&
                               evt.event_end_date !== evt.event_date && (
                                 <>
-                                  {" "}
-                                  -{" "}
+                                  {" - "}
                                   {new Date(
                                     evt.event_end_date,
                                   ).toLocaleDateString("en-US", {
@@ -743,34 +772,60 @@ export default function UserEvents() {
                               )}
                           </div>
                           <div className="ue-event-card__time">
-                            <i className="fas fa-clock" />
+                            <i
+                              className="fas fa-clock"
+                              style={{ color: serviceColor }}
+                            />
                             {evt.start_time?.slice(0, 5)} -{" "}
                             {evt.end_time?.slice(0, 5)}
                           </div>
                           <div className="ue-event-card__location">
-                            <i className="fas fa-map-marker-alt" />
+                            <i
+                              className="fas fa-map-marker-alt"
+                              style={{ color: serviceColor }}
+                            />
                             {evt.location?.split("\n")[0]}
                           </div>
+                          {evt.duration_days > 1 && (
+                            <div className="ue-event-card__duration">
+                              <i
+                                className="fas fa-calendar-week"
+                                style={{ color: serviceColor }}
+                              />
+                              {evt.duration_days} days
+                            </div>
+                          )}
                         </div>
 
                         {evt.description && (
-                          <p className="ue-event-card__desc">
-                            {evt.description.length > 120
-                              ? evt.description.slice(0, 120) + "..."
-                              : evt.description}
-                          </p>
+                          <div className="ue-event-card__desc">
+                            <p>{evt.description}</p>
+                          </div>
                         )}
 
                         <div className="ue-event-card__footer">
                           <div className="ue-event-card__capacity">
-                            <i className="fas fa-users" />
-                            {evt.approved_count}/
-                            {evt.capacity > 0 ? evt.capacity : "∞"}
+                            <i
+                              className="fas fa-users"
+                              style={{ color: serviceColor }}
+                            />
+                            <span>
+                              {evt.approved_count} /{" "}
+                              {evt.capacity > 0 ? evt.capacity : "∞"}
+                            </span>
+                            {evt.pending_count > 0 && (
+                              <span className="ue-event-card__pending">
+                                ({evt.pending_count} pending)
+                              </span>
+                            )}
                           </div>
 
                           {isRegistered ? (
                             <div className="ue-event-card__registered">
-                              <i className="fas fa-check-circle" />
+                              <i
+                                className="fas fa-check-circle"
+                                style={{ color: "#10b981" }}
+                              />
                               <span className={`ue-status-${myReg.status}`}>
                                 {myReg.status.toUpperCase()}
                               </span>
@@ -786,6 +841,9 @@ export default function UserEvents() {
                             <button
                               className="ue-event-card__btn"
                               onClick={() => setRegisterEvent(evt)}
+                              style={{
+                                background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
+                              }}
                             >
                               <i className="fas fa-user-plus" /> Register Now
                             </button>

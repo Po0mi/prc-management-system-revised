@@ -569,8 +569,6 @@
   }
 
   &__service {
-    background: rgba($primary-blue-light, 0.12);
-    color: $primary-blue-light;
     padding: $space-xs $space-md;
     border-radius: $radius-full;
     font-size: $font-size-xs;
@@ -593,8 +591,6 @@
   }
 
   &__free {
-    background: rgba($success, 0.12);
-    color: $success;
     padding: $space-xs $space-md;
     border-radius: $radius-full;
     font-size: $font-size-xs;
@@ -627,7 +623,9 @@
 
   &__date,
   &__time,
-  &__location {
+  &__location,
+  &__instructor,
+  &__duration {
     font-size: $font-size-sm;
     color: $gray-600;
     display: flex;
@@ -635,9 +633,52 @@
     gap: $space-sm;
 
     i {
-      color: $gray-400;
       width: 16px;
       font-size: $font-size-sm;
+    }
+
+    strong {
+      color: $gray-700;
+      font-weight: $font-weight-semibold;
+    }
+
+    small {
+      color: $gray-500;
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__instructor {
+    background: rgba($primary-blue-light, 0.04);
+    padding: $space-xs $space-sm;
+    border-radius: $radius-md;
+    margin-top: $space-xs;
+    border-left: 2px solid transparent;
+    transition: $transition-fast;
+
+    &:hover {
+      background: rgba($primary-blue-light, 0.08);
+    }
+
+    i {
+      font-size: $font-size-sm;
+    }
+
+    span {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    small {
+      color: $gray-500;
+      font-style: italic;
+    }
+  }
+
+  &__duration {
+    i {
+      color: $info;
     }
   }
 
@@ -645,8 +686,36 @@
     font-size: $font-size-sm;
     color: $gray-600;
     line-height: 1.6;
-    margin: 0 0 $space-lg;
+    margin: 0 0 $space-md;
     flex: 1;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__requirements {
+    background: rgba($warning, 0.04);
+    border: 1px solid rgba($warning, 0.1);
+    border-radius: $radius-md;
+    padding: $space-xs $space-sm;
+    margin-bottom: $space-md;
+    font-size: $font-size-xs;
+    color: $gray-600;
+    display: flex;
+    align-items: flex-start;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-xs;
+      margin-top: 2px;
+      color: $warning;
+    }
+
+    small {
+      line-height: 1.5;
+      color: $gray-600;
+    }
   }
 
   &__footer {
@@ -669,6 +738,12 @@
     }
   }
 
+  &__pending {
+    margin-left: $space-xs;
+    color: $warning;
+    font-weight: $font-weight-medium;
+  }
+
   &__registered {
     display: flex;
     align-items: center;
@@ -683,7 +758,6 @@
 
   &__btn {
     padding: $space-sm $space-lg;
-    background: linear-gradient(135deg, $primary-red, $primary-dark);
     color: $white;
     border: none;
     border-radius: $radius-md;
@@ -1508,5 +1582,21 @@
 
   .ut-form__submit-group {
     flex-direction: column;
+  }
+
+  // Instructor responsive styles
+  .ut-session-card {
+    &__instructor {
+      flex-direction: column;
+      align-items: flex-start;
+
+      i {
+        margin-bottom: $space-xs;
+      }
+
+      span {
+        width: 100%;
+      }
+    }
   }
 }

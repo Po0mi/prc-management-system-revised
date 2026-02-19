@@ -27,7 +27,11 @@ function LandingPage() {
       );
       const data = await response.json();
       if (data.success) {
-        setAnnouncements(data.data.slice(0, 3));
+        // Filter only published announcements and limit to 3
+        const publishedAnnouncements = data.data
+          .filter((a) => a.status === "published")
+          .slice(0, 3);
+        setAnnouncements(publishedAnnouncements);
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
@@ -56,6 +60,16 @@ function LandingPage() {
       icon: "fa-solid fa-graduation-cap",
     },
   ];
+
+  // Helper function to get the correct image URL
+  const getImageUrl = (announcement) => {
+    // Check both possible image fields
+    const imagePath = announcement.image_path || announcement.image_url;
+    if (!imagePath) return null;
+
+    // Construct the full URL
+    return `http://localhost/prc-management-system/${imagePath}`;
+  };
 
   return (
     <div className="landing-page">
@@ -345,47 +359,53 @@ function LandingPage() {
                 <p>Loading announcements...</p>
               </div>
             ) : announcements.length > 0 ? (
-              announcements.map((announcement) => (
-                <div
-                  key={announcement.announcement_id}
-                  className="announcements__card"
-                >
-                  <div className="announcements__card-image">
-                    {announcement.image_url ? (
-                      <img
-                        src={`http://localhost/prc-management-system/backend/${announcement.image_url}`}
-                        alt={announcement.title}
-                        onError={(e) => {
-                          e.target.src =
-                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23e0e0e0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='%23999'%3ENo Image%3C/text%3E%3C/svg%3E";
-                        }}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <i className="fa-regular fa-image"></i>
-                      </div>
-                    )}
-                  </div>
-                  <div className="announcements__card-content">
-                    <span className="announcements__card-date">
-                      <i className="fa-regular fa-calendar"></i>
-                      {new Date(announcement.posted_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        },
+              announcements.map((announcement) => {
+                const imageUrl = getImageUrl(announcement);
+
+                return (
+                  <div
+                    key={announcement.announcement_id}
+                    className="announcements__card"
+                  >
+                    <div className="announcements__card-image">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={announcement.title}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src =
+                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23e0e0e0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='%23999'%3EImage Not Found%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                      ) : (
+                        <div className="image-placeholder">
+                          <i className="fa-regular fa-image"></i>
+                          <span>No Image</span>
+                        </div>
                       )}
-                    </span>
-                    <h3>{announcement.title}</h3>
-                    <p>{announcement.content.substring(0, 120)}...</p>
-                    <Link to="/login" className="announcements__card-link">
-                      Read More <i className="fa-solid fa-arrow-right"></i>
-                    </Link>
+                    </div>
+                    <div className="announcements__card-content">
+                      <span className="announcements__card-date">
+                        <i className="fa-regular fa-calendar"></i>
+                        {new Date(announcement.posted_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </span>
+                      <h3>{announcement.title}</h3>
+                      <p>{announcement.content.substring(0, 120)}...</p>
+                      <Link to="/login" className="announcements__card-link">
+                        Read More <i className="fa-solid fa-arrow-right"></i>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="announcements__empty">
                 <i className="fa-regular fa-newspaper"></i>

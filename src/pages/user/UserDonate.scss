@@ -1,0 +1,1032 @@
+@use "../../styles/variables.scss" as *;
+
+// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// ─── ROOT ────────────────────────────────────────────────────────────────────
+.ud-root {
+  min-height: 100vh;
+  background: $gray-100;
+  font-family: $font-family-base;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  // Scrollbar styling
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $radius-full;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+// ─── HEADER ──────────────────────────────────────────────────────────────────
+.ud-header {
+  background: linear-gradient(
+    135deg,
+    $primary-dark 0%,
+    $primary-red 60%,
+    $primary-light 100%
+  );
+  padding: $space-xl $space-2xl;
+  color: $white;
+  box-shadow: $shadow-lg;
+  animation: slideUp 400ms ease;
+
+  &__content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-lg;
+
+    @media (max-width: $breakpoint-md) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  &__eyebrow {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    opacity: 0.65;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: $space-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: $space-xs 0 0;
+    opacity: 0.7;
+    font-size: $font-size-sm;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-xl;
+    text-align: center;
+  }
+
+  &__stat {
+    &-num {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      line-height: 1;
+    }
+    &-label {
+      font-size: $font-size-xs;
+      opacity: 0.65;
+      font-weight: $font-weight-medium;
+      margin-top: 3px;
+      max-width: 120px;
+    }
+  }
+}
+
+// ─── BODY ────────────────────────────────────────────────────────────────────
+.ud-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $space-xl;
+}
+
+// ─── NOTICE ──────────────────────────────────────────────────────────────────
+.ud-notice {
+  background: rgba($warning, 0.06);
+  border: 1px solid rgba($warning, 0.25);
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  margin-bottom: $space-xl;
+  display: flex;
+  gap: $space-md;
+  animation: slideUp 400ms ease;
+
+  &__icon {
+    i {
+      font-size: $font-size-xl;
+      color: $warning;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin-bottom: $space-xs;
+    }
+
+    p {
+      font-size: $font-size-base;
+      color: $gray-700;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+.ud-tabs {
+  display: flex;
+  gap: $space-md;
+  margin-bottom: $space-xl;
+  flex-wrap: wrap;
+  animation: slideUp 400ms ease;
+}
+
+.ud-tab {
+  flex: 1;
+  min-width: 150px;
+  padding: $space-md $space-lg;
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: $radius-lg;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-base;
+  color: $gray-600;
+  cursor: pointer;
+  transition: $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+
+  i {
+    font-size: $font-size-lg;
+  }
+
+  &:hover {
+    background: $gray-100;
+    border-color: $gray-300;
+    color: $gray-900;
+  }
+
+  &--active {
+    background: $primary-red;
+    border-color: $primary-red;
+    color: $white;
+    box-shadow: $shadow-md;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+// ─── SECTION ─────────────────────────────────────────────────────────────────
+.ud-section {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: $space-xl;
+  margin-bottom: $space-xl;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  animation: slideUp 400ms ease;
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $space-xl;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      color: $primary-red;
+      font-size: $font-size-lg;
+      background: rgba($primary-red, 0.1);
+      padding: $space-xs;
+      border-radius: $radius-md;
+    }
+  }
+}
+
+// ─── CHAPTER CARD ────────────────────────────────────────────────────────────
+.ud-chapter-card {
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  overflow: hidden;
+
+  &__header {
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    padding: $space-md $space-lg;
+    color: $white;
+
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      i {
+        font-size: $font-size-lg;
+      }
+    }
+  }
+
+  &__content {
+    padding: $space-lg;
+  }
+}
+
+// ─── CONTACT GROUP ───────────────────────────────────────────────────────────
+.ud-contact-group {
+  margin-bottom: $space-lg;
+
+  h4 {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-700;
+    margin-bottom: $space-sm;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $primary-red;
+      width: 20px;
+    }
+  }
+}
+
+.ud-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.ud-contact-item {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-xs $space-sm;
+  background: $gray-100;
+  border-radius: $radius-md;
+  border: 1px solid $gray-200;
+
+  &--address {
+    background: $white;
+    border: 1px solid $gray-200;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    min-width: 70px;
+  }
+
+  &__value {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $gray-900;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+      width: 16px;
+      font-size: $font-size-xs;
+    }
+
+    &--clickable {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      font-family: inherit;
+
+      &:hover {
+        color: $primary-red;
+        text-decoration: underline;
+
+        i {
+          color: $primary-red;
+        }
+      }
+    }
+  }
+}
+
+// ─── COPY BUTTON ─────────────────────────────────────────────────────────────
+.ud-copy-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-md;
+  border: 1px solid $gray-200;
+  background: $white;
+  color: $gray-600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: $transition-fast;
+  flex-shrink: 0;
+
+  i {
+    font-size: $font-size-sm;
+  }
+
+  &:hover {
+    background: $gray-100;
+    color: $primary-red;
+    border-color: $primary-red;
+  }
+
+  &--copied {
+    background: $success;
+    border-color: $success;
+    color: $white;
+
+    &:hover {
+      background: darken($success, 5%);
+      color: $white;
+    }
+  }
+}
+
+// ─── ACTION BUTTONS ──────────────────────────────────────────────────────────
+.ud-action-buttons {
+  display: flex;
+  gap: $space-md;
+  margin-top: $space-lg;
+  flex-wrap: wrap;
+}
+
+.ud-btn {
+  padding: $space-sm $space-xl;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: $transition-fast;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  border: none;
+
+  i {
+    font-size: $font-size-base;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    color: $white;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+  }
+
+  &--secondary {
+    background: $white;
+    color: $primary-red;
+    border: 1.5px solid $primary-red;
+
+    &:hover {
+      background: rgba($primary-red, 0.04);
+      transform: translateY(-2px);
+      box-shadow: $shadow-sm;
+    }
+  }
+}
+
+// ─── BLOOD TYPES ─────────────────────────────────────────────────────────────
+.ud-blood-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $space-md;
+}
+
+.ud-blood-type {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $space-md;
+  transition: $transition-fast;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $space-sm;
+  }
+
+  &__description {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// ─── REQUIREMENTS ────────────────────────────────────────────────────────────
+.ud-requirements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $space-md;
+}
+
+.ud-requirement {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-md;
+  padding: $space-md;
+  background: $gray-100;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    background: rgba($primary-red, 0.1);
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+      font-size: $font-size-lg;
+      color: $primary-red;
+    }
+  }
+
+  &__text {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+  }
+}
+
+// ─── GUIDELINES ──────────────────────────────────────────────────────────────
+.ud-guidelines {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.ud-guideline {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-sm;
+  padding: $space-sm;
+  background: $gray-100;
+  border-radius: $radius-md;
+
+  i {
+    color: $success;
+    font-size: $font-size-base;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// ─── CATEGORIES (for goods donation) ─────────────────────────────────────────
+.ud-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $space-lg;
+}
+
+.ud-category {
+  background: $gray-100;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  border: 1px solid $gray-200;
+  transition: $transition-fast;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    margin-bottom: $space-md;
+
+    i {
+      font-size: $font-size-xl;
+      color: $primary-red;
+    }
+
+    h3 {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin: 0;
+    }
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      font-size: $font-size-sm;
+      color: $gray-700;
+      margin-bottom: $space-xs;
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        color: $success;
+        font-size: $font-size-xs;
+      }
+    }
+  }
+}
+
+// ─── DROPOFF ─────────────────────────────────────────────────────────────────
+.ud-dropoff {
+  &__card {
+    background: $gray-100;
+    border-radius: $radius-lg;
+    padding: $space-lg;
+    border: 1px solid $gray-200;
+
+    h4 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin-bottom: $space-md;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      i {
+        color: $primary-red;
+      }
+    }
+
+    p {
+      font-size: $font-size-sm;
+      color: $gray-700;
+      margin-bottom: $space-sm;
+      display: flex;
+      align-items: center;
+      gap: $space-sm;
+
+      i {
+        color: $gray-500;
+        width: 20px;
+      }
+    }
+  }
+}
+
+// ─── CASH OPTIONS ────────────────────────────────────────────────────────────
+.ud-cash-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: $space-lg;
+}
+
+.ud-cash-option {
+  background: $gray-100;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border: 1px solid $gray-200;
+  transition: $transition-fast;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
+    padding: $space-md $space-lg;
+    color: $white;
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+
+    i {
+      font-size: $font-size-xl;
+    }
+
+    h3 {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      margin: 0;
+    }
+  }
+
+  &__details {
+    padding: $space-lg;
+  }
+
+  &__detail {
+    margin-bottom: $space-sm;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: $space-xs;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    min-width: 100px;
+  }
+
+  &__value-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  &__value {
+    font-size: $font-size-sm;
+    color: $gray-900;
+    word-break: break-word;
+  }
+}
+
+// ─── CONTACT CARD ────────────────────────────────────────────────────────────
+.ud-contact-card {
+  background: $gray-100;
+  border-radius: $radius-lg;
+  padding: $space-lg;
+  border: 1px solid $gray-200;
+
+  p {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    margin-bottom: $space-md;
+    line-height: 1.6;
+  }
+}
+
+.ud-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  .ud-contact-item {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    font-size: $font-size-sm;
+    color: $gray-900;
+
+    i {
+      color: $primary-red;
+      width: 20px;
+    }
+  }
+}
+
+// ─── STEPS ───────────────────────────────────────────────────────────────────
+.ud-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: $space-lg;
+}
+
+.ud-step {
+  display: flex;
+  gap: $space-md;
+  align-items: flex-start;
+
+  &__number {
+    width: 36px;
+    height: 36px;
+    background: $primary-red;
+    color: $white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-lg;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    h4 {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+      margin-bottom: $space-xs;
+    }
+
+    p {
+      font-size: $font-size-sm;
+      color: $gray-600;
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+}
+
+// ─── FAQ ─────────────────────────────────────────────────────────────────────
+.ud-faq {
+  display: grid;
+  gap: $space-lg;
+}
+
+.ud-faq-item {
+  padding: $space-md;
+  background: $gray-100;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+
+  h4 {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $space-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    &::before {
+      content: "Q:";
+      color: $primary-red;
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  p {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.6;
+    margin: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: $space-xs;
+
+    &::before {
+      content: "A:";
+      color: $success;
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+
+// ─── REMINDER ────────────────────────────────────────────────────────────────
+.ud-reminder {
+  text-align: center;
+  padding: $space-xl;
+  background: linear-gradient(135deg, $primary-red, $primary-dark);
+  border-radius: $radius-lg;
+  color: $white;
+  animation: pulse 2s ease-in-out infinite;
+
+  i {
+    font-size: $font-size-2xl;
+    margin-bottom: $space-md;
+    display: block;
+  }
+
+  p {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+.ud-toast {
+  position: fixed;
+  bottom: $space-lg;
+  right: $space-lg;
+  z-index: $z-tooltip;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  box-shadow: $shadow-lg;
+  animation: slideIn 300ms ease;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  max-width: 360px;
+
+  i {
+    flex-shrink: 0;
+  }
+
+  &--success {
+    background: #f0fdf4;
+    color: darken($success, 12%);
+    border: 1px solid rgba($success, 0.25);
+    border-left: 4px solid $success;
+  }
+
+  &--error {
+    background: rgba($error, 0.06);
+    color: $error;
+    border: 1px solid rgba($error, 0.2);
+    border-left: 4px solid $error;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: $font-weight-bold;
+    margin-left: auto;
+    opacity: 0.5;
+    color: inherit;
+    padding: 0;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      opacity: 1;
+    }
+    i {
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+// ─── RESPONSIVE ──────────────────────────────────────────────────────────────
+@media (max-width: $breakpoint-lg) {
+  .ud-header {
+    padding: $space-lg $space-xl;
+
+    &__title {
+      font-size: $font-size-xl;
+    }
+  }
+
+  .ud-body {
+    padding: $space-lg;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .ud-header {
+    padding: $space-md $space-lg;
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__stats {
+      flex-wrap: wrap;
+      gap: $space-md;
+    }
+  }
+
+  .ud-body {
+    padding: $space-md;
+  }
+
+  .ud-tabs {
+    flex-direction: column;
+
+    .ud-tab {
+      width: 100%;
+    }
+  }
+
+  .ud-notice {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .ud-contact-item {
+    flex-wrap: wrap;
+  }
+
+  .ud-action-buttons {
+    flex-direction: column;
+
+    .ud-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .ud-requirements,
+  .ud-categories,
+  .ud-cash-options {
+    grid-template-columns: 1fr;
+  }
+
+  .ud-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .ud-blood-types {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ud-cash-option__detail {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .ud-blood-types {
+    grid-template-columns: 1fr;
+  }
+}

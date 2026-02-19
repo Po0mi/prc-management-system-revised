@@ -48,6 +48,83 @@ const EMPTY_FORM = {
   instructor_credentials: "",
 };
 
+// ─── SERVICE BADGE COMPONENT ─────────────────────────────────────────────────
+function ServiceBadge({ service }) {
+  // Find the service config or use default
+  const serviceConfig = SERVICE_OPTIONS.find((s) => s.key === service) || {
+    label: service,
+    color: "#6b7280",
+  };
+
+  const bgColor = serviceConfig.color + "15"; // 15% opacity
+
+  return (
+    <span
+      className="at-badge at-badge--service"
+      style={{
+        background: bgColor,
+        color: serviceConfig.color,
+        border: `1px solid ${serviceConfig.color}33`,
+      }}
+    >
+      {serviceConfig.label}
+    </span>
+  );
+}
+
+// ─── STATUS BADGE COMPONENT ──────────────────────────────────────────────────
+function StatusBadge({ isPast, isUpcoming, isOngoing }) {
+  let status = "ONGOING";
+  let color = "#f59e0b";
+  let bgColor = "#fef3c7";
+  let icon = "fa-clock";
+
+  if (isPast) {
+    status = "COMPLETED";
+    color = "#10b981";
+    bgColor = "#d1fae5";
+    icon = "fa-check-circle";
+  } else if (isUpcoming) {
+    status = "UPCOMING";
+    color = "#3b82f6";
+    bgColor = "#dbeafe";
+    icon = "fa-calendar";
+  }
+
+  return (
+    <span
+      className="at-badge"
+      style={{
+        background: bgColor,
+        color: color,
+        border: `1px solid ${color}33`,
+      }}
+    >
+      <i className={`fas ${icon}`} /> {status}
+    </span>
+  );
+}
+
+// ─── FEE BADGE COMPONENT ─────────────────────────────────────────────────────
+function FeeBadge({ fee }) {
+  if (fee > 0) {
+    return <span className="at-fee">₱{parseFloat(fee).toFixed(2)}</span>;
+  }
+
+  return (
+    <span
+      className="at-badge at-badge--free"
+      style={{
+        background: "#e8f5e9",
+        color: "#2e7d32",
+        border: "1px solid #2e7d3233",
+      }}
+    >
+      <i className="fas fa-gift" /> FREE
+    </span>
+  );
+}
+
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -448,6 +525,15 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
     }
   }
 
+  function getStatusColor(status) {
+    const colors = {
+      approved: { bg: "#d1fae5", color: "#10b981" },
+      pending: { bg: "#fef3c7", color: "#f59e0b" },
+      rejected: { bg: "#fee2e2", color: "#ef4444" },
+    };
+    return colors[status] || { bg: "#f3f4f6", color: "#6b7280" };
+  }
+
   return (
     <div className="at-overlay" onClick={onClose}>
       <div
@@ -467,19 +553,28 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
         <div className="at-modal__body at-modal__body--regs">
           {/* Stats Cards */}
           <div className="at-reg-stats">
-            <div className="at-reg-stat">
+            <div className="at-reg-stat" style={{ borderColor: "#c41e3a" }}>
               <div className="at-reg-stat__num">{stats.total}</div>
               <div className="at-reg-stat__label">Total Registrations</div>
             </div>
-            <div className="at-reg-stat at-reg-stat--approved">
+            <div
+              className="at-reg-stat at-reg-stat--approved"
+              style={{ borderColor: "#10b981" }}
+            >
               <div className="at-reg-stat__num">{stats.approved}</div>
               <div className="at-reg-stat__label">Approved</div>
             </div>
-            <div className="at-reg-stat at-reg-stat--pending">
+            <div
+              className="at-reg-stat at-reg-stat--pending"
+              style={{ borderColor: "#f59e0b" }}
+            >
               <div className="at-reg-stat__num">{stats.pending}</div>
               <div className="at-reg-stat__label">Pending</div>
             </div>
-            <div className="at-reg-stat at-reg-stat--rejected">
+            <div
+              className="at-reg-stat at-reg-stat--rejected"
+              style={{ borderColor: "#ef4444" }}
+            >
               <div className="at-reg-stat__num">{stats.rejected}</div>
               <div className="at-reg-stat__label">Rejected</div>
             </div>
@@ -508,108 +603,149 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
                 </tr>
               </thead>
               <tbody>
-                {registrations.map((reg) => (
-                  <tr key={reg.registration_id}>
-                    <td>
-                      <div className="at-reg-user">
-                        <div className="at-reg-user__avatar">
-                          {reg.full_name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="at-reg-user__name">
-                            {reg.full_name}
+                {registrations.map((reg) => {
+                  const statusColors = getStatusColor(reg.status);
+                  return (
+                    <tr key={reg.registration_id}>
+                      <td>
+                        <div className="at-reg-user">
+                          <div
+                            className="at-reg-user__avatar"
+                            style={{
+                              background: "#c41e3a15",
+                              color: "#c41e3a",
+                              border: "2px solid #c41e3a33",
+                            }}
+                          >
+                            {reg.full_name?.charAt(0).toUpperCase()}
                           </div>
-                          <div className="at-reg-user__email">{reg.email}</div>
-                          {reg.age && (
-                            <div className="at-reg-user__meta">
-                              Age: {reg.age}
+                          <div>
+                            <div className="at-reg-user__name">
+                              {reg.full_name}
                             </div>
+                            <div className="at-reg-user__email">
+                              {reg.email}
+                            </div>
+                            {reg.age && (
+                              <div className="at-reg-user__meta">
+                                Age: {reg.age}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {new Date(reg.registration_date).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </td>
+                      <td>
+                        <span
+                          className="at-status"
+                          style={{
+                            background: statusColors.bg,
+                            color: statusColors.color,
+                            border: `1px solid ${statusColors.color}33`,
+                          }}
+                        >
+                          {reg.status?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="at-reg-docs">
+                          {reg.valid_id_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
+                              style={{ color: "#c41e3a" }}
+                            >
+                              <i className="fas fa-id-card" /> Valid ID
+                            </a>
+                          )}
+                          {reg.requirements_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.requirements_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
+                              style={{ color: "#c41e3a" }}
+                            >
+                              <i className="fas fa-file" /> Requirements
+                            </a>
+                          )}
+                          {reg.payment_receipt_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
+                              style={{ color: "#c41e3a" }}
+                            >
+                              <i className="fas fa-receipt" /> Receipt
+                            </a>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      {new Date(reg.registration_date).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      )}
-                    </td>
-                    <td>
-                      <span className={`at-status at-status--${reg.status}`}>
-                        {reg.status?.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="at-reg-docs">
-                        {reg.valid_id_path && (
-                          <a
-                            href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="at-doc-link"
+                      </td>
+                      <td>
+                        <div className="at-reg-actions">
+                          {reg.status === "pending" && (
+                            <>
+                              <button
+                                className="at-reg-btn at-reg-btn--approve"
+                                onClick={() =>
+                                  handleApprove(reg.registration_id)
+                                }
+                                title="Approve"
+                                style={{
+                                  background: "#10b98115",
+                                  color: "#10b981",
+                                  border: "1px solid #10b98133",
+                                }}
+                              >
+                                <i className="fas fa-check" />
+                              </button>
+                              <button
+                                className="at-reg-btn at-reg-btn--reject"
+                                onClick={() =>
+                                  handleReject(reg.registration_id)
+                                }
+                                title="Reject"
+                                style={{
+                                  background: "#ef444415",
+                                  color: "#ef4444",
+                                  border: "1px solid #ef444433",
+                                }}
+                              >
+                                <i className="fas fa-xmark" />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            className="at-reg-btn at-reg-btn--delete"
+                            onClick={() => handleDelete(reg.registration_id)}
+                            title="Delete"
+                            style={{
+                              background: "#6b728015",
+                              color: "#6b7280",
+                              border: "1px solid #6b728033",
+                            }}
                           >
-                            <i className="fas fa-id-card" /> Valid ID
-                          </a>
-                        )}
-                        {reg.requirements_path && (
-                          <a
-                            href={`http://localhost/prc-management-system/${reg.requirements_path}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="at-doc-link"
-                          >
-                            <i className="fas fa-file" /> Requirements
-                          </a>
-                        )}
-                        {reg.payment_receipt_path && (
-                          <a
-                            href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="at-doc-link"
-                          >
-                            <i className="fas fa-receipt" /> Receipt
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="at-reg-actions">
-                        {reg.status === "pending" && (
-                          <>
-                            <button
-                              className="at-reg-btn at-reg-btn--approve"
-                              onClick={() => handleApprove(reg.registration_id)}
-                              title="Approve"
-                            >
-                              <i className="fas fa-check" />
-                            </button>
-                            <button
-                              className="at-reg-btn at-reg-btn--reject"
-                              onClick={() => handleReject(reg.registration_id)}
-                              title="Reject"
-                            >
-                              <i className="fas fa-xmark" />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          className="at-reg-btn at-reg-btn--delete"
-                          onClick={() => handleDelete(reg.registration_id)}
-                          title="Delete"
-                        >
-                          <i className="fas fa-trash" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                            <i className="fas fa-trash" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -715,8 +851,11 @@ export default function AdminTraining() {
         <div className="at-header__inner">
           <div>
             <div className="at-header__eyebrow">
-              <i className="fas fa-graduation-cap" /> Training Sessions
-              Management
+              <i
+                className="fas fa-graduation-cap"
+                style={{ color: "#c41e3a" }}
+              />{" "}
+              Training Sessions Management
             </div>
             <h1 className="at-header__title">Training Administration</h1>
             <p className="at-header__subtitle">
@@ -726,12 +865,14 @@ export default function AdminTraining() {
           </div>
           <div className="at-header__stats">
             {[
-              { n: totalSessions, label: "Total Sessions" },
-              { n: upcomingSessions, label: "Upcoming" },
-              { n: completedSessions, label: "Completed" },
-            ].map(({ n, label }) => (
+              { n: totalSessions, label: "Total Sessions", color: "#c41e3a" },
+              { n: upcomingSessions, label: "Upcoming", color: "#3b82f6" },
+              { n: completedSessions, label: "Completed", color: "#10b981" },
+            ].map(({ n, label, color }) => (
               <div key={label}>
-                <div className="at-header__stat-num">{n ?? "—"}</div>
+                <div className="at-header__stat-num" style={{ color }}>
+                  {n ?? "—"}
+                </div>
                 <div className="at-header__stat-label">{label}</div>
               </div>
             ))}
@@ -753,7 +894,10 @@ export default function AdminTraining() {
               <button
                 key={svc.key}
                 className={`at-service-card${service === svc.key ? " at-service-card--active" : ""}`}
-                style={{ borderColor: svc.color }}
+                style={{
+                  borderColor: svc.color,
+                  background: service === svc.key ? `${svc.color}10` : "white",
+                }}
                 onClick={() => setService(svc.key)}
               >
                 <div
@@ -790,14 +934,19 @@ export default function AdminTraining() {
 
           <div className="at-toolbar__filters">
             {[
-              { key: "all", label: "All" },
-              { key: "upcoming", label: "Upcoming" },
-              { key: "past", label: "Past" },
-            ].map(({ key, label }) => (
+              { key: "all", label: "All", color: "#6b7280" },
+              { key: "upcoming", label: "Upcoming", color: "#3b82f6" },
+              { key: "past", label: "Past", color: "#9ca3af" },
+            ].map(({ key, label, color }) => (
               <button
                 key={key}
                 className={`at-toolbar__filter-btn${filter === key ? " at-toolbar__filter-btn--active" : ""}`}
                 onClick={() => setFilter(key)}
+                style={
+                  filter === key
+                    ? { background: `${color}15`, color, borderColor: color }
+                    : {}
+                }
               >
                 {label}
               </button>
@@ -807,6 +956,10 @@ export default function AdminTraining() {
           <button
             className="at-toolbar__create-btn"
             onClick={() => setCreateOpen(true)}
+            style={{
+              background: "#c41e3a",
+              color: "white",
+            }}
           >
             <i className="fas fa-plus" /> Create New Session
           </button>
@@ -816,7 +969,8 @@ export default function AdminTraining() {
         <div className="at-table-panel">
           <div className="at-table-panel__head">
             <span className="at-table-panel__title">
-              <i className="fas fa-table-list" /> All Training Sessions
+              <i className="fas fa-table-list" style={{ color: "#c41e3a" }} />{" "}
+              All Training Sessions
             </span>
             {!loading && (
               <span className="at-table-panel__count">
@@ -845,7 +999,10 @@ export default function AdminTraining() {
                   <tr>
                     <td colSpan={9}>
                       <div className="at-table__loading">
-                        <i className="fas fa-spinner fa-spin at-table__loading-icon" />
+                        <i
+                          className="fas fa-spinner fa-spin at-table__loading-icon"
+                          style={{ color: "#c41e3a" }}
+                        />
                         <p>Loading training sessions…</p>
                       </div>
                     </td>
@@ -854,7 +1011,10 @@ export default function AdminTraining() {
                   <tr>
                     <td colSpan={9}>
                       <div className="at-table__empty">
-                        <i className="fas fa-calendar-xmark at-table__empty-icon" />
+                        <i
+                          className="fas fa-calendar-xmark at-table__empty-icon"
+                          style={{ color: "#9ca3af" }}
+                        />
                         <p>No training sessions found</p>
                       </div>
                     </td>
@@ -878,9 +1038,7 @@ export default function AdminTraining() {
                         </div>
                       </td>
                       <td>
-                        <span className="at-badge at-badge--service">
-                          {sess.major_service}
-                        </span>
+                        <ServiceBadge service={sess.major_service} />
                       </td>
                       <td>
                         <div className="at-date">
@@ -934,13 +1092,7 @@ export default function AdminTraining() {
                         </div>
                       </td>
                       <td>
-                        {sess.fee > 0 ? (
-                          <span className="at-fee">
-                            ₱{parseFloat(sess.fee).toFixed(2)}
-                          </span>
-                        ) : (
-                          <span className="at-badge at-badge--free">FREE</span>
-                        )}
+                        <FeeBadge fee={sess.fee} />
                       </td>
                       <td>
                         <div className="at-regs">
@@ -949,24 +1101,24 @@ export default function AdminTraining() {
                             {sess.capacity > 0 ? sess.capacity : "∞"}
                           </span>
                           {sess.pending_count > 0 && (
-                            <span className="at-regs__pending">
+                            <span
+                              className="at-regs__pending"
+                              style={{
+                                background: "#f59e0b15",
+                                color: "#f59e0b",
+                              }}
+                            >
                               {sess.pending_count} pending
                             </span>
                           )}
                         </div>
                       </td>
                       <td>
-                        {sess.is_past ? (
-                          <span className="at-badge at-badge--completed">
-                            COMPLETED
-                          </span>
-                        ) : sess.is_upcoming ? (
-                          <span className="at-badge at-badge--upcoming">
-                            UPCOMING
-                          </span>
-                        ) : (
-                          <span className="at-badge">ONGOING</span>
-                        )}
+                        <StatusBadge
+                          isPast={sess.is_past}
+                          isUpcoming={sess.is_upcoming}
+                          isOngoing={sess.is_ongoing}
+                        />
                       </td>
                       <td>
                         <div className="at-actions">
@@ -974,6 +1126,11 @@ export default function AdminTraining() {
                             title="View Registrations"
                             className="at-action-btn at-action-btn--view"
                             onClick={() => setRegsSession(sess)}
+                            style={{
+                              background: "#c41e3a15",
+                              color: "#c41e3a",
+                              border: "1px solid #c41e3a33",
+                            }}
                           >
                             <i className="fas fa-users" />
                           </button>
@@ -981,6 +1138,11 @@ export default function AdminTraining() {
                             title="Edit Session"
                             className="at-action-btn at-action-btn--edit"
                             onClick={() => setEditSession(sess)}
+                            style={{
+                              background: "#3b82f615",
+                              color: "#3b82f6",
+                              border: "1px solid #3b82f633",
+                            }}
                           >
                             <i className="fas fa-pen" />
                           </button>
@@ -988,6 +1150,11 @@ export default function AdminTraining() {
                             title="Archive Session"
                             className="at-action-btn at-action-btn--delete"
                             onClick={() => handleDelete(sess)}
+                            style={{
+                              background: "#6b728015",
+                              color: "#6b7280",
+                              border: "1px solid #6b728033",
+                            }}
                           >
                             <i className="fas fa-archive" />
                           </button>

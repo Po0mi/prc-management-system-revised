@@ -1,109 +1,93 @@
-// Path: src/services/volunteersApi.js
-const API_URL =
-  "http://localhost/prc-management-system/backend/api/volunteers.php";
+/**
+ * volunteersApi.js
+ * Path: src/services/volunteersApi.js
+ *
+ * PHP response shape (volunteers.php):
+ *   { success: true, message: "OK", data: [...], stats: {...} }
+ *   { success: true, message: "OK", data: {...} }
+ *   { success: false, message: "..." }
+ */
+import api from "./api";
 
-// Helper function to handle responses
-const handleResponse = async (response) => {
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
-  }
-  return data;
-};
+const BASE = "/api/volunteers.php";
 
-// Helper function to get auth headers
-const getHeaders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+// ─── GET VOLUNTEERS ───────────────────────────────────────────────────────────
+export const getVolunteers = async (filters = {}) => {
+  const params = {};
+
+  if (filters.search) params.search = filters.search;
+  if (filters.service) params.service = filters.service;
+  if (filters.status) params.status = filters.status;
+
+  const { data } = await api.get(BASE, { params });
+  if (!data.success)
+    throw new Error(data.message || "Failed to fetch volunteers");
+
   return {
-    "Content-Type": "application/json",
-    "User-ID": user?.user_id || "",
+    success: true,
+    data: data.data ?? [],
+    stats: data.stats ?? {
+      total: 0,
+      by_status: {},
+      by_service: {},
+    },
   };
 };
 
-// Get all volunteers with optional filters
-export const getVolunteers = async (filters = {}) => {
-  try {
-    const queryParams = new URLSearchParams();
-
-    if (filters.search) queryParams.append("search", filters.search);
-    if (filters.service) queryParams.append("service", filters.service);
-    if (filters.status) queryParams.append("status", filters.status);
-
-    const url = `${API_URL}${queryParams.toString() ? "?" + queryParams.toString() : ""}`;
-
-    const response = await fetch(url, {
-      headers: getHeaders(),
-    });
-
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Error fetching volunteers:", error);
-    throw error;
-  }
-};
-
-// Get single volunteer by ID
+// ─── GET SINGLE VOLUNTEER ─────────────────────────────────────────────────────
 export const getVolunteer = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}?id=${id}`, {
-      headers: getHeaders(),
-    });
+  if (!id) throw new Error("Volunteer ID is required");
 
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Error fetching volunteer:", error);
-    throw error;
-  }
+  const { data } = await api.get(BASE, { params: { id } });
+  if (!data.success)
+    throw new Error(data.message || "Failed to fetch volunteer");
+
+  return { success: true, data: data.data };
 };
 
-// Create new volunteer
+// ─── CREATE VOLUNTEER ─────────────────────────────────────────────────────────
 export const createVolunteer = async (volunteerData) => {
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(volunteerData),
-    });
+  // Validate required fields
+  if (!volunteerData.full_name?.trim())
+    throw new Error("Full name is required");
+  if (!volunteerData.age) throw new Error("Age is required");
+  if (!volunteerData.location?.trim()) throw new Error("Location is required");
+  if (!volunteerData.contact_number?.trim())
+    throw new Error("Contact number is required");
+  if (!volunteerData.service) throw new Error("Service is required");
 
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Error creating volunteer:", error);
-    throw error;
-  }
+  const { data } = await api.post(BASE, volunteerData);
+  if (!data.success)
+    throw new Error(data.message || "Failed to create volunteer");
+
+  return { success: true, message: data.message, id: data.id };
 };
 
-// Update volunteer
+// ─── UPDATE VOLUNTEER ─────────────────────────────────────────────────────────
 export const updateVolunteer = async (id, volunteerData) => {
-  try {
-    const response = await fetch(`${API_URL}?id=${id}`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify(volunteerData),
-    });
+  if (!id) throw new Error("Volunteer ID is required");
 
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Error updating volunteer:", error);
-    throw error;
-  }
+  const { data } = await api.put(BASE, volunteerData, {
+    params: { id },
+  });
+  if (!data.success)
+    throw new Error(data.message || "Failed to update volunteer");
+
+  return { success: true, message: data.message };
 };
 
-// Delete volunteer
+// ─── DELETE VOLUNTEER ─────────────────────────────────────────────────────────
 export const deleteVolunteer = async (id) => {
-  try {
-    const response = await fetch(`${API_URL}?id=${id}`, {
-      method: "DELETE",
-      headers: getHeaders(),
-    });
+  if (!id) throw new Error("Volunteer ID is required");
 
-    return await handleResponse(response);
-  } catch (error) {
-    console.error("Error deleting volunteer:", error);
-    throw error;
-  }
+  const { data } = await api.delete(BASE, { params: { id } });
+  if (!data.success)
+    throw new Error(data.message || "Failed to delete volunteer");
+
+  return { success: true, message: data.message };
 };
 
-// Service options for dropdowns
+// ─── SERVICE OPTIONS ──────────────────────────────────────────────────────────
 export const SERVICE_OPTIONS = [
   { value: "first_aid", label: "First Aid", icon: "fa-solid fa-kit-medical" },
   {
@@ -133,7 +117,7 @@ export const SERVICE_OPTIONS = [
   },
 ];
 
-// Status options for dropdowns
+// ─── STATUS OPTIONS ───────────────────────────────────────────────────────────
 export const STATUS_OPTIONS = [
   { value: "current", label: "Current", icon: "fa-solid fa-check-circle" },
   {
@@ -143,7 +127,7 @@ export const STATUS_OPTIONS = [
   },
 ];
 
-// Format service label for display
+// ─── HELPER FUNCTIONS ─────────────────────────────────────────────────────────
 export const formatService = (service) => {
   const option = SERVICE_OPTIONS.find((opt) => opt.value === service);
   return option
@@ -151,10 +135,21 @@ export const formatService = (service) => {
     : service.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
-// Format status label for display
 export const formatStatus = (status) => {
   const option = STATUS_OPTIONS.find((opt) => opt.value === status);
   return option
     ? option.label
     : status.charAt(0).toUpperCase() + status.slice(1);
+};
+
+export default {
+  getVolunteers,
+  getVolunteer,
+  createVolunteer,
+  updateVolunteer,
+  deleteVolunteer,
+  SERVICE_OPTIONS,
+  STATUS_OPTIONS,
+  formatService,
+  formatStatus,
 };
