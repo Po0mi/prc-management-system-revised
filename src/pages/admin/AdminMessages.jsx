@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import ChatBox from '../../components/ChatBox';
-import './AdminMessages.scss';
+import { useState, useEffect } from "react";
+import "./AdminMessages.scss";
 
 function AdminMessages() {
   const [conversations, setConversations] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showNewChat, setShowNewChat] = useState(false);
 
   useEffect(() => {
@@ -21,27 +20,27 @@ function AdminMessages() {
         {
           id: 1,
           userId: 101,
-          name: 'John Doe',
-          role: 'Volunteer',
-          lastMessage: 'Thank you for the information',
-          timestamp: '2026-02-17T10:30:00',
+          name: "John Doe",
+          role: "Volunteer",
+          lastMessage: "Thank you for the information",
+          timestamp: "2026-02-17T10:30:00",
           unread: 0,
-          avatar: 'J',
+          avatar: "J",
         },
         {
           id: 2,
           userId: 102,
-          name: 'Jane Smith',
-          role: 'Member',
-          lastMessage: 'When is the next event?',
-          timestamp: '2026-02-16T15:20:00',
+          name: "Jane Smith",
+          role: "Member",
+          lastMessage: "When is the next event?",
+          timestamp: "2026-02-16T15:20:00",
           unread: 1,
-          avatar: 'J',
+          avatar: "J",
         },
       ];
       setConversations(mockConversations);
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error("Error fetching conversations:", error);
     }
   };
 
@@ -49,13 +48,13 @@ function AdminMessages() {
     try {
       // TODO: Replace with actual API call to get all users
       const mockUsers = [
-        { id: 101, name: 'John Doe', role: 'Volunteer' },
-        { id: 102, name: 'Jane Smith', role: 'Member' },
-        { id: 103, name: 'Bob Johnson', role: 'Volunteer' },
+        { id: 101, name: "John Doe", role: "Volunteer" },
+        { id: 102, name: "Jane Smith", role: "Member" },
+        { id: 103, name: "Bob Johnson", role: "Volunteer" },
       ];
       setUsers(mockUsers);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -71,11 +70,11 @@ function AdminMessages() {
   };
 
   const filteredConversations = conversations.filter((conv) =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+    conv.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const formatTimestamp = (timestamp) => {
@@ -84,13 +83,16 @@ function AdminMessages() {
     const isToday = date.toDateString() === now.toDateString();
 
     if (isToday) {
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
         hour12: true,
       });
     } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
     }
   };
 
@@ -98,7 +100,10 @@ function AdminMessages() {
     <div className="admin-messages">
       <div className="messages-header">
         <h1>Messages</h1>
-        <button className="btn-new-chat" onClick={() => setShowNewChat(!showNewChat)}>
+        <button
+          className="btn-new-chat"
+          onClick={() => setShowNewChat(!showNewChat)}
+        >
           + New Message
         </button>
       </div>
@@ -139,14 +144,16 @@ function AdminMessages() {
             {filteredConversations.length === 0 ? (
               <div className="empty-state">
                 <p>No conversations yet</p>
-                <button onClick={() => setShowNewChat(true)}>Start a conversation</button>
+                <button onClick={() => setShowNewChat(true)}>
+                  Start a conversation
+                </button>
               </div>
             ) : (
               filteredConversations.map((conv) => (
                 <div
                   key={conv.id}
                   className={`conversation-item ${
-                    selectedChat?.id === conv.id ? 'active' : ''
+                    selectedChat?.id === conv.id ? "active" : ""
                   }`}
                   onClick={() => setSelectedChat(conv)}
                 >
@@ -157,7 +164,9 @@ function AdminMessages() {
                         <h4>{conv.name}</h4>
                         <span className="role">{conv.role}</span>
                       </div>
-                      <span className="time">{formatTimestamp(conv.timestamp)}</span>
+                      <span className="time">
+                        {formatTimestamp(conv.timestamp)}
+                      </span>
                     </div>
                     <div className="preview">
                       <p>{conv.lastMessage}</p>

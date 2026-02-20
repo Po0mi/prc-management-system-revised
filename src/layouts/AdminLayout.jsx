@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FloatingChat from "../components/FloatingChat";
 import Notifications from "../components/Notifications";
 import authService from "../services/auth.service";
@@ -15,8 +15,14 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const user = authService.getCurrentUser();
+  const [user, setUser] = useState(null);
   const userRole = getUserRole();
+
+  useEffect(() => {
+    // Get user data
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+  }, []);
 
   const handleLogout = () => {
     authService.logout();
@@ -86,6 +92,17 @@ function AdminLayout() {
     },
   ];
 
+  // Get current user ID for chat
+  const getCurrentUserId = () => {
+    const userData = authService.getCurrentUser();
+    return userData?.user_id || null;
+  };
+
+  const getCurrentUserName = () => {
+    const userData = authService.getCurrentUser();
+    return userData?.full_name || userData?.username || "Admin";
+  };
+
   return (
     <>
       <div className="admin-layout">
@@ -109,7 +126,9 @@ function AdminLayout() {
               {user?.full_name?.charAt(0) || "A"}
             </div>
             <div className="sidebar__profile-info">
-              <p className="sidebar__profile-info-name">{user?.full_name}</p>
+              <p className="sidebar__profile-info-name">
+                {user?.full_name || "Admin"}
+              </p>
               <p className="sidebar__profile-info-role">
                 <i className="fa-solid fa-circle"></i>
                 {getRoleLabel(userRole)}
@@ -161,7 +180,7 @@ function AdminLayout() {
 
               <div className="main-content__header-actions-user">
                 <i className="fa-regular fa-user"></i>
-                <span>{user?.full_name}</span>
+                <span>{user?.full_name || "Admin"}</span>
               </div>
             </div>
           </header>
@@ -173,7 +192,11 @@ function AdminLayout() {
       </div>
 
       {/* Floating Chat Widget */}
-      <FloatingChat userRole="admin" />
+      <FloatingChat
+        userRole="admin"
+        currentUserId={getCurrentUserId()}
+        currentUserName={getCurrentUserName()}
+      />
     </>
   );
 }

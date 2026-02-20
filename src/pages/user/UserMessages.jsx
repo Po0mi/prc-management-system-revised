@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ChatBox from "../../components/ChatBox";
+
 import "./UserMessages.scss";
 
 function UserMessages() {

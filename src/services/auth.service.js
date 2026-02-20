@@ -78,6 +78,14 @@ const authService = {
       // ignore network errors — still clear local state
     } finally {
       localStorage.removeItem("user");
+      // Also clear Firebase state if needed
+      try {
+        const { getAuth, signOut } = await import("firebase/auth");
+        const auth = getAuth();
+        await signOut(auth);
+      } catch (e) {
+        // Firebase might not be initialized, ignore
+      }
       window.location.href = "/login";
     }
   },
@@ -86,6 +94,22 @@ const authService = {
   async checkSession() {
     try {
       const response = await api.get(AUTH, { params: { action: "check" } });
+
+      // If session is valid, update localStorage
+      if (response.data.success && response.data.loggedIn) {
+        const currentUser = this.getCurrentUser();
+        if (currentUser) {
+          // Update existing user data if needed
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              ...currentUser,
+              ...response.data.user,
+            }),
+          );
+        }
+      }
+
       return response.data;
     } catch {
       return { success: false, loggedIn: false };
@@ -96,6 +120,21 @@ const authService = {
   getCurrentUser() {
     const raw = localStorage.getItem("user");
     return raw ? JSON.parse(raw) : null;
+  },
+
+  getCurrentUserId() {
+    const user = this.getCurrentUser();
+    return user?.user_id || null;
+  },
+
+  getCurrentUserName() {
+    const user = this.getCurrentUser();
+    return user?.full_name || user?.username || "User";
+  },
+
+  getCurrentUserEmail() {
+    const user = this.getCurrentUser();
+    return user?.email || null;
   },
 
   isAuthenticated() {
@@ -119,6 +158,49 @@ const authService = {
   isSuperAdmin() {
     const user = this.getCurrentUser();
     return user?.role === "super_admin";
+  },
+
+  // ── NEW: Check if service admin ──────────────────────────────────────────────
+  isServiceAdmin() {
+    const user = this.getCurrentUser();
+    const serviceRoles = [
+      "safety_admin",
+      "welfare_admin",
+      "health_admin",
+      "disaster_admin",
+      "youth_admin",
+    ];
+    return serviceRoles.includes(user?.role);
+  },
+
+  // ── NEW: Get user's service area (for service admins) ────────────────────────
+  getServiceArea() {
+    const user = this.getCurrentUser();
+    const serviceMap = {
+      safety_admin: "safety",
+      welfare_admin: "welfare",
+      health_admin: "health",
+      disaster_admin: "disaster",
+      youth_admin: "youth",
+      super_admin: "all",
+    };
+    return serviceMap[user?.role] || null;
+  },
+
+  // ── UPDATE USER DATA ─────────────────────────────────────────────────────────
+  updateUserData(userData) {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...userData };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      return updatedUser;
+    }
+    return null;
+  },
+
+  // ── CLEAR USER DATA ─────────────────────────────────────────────────────────
+  clearUserData() {
+    localStorage.removeItem("user");
   },
 };
 
