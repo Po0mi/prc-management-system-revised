@@ -22,10 +22,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`um-toast um-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="um-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="um-toast__content">
+        <div className="um-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="um-toast__message">{message}</div>
+      </div>
       <button className="um-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -61,6 +68,7 @@ function MerchandiseCard({ item, onViewDetails }) {
         )}
         {item.stock_quantity === 0 && (
           <div className="um-card__out-of-stock">
+            <i className="fa-solid fa-ban" />
             <span>Out of Stock</span>
           </div>
         )}
@@ -80,7 +88,7 @@ function MerchandiseCard({ item, onViewDetails }) {
             {formatCategory(item.category)}
           </span>
           <span className="um-card__stock">
-            <i className="fa-solid fa-boxes" />
+            <i className="fa-solid fa-boxes-stacked" />
             {item.stock_quantity} left
           </span>
         </div>
@@ -96,9 +104,17 @@ function MerchandiseCard({ item, onViewDetails }) {
         )}
 
         <div className="um-card__footer">
-          <span className="um-card__price">{formatPrice(item.price)}</span>
-          <button className="um-card__btn" onClick={() => onViewDetails(item)}>
-            View Details <i className="fa-solid fa-arrow-right" />
+          <div className="um-card__price-wrapper">
+            <span className="um-card__price-label">Price</span>
+            <span className="um-card__price">{formatPrice(item.price)}</span>
+          </div>
+          <button
+            className="um-card__btn"
+            onClick={() => onViewDetails(item)}
+            disabled={item.stock_quantity === 0}
+          >
+            <span>View Details</span>
+            <i className="fa-solid fa-arrow-right" />
           </button>
         </div>
       </div>
@@ -114,6 +130,17 @@ function DetailsModal({ item, onClose }) {
   const categoryIcon = getCategoryIcon(item.category);
   const imageUrl = getImageUrl(item);
   const [imageError, setImageError] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
+
+  const copyToClipboard = (text, field) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+      },
+      () => {},
+    );
+  };
 
   const handleCall = (phoneNumber) => {
     window.location.href = `tel:${phoneNumber.replace(/\s/g, "")}`;
@@ -137,7 +164,10 @@ function DetailsModal({ item, onClose }) {
     <div className="um-overlay" onClick={onClose}>
       <div className="um-modal" onClick={(e) => e.stopPropagation()}>
         <div className="um-modal__header">
-          <h2 className="um-modal__title">Item Details</h2>
+          <h2 className="um-modal__title">
+            <i className="fa-solid fa-circle-info" />
+            Item Details
+          </h2>
           <button className="um-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -203,11 +233,17 @@ function DetailsModal({ item, onClose }) {
 
             <h1 className="um-modal__title-text">{item.name}</h1>
 
-            <div className="um-modal__price">{formatPrice(item.price)}</div>
+            <div className="um-modal__price-wrapper">
+              <span className="um-modal__price-label">Price</span>
+              <div className="um-modal__price">{formatPrice(item.price)}</div>
+            </div>
 
             {item.description && (
               <div className="um-modal__description">
-                <h3>Description</h3>
+                <h3>
+                  <i className="fa-solid fa-align-left" />
+                  Description
+                </h3>
                 <p>{item.description}</p>
               </div>
             )}
@@ -215,7 +251,7 @@ function DetailsModal({ item, onClose }) {
             {/* Important Notice */}
             <div className="um-modal__notice">
               <h4>
-                <i className="fa-solid fa-info-circle" />
+                <i className="fa-solid fa-circle-info" />
                 Important Purchase Information
               </h4>
               <p>
@@ -240,6 +276,17 @@ function DetailsModal({ item, onClose }) {
                 >
                   <i className="fa-solid fa-phone" />
                   <span>(033) 503-3393</span>
+                  <button
+                    className={`um-copy-btn ${copiedField === "landline" ? "um-copy-btn--copied" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard("(033) 503-3393", "landline");
+                    }}
+                  >
+                    <i
+                      className={`fa-solid ${copiedField === "landline" ? "fa-check" : "fa-copy"}`}
+                    />
+                  </button>
                 </button>
 
                 <button
@@ -248,6 +295,17 @@ function DetailsModal({ item, onClose }) {
                 >
                   <i className="fa-solid fa-mobile" />
                   <span>0917 117 0066</span>
+                  <button
+                    className={`um-copy-btn ${copiedField === "mobile" ? "um-copy-btn--copied" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard("09171170066", "mobile");
+                    }}
+                  >
+                    <i
+                      className={`fa-solid ${copiedField === "mobile" ? "fa-check" : "fa-copy"}`}
+                    />
+                  </button>
                 </button>
 
                 <button
@@ -256,11 +314,35 @@ function DetailsModal({ item, onClose }) {
                 >
                   <i className="fa-regular fa-envelope" />
                   <span>iloilo@redcross.org.ph</span>
+                  <button
+                    className={`um-copy-btn ${copiedField === "email" ? "um-copy-btn--copied" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard("iloilo@redcross.org.ph", "email");
+                    }}
+                  >
+                    <i
+                      className={`fa-solid ${copiedField === "email" ? "fa-check" : "fa-copy"}`}
+                    />
+                  </button>
                 </button>
 
                 <div className="um-modal__contact-item">
                   <i className="fa-solid fa-location-dot" />
                   <span>Brgy. Danao, Bonifacio Drive, Iloilo City, 5000</span>
+                  <button
+                    className={`um-copy-btn ${copiedField === "address" ? "um-copy-btn--copied" : ""}`}
+                    onClick={() =>
+                      copyToClipboard(
+                        "Brgy. Danao, Bonifacio Drive, Iloilo City, 5000",
+                        "address",
+                      )
+                    }
+                  >
+                    <i
+                      className={`fa-solid ${copiedField === "address" ? "fa-check" : "fa-copy"}`}
+                    />
+                  </button>
                 </div>
               </div>
 
@@ -298,6 +380,7 @@ export default function UserMerch() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedItem, setSelectedItem] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -359,33 +442,49 @@ export default function UserMerch() {
     setSearch("");
   };
 
+  const totalStock = items.reduce((sum, item) => sum + item.stock_quantity, 0);
+
   return (
     <div className="um-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="um-header">
-        <div className="um-header__content">
-          <div>
-            <div className="um-header__eyebrow">
-              <i className="fa-solid fa-store" />
-              PRC Merchandise
-            </div>
-            <h1 className="um-header__title">Support the Cause</h1>
-            <p className="um-header__subtitle">
-              Browse our collection of official Philippine Red Cross merchandise
-            </p>
-          </div>
-          <div className="um-header__stats">
-            <div className="um-header__stat">
-              <div className="um-header__stat-num">{items.length}</div>
-              <div className="um-header__stat-label">Available Items</div>
-            </div>
-            <div className="um-header__stat">
-              <div className="um-header__stat-num">
-                {items.reduce((sum, item) => sum + item.stock_quantity, 0)}
+        <div className="um-header__container">
+          <div className="um-header__content">
+            <div className="um-header__left">
+              <div className="um-header__badge">
+                <i className="fa-solid fa-store" />
+                PRC Merchandise Store
               </div>
-              <div className="um-header__stat-label">Total Stock</div>
+              <h1 className="um-header__title">Support the Cause</h1>
+              <p className="um-header__subtitle">
+                Browse our collection of official Philippine Red Cross
+                merchandise
+              </p>
+            </div>
+            <div className="um-header__stats">
+              <div className="um-header-stat">
+                <span className="um-header-stat__value">{items.length}</span>
+                <span className="um-header-stat__label">Available Items</span>
+              </div>
+              <div className="um-header-stat">
+                <span className="um-header-stat__value">{totalStock}</span>
+                <span className="um-header-stat__label">Total Stock</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="um-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -393,8 +492,10 @@ export default function UserMerch() {
       <div className="um-body">
         {/* Important Notice Banner */}
         <div className="um-notice-banner">
-          <i className="fa-solid fa-info-circle" />
-          <div>
+          <div className="um-notice-banner__icon">
+            <i className="fa-solid fa-circle-info" />
+          </div>
+          <div className="um-notice-banner__content">
             <strong>Display-Only Catalog:</strong> The Philippine Red Cross
             merchandise store currently operates as a display-only catalog. We
             do not offer online purchasing or delivery services at this time.
@@ -409,7 +510,7 @@ export default function UserMerch() {
             <input
               type="text"
               className="um-filters__search-input"
-              placeholder="Search merchandise..."
+              placeholder="Search merchandise by name or description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -431,9 +532,16 @@ export default function UserMerch() {
                   : ""
               }`}
               onClick={() => setCategoryFilter("all")}
+              onMouseEnter={() => setHoveredCategory("all")}
+              onMouseLeave={() => setHoveredCategory(null)}
             >
               <i className="fa-solid fa-grid-2" />
               All Items
+              {categoryFilter === "all" && (
+                <span className="um-filters__category-count">
+                  {items.length}
+                </span>
+              )}
             </button>
             {CATEGORY_OPTIONS.map((option) => (
               <button
@@ -444,17 +552,34 @@ export default function UserMerch() {
                     : ""
                 }`}
                 onClick={() => setCategoryFilter(option.value)}
+                onMouseEnter={() => setHoveredCategory(option.value)}
+                onMouseLeave={() => setHoveredCategory(null)}
                 style={{
                   borderColor:
-                    categoryFilter === option.value ? option.color : undefined,
+                    categoryFilter === option.value ||
+                    hoveredCategory === option.value
+                      ? option.color
+                      : undefined,
                   background:
                     categoryFilter === option.value
-                      ? `${option.color}10`
+                      ? `${option.color}15`
+                      : hoveredCategory === option.value
+                        ? `${option.color}08`
+                        : undefined,
+                  color:
+                    categoryFilter === option.value ||
+                    hoveredCategory === option.value
+                      ? option.color
                       : undefined,
                 }}
               >
                 <i className={option.icon} />
                 {option.label}
+                {categoryFilter === option.value && (
+                  <span className="um-filters__category-count">
+                    {items.filter((i) => i.category === option.value).length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -463,33 +588,41 @@ export default function UserMerch() {
         {/* Merchandise Grid */}
         {loading ? (
           <div className="um-loading">
-            <i className="fa-solid fa-spinner fa-spin" />
+            <div className="um-loading__spinner">
+              <i className="fa-solid fa-spinner fa-spin" />
+            </div>
             <p>Loading merchandise...</p>
+            <span className="um-loading__subtitle">
+              Fetching available items
+            </span>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="um-empty">
-            <i className="fa-solid fa-store" />
-            <h3>No Items Found</h3>
-            <p>
+            <div className="um-empty__icon">
+              <i className="fa-solid fa-store-slash" />
+            </div>
+            <h3 className="um-empty__title">No Items Found</h3>
+            <p className="um-empty__message">
               {search || categoryFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
                 : "There are no merchandise items available at the moment."}
             </p>
             {(search || categoryFilter !== "all") && (
               <button
-                className="um-empty__clear"
+                className="um-empty__action"
                 onClick={() => {
                   setSearch("");
                   setCategoryFilter("all");
                 }}
               >
+                <i className="fa-solid fa-times" />
                 Clear All Filters
               </button>
             )}
           </div>
         ) : (
           <div className="um-grid">
-            {filteredItems.map((item) => (
+            {filteredItems.map((item, index) => (
               <MerchandiseCard
                 key={item.merch_id}
                 item={item}
@@ -501,10 +634,10 @@ export default function UserMerch() {
 
         {/* Chapter Information Card */}
         <div className="um-chapter-card">
-          <h3>
+          <div className="um-chapter-card__header">
             <i className="fa-solid fa-building" />
-            Iloilo Chapter
-          </h3>
+            <h3>Iloilo Chapter</h3>
+          </div>
           <div className="um-chapter-card__contact">
             <div className="um-chapter-card__item">
               <i className="fa-solid fa-phone" />
@@ -519,7 +652,7 @@ export default function UserMerch() {
               </div>
             </div>
             <div className="um-chapter-card__item">
-              <i className="fa-solid fa-mobile" />
+              <i className="fa-solid fa-mobile-screen" />
               <div>
                 <span className="um-chapter-card__label">Mobile:</span>
                 <button

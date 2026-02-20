@@ -48,10 +48,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ubm-toast ubm-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="ubm-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="ubm-toast__content">
+        <div className="ubm-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ubm-toast__message">{message}</div>
+      </div>
       <button className="ubm-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -60,7 +67,7 @@ function Toast({ message, type, onClose }) {
 }
 
 // ─── BLOOD TYPE FILTER BUTTON ─────────────────────────────────────────────────
-function BloodTypeFilter({ type, selected, onClick }) {
+function BloodTypeFilter({ type, selected, onClick, count }) {
   const bloodTypeColor = getBloodTypeColor(type.value);
 
   return (
@@ -68,19 +75,37 @@ function BloodTypeFilter({ type, selected, onClick }) {
       className={`ubm-filter-btn ${selected ? "ubm-filter-btn--selected" : ""}`}
       onClick={() => onClick(type.value)}
       style={{
-        backgroundColor: selected ? bloodTypeColor : `${bloodTypeColor}10`,
+        backgroundColor: selected ? bloodTypeColor : `${bloodTypeColor}08`,
         color: selected ? "#fff" : bloodTypeColor,
-        borderColor: bloodTypeColor,
+        borderColor: selected ? bloodTypeColor : `${bloodTypeColor}40`,
       }}
     >
       <i className="fa-solid fa-droplet" />
       {type.value}
+      {count !== undefined && (
+        <span
+          className="ubm-filter-btn__count"
+          style={{
+            backgroundColor: selected
+              ? "rgba(255,255,255,0.2)"
+              : `${bloodTypeColor}20`,
+          }}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
 
 // ─── LOCATION CARD ────────────────────────────────────────────────────────────
-function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
+function LocationCard({
+  location,
+  bloodTypes,
+  onViewLocation,
+  onClick,
+  isSelected,
+}) {
   // FIXED: Convert units_available to number before summing
   const totalUnits = bloodTypes.reduce(
     (sum, item) => sum + (Number(item.units_available) || 0),
@@ -103,9 +128,11 @@ function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
     return "#10b981";
   };
 
+  const statusColor = getStatusColor();
+
   return (
     <div
-      className="ubm-location-card"
+      className={`ubm-location-card ${isSelected ? "ubm-location-card--selected" : ""}`}
       onClick={() => {
         onViewLocation(location);
         if (onClick) onClick();
@@ -118,7 +145,16 @@ function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
         </h3>
         <span
           className="ubm-location-card__status"
-          style={{ backgroundColor: getStatusColor() }}
+          style={{ backgroundColor: statusColor }}
+          title={
+            statusColor === "#ef4444"
+              ? "Critical Stock"
+              : statusColor === "#f59e0b"
+                ? "Low Stock"
+                : statusColor === "#6b7280"
+                  ? "Out of Stock"
+                  : "Normal Stock"
+          }
         />
       </div>
 
@@ -141,9 +177,9 @@ function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
             key={item.id}
             className="ubm-location-card__blood-type"
             style={{
-              backgroundColor: `${getBloodTypeColor(item.blood_type)}15`,
+              backgroundColor: `${getBloodTypeColor(item.blood_type)}12`,
               color: getBloodTypeColor(item.blood_type),
-              border: `1px solid ${getBloodTypeColor(item.blood_type)}33`,
+              border: `1px solid ${getBloodTypeColor(item.blood_type)}25`,
             }}
           >
             {item.blood_type}
@@ -152,13 +188,13 @@ function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
         ))}
         {bloodTypes.length > 4 && (
           <span className="ubm-location-card__blood-type-more">
-            +{bloodTypes.length - 4} more
+            +{bloodTypes.length - 4}
           </span>
         )}
       </div>
 
       <button className="ubm-location-card__btn">
-        View Details
+        <span>View Details</span>
         <i className="fa-solid fa-arrow-right" />
       </button>
     </div>
@@ -168,6 +204,7 @@ function LocationCard({ location, bloodTypes, onViewLocation, onClick }) {
 // ─── LOCATION DETAILS MODAL ───────────────────────────────────────────────────
 function LocationDetailsModal({ location, bloodTypes, onClose }) {
   const [selectedBloodType, setSelectedBloodType] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
 
   const handleCall = (phoneNumber) => {
     window.location.href = `tel:${phoneNumber.replace(/\D/g, "")}`;
@@ -181,9 +218,10 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
     );
   };
 
-  const handleCopy = (text) => {
+  const handleCopy = (text, field) => {
     navigator.clipboard.writeText(text);
-    // You could add a toast notification here
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const locationBloodTypes = bloodTypes.filter(
@@ -233,8 +271,16 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
                       borderColor: color,
                       backgroundColor:
                         selectedBloodType === item.blood_type
-                          ? `${color}10`
+                          ? `${color}08`
                           : "#fff",
+                      transform:
+                        selectedBloodType === item.blood_type
+                          ? "translateY(-2px)"
+                          : "none",
+                      boxShadow:
+                        selectedBloodType === item.blood_type
+                          ? `0 4px 12px ${color}30`
+                          : "none",
                     }}
                   >
                     <div className="ubm-blood-card__type" style={{ color }}>
@@ -246,7 +292,7 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
                     <div
                       className="ubm-blood-card__status"
                       style={{
-                        backgroundColor: `${status.color}15`,
+                        backgroundColor: `${status.color}12`,
                         color: status.color,
                       }}
                     >
@@ -259,7 +305,10 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
               })}
             </div>
             <div className="ubm-location-total">
-              <strong>Total Units:</strong> {locationTotalUnits}
+              <strong>Total Units:</strong>
+              <span className="ubm-location-total__value">
+                {locationTotalUnits}
+              </span>
             </div>
           </div>
 
@@ -281,11 +330,15 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
                     {firstItem.contact_number}
                   </button>
                   <button
-                    className="ubm-contact-item__copy"
-                    onClick={() => handleCopy(firstItem.contact_number)}
+                    className={`ubm-copy-btn ${copiedField === "phone" ? "ubm-copy-btn--copied" : ""}`}
+                    onClick={() =>
+                      handleCopy(firstItem.contact_number, "phone")
+                    }
                     title="Copy phone number"
                   >
-                    <i className="fa-regular fa-copy" />
+                    <i
+                      className={`fa-solid ${copiedField === "phone" ? "fa-check" : "fa-copy"}`}
+                    />
                   </button>
                 </div>
               </div>
@@ -298,11 +351,13 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
                     {firstItem.address}
                   </span>
                   <button
-                    className="ubm-contact-item__copy"
-                    onClick={() => handleCopy(firstItem.address)}
+                    className={`ubm-copy-btn ${copiedField === "address" ? "ubm-copy-btn--copied" : ""}`}
+                    onClick={() => handleCopy(firstItem.address, "address")}
                     title="Copy address"
                   >
-                    <i className="fa-regular fa-copy" />
+                    <i
+                      className={`fa-solid ${copiedField === "address" ? "fa-check" : "fa-copy"}`}
+                    />
                   </button>
                 </div>
               </div>
@@ -312,7 +367,8 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
                 <div className="ubm-contact-item__content">
                   <span className="ubm-contact-item__label">Coordinates:</span>
                   <span className="ubm-contact-item__value">
-                    {firstItem.latitude}, {firstItem.longitude}
+                    {Number(firstItem.latitude).toFixed(4)},{" "}
+                    {Number(firstItem.longitude).toFixed(4)}
                   </span>
                 </div>
               </div>
@@ -340,7 +396,9 @@ function LocationDetailsModal({ location, bloodTypes, onClose }) {
           {/* Last Updated */}
           <div className="ubm-modal__footer">
             <i className="fa-regular fa-clock" />
-            Last updated: {new Date(firstItem.updated_at).toLocaleString()}
+            <span>
+              Last updated: {new Date(firstItem.updated_at).toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
@@ -403,6 +461,17 @@ export default function UserBloodMap() {
     // FIXED: Use Number() for addition
     acc[item.location_name].totalUnits += Number(item.units_available) || 0;
 
+    return acc;
+  }, {});
+
+  // Get counts for blood type filters
+  const bloodTypeCounts = BLOOD_TYPES.reduce((acc, type) => {
+    acc[type.value] = Object.values(locations).reduce((count, location) => {
+      return (
+        count +
+        (location.bloodTypes.some((b) => b.blood_type === type.value) ? 1 : 0)
+      );
+    }, 0);
     return acc;
   }, {});
 
@@ -487,31 +556,47 @@ export default function UserBloodMap() {
 
   return (
     <div className="ubm-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="ubm-header">
-        <div className="ubm-header__content">
-          <div>
-            <div className="ubm-header__eyebrow">
-              <i className="fa-solid fa-map-location-dot" />
-              Blood Map
-            </div>
-            <h1 className="ubm-header__title">Find Blood Near You</h1>
-            <p className="ubm-header__subtitle">
-              Locate blood banks and hospitals with available blood supplies
-            </p>
-          </div>
-          <div className="ubm-header__stats">
-            <div className="ubm-header__stat">
-              <div className="ubm-header__stat-num">
-                {Object.keys(locations).length}
+        <div className="ubm-header__container">
+          <div className="ubm-header__content">
+            <div className="ubm-header__left">
+              <div className="ubm-header__badge">
+                <i className="fa-solid fa-map-location-dot" />
+                Blood Map
               </div>
-              <div className="ubm-header__stat-label">Locations</div>
+              <h1 className="ubm-header__title">Find Blood Near You</h1>
+              <p className="ubm-header__subtitle">
+                Locate blood banks and hospitals with available blood supplies
+                in real-time
+              </p>
             </div>
-            <div className="ubm-header__stat">
-              <div className="ubm-header__stat-num">{totalUnits}</div>
-              <div className="ubm-header__stat-label">Total Units</div>
+            <div className="ubm-header__stats">
+              <div className="ubm-header-stat">
+                <span className="ubm-header-stat__value">
+                  {Object.keys(locations).length}
+                </span>
+                <span className="ubm-header-stat__label">Locations</span>
+              </div>
+              <div className="ubm-header-stat">
+                <span className="ubm-header-stat__value">{totalUnits}</span>
+                <span className="ubm-header-stat__label">Total Units</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="ubm-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -550,6 +635,7 @@ export default function UserBloodMap() {
                   type={type}
                   selected={bloodTypeFilter.includes(type.value)}
                   onClick={handleBloodTypeToggle}
+                  count={bloodTypeCounts[type.value]}
                 />
               ))}
             </div>
@@ -581,18 +667,34 @@ export default function UserBloodMap() {
             <div className="ubm-sidebar__list">
               {loading ? (
                 <div className="ubm-loading">
-                  <i className="fa-solid fa-spinner fa-spin" />
+                  <div className="ubm-loading__spinner">
+                    <i className="fa-solid fa-spinner fa-spin" />
+                  </div>
                   <p>Loading locations...</p>
+                  <span className="ubm-loading__subtitle">
+                    Fetching blood inventory data
+                  </span>
                 </div>
               ) : filteredLocations.length === 0 ? (
                 <div className="ubm-empty">
-                  <i className="fa-regular fa-map" />
-                  <h3>No Locations Found</h3>
-                  <p>
+                  <div className="ubm-empty__icon">
+                    <i className="fa-regular fa-map" />
+                  </div>
+                  <h3 className="ubm-empty__title">No Locations Found</h3>
+                  <p className="ubm-empty__message">
                     {bloodTypeFilter.length > 0 || searchQuery
                       ? "Try adjusting your filters"
                       : "No blood inventory locations available"}
                   </p>
+                  {(bloodTypeFilter.length > 0 || searchQuery) && (
+                    <button
+                      className="ubm-empty__action"
+                      onClick={clearFilters}
+                    >
+                      <i className="fa-solid fa-times" />
+                      Clear Filters
+                    </button>
+                  )}
                 </div>
               ) : (
                 filteredLocations.map((location) => (
@@ -604,6 +706,7 @@ export default function UserBloodMap() {
                     onClick={() =>
                       flyToLocation(location.latitude, location.longitude)
                     }
+                    isSelected={selectedLocation === location.location_name}
                   />
                 ))
               )}
@@ -612,75 +715,85 @@ export default function UserBloodMap() {
 
           {/* Map */}
           <div className="ubm-map-container">
-            <MapContainer
-              center={getMapCenter()}
-              zoom={12}
-              scrollWheelZoom={true}
-              className="ubm-leaflet-map"
-              whenCreated={setMap}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+            {loading ? (
+              <div className="ubm-map-loading">
+                <i className="fa-solid fa-spinner fa-spin" />
+                <span>Loading map...</span>
+              </div>
+            ) : (
+              <MapContainer
+                center={getMapCenter()}
+                zoom={12}
+                scrollWheelZoom={true}
+                className="ubm-leaflet-map"
+                whenCreated={setMap}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-              {filteredLocations.map((location) => {
-                const markerColor = getMarkerColor(location);
-                const customIcon = createCustomIcon(markerColor);
+                {filteredLocations.map((location) => {
+                  const markerColor = getMarkerColor(location);
+                  const customIcon = createCustomIcon(markerColor);
 
-                return (
-                  <Marker
-                    key={location.location_name}
-                    position={[location.latitude, location.longitude]}
-                    icon={customIcon}
-                    eventHandlers={{
-                      click: () => {
-                        flyToLocation(location.latitude, location.longitude);
-                      },
-                    }}
-                  >
-                    <Popup>
-                      <div className="ubm-popup">
-                        <h4>{location.location_name}</h4>
-                        <p className="ubm-popup__address">{location.address}</p>
-                        <div className="ubm-popup__stats">
-                          <div className="ubm-popup__stat">
-                            <i className="fa-solid fa-droplet" />
-                            <span>{location.bloodTypes.length} types</span>
+                  return (
+                    <Marker
+                      key={location.location_name}
+                      position={[location.latitude, location.longitude]}
+                      icon={customIcon}
+                      eventHandlers={{
+                        click: () => {
+                          setSelectedLocation(location.location_name);
+                          flyToLocation(location.latitude, location.longitude);
+                        },
+                      }}
+                    >
+                      <Popup>
+                        <div className="ubm-popup">
+                          <h4>{location.location_name}</h4>
+                          <p className="ubm-popup__address">
+                            {location.address}
+                          </p>
+                          <div className="ubm-popup__stats">
+                            <div className="ubm-popup__stat">
+                              <i className="fa-solid fa-droplet" />
+                              <span>{location.bloodTypes.length} types</span>
+                            </div>
+                            <div className="ubm-popup__stat">
+                              <i className="fa-solid fa-boxes" />
+                              <span>{location.totalUnits} units</span>
+                            </div>
                           </div>
-                          <div className="ubm-popup__stat">
-                            <i className="fa-solid fa-boxes" />
-                            <span>{location.totalUnits} units</span>
+                          <div className="ubm-popup__blood-types">
+                            {location.bloodTypes.slice(0, 4).map((item) => (
+                              <span
+                                key={item.id}
+                                className="ubm-popup__blood-type"
+                                style={{
+                                  backgroundColor: `${getBloodTypeColor(item.blood_type)}12`,
+                                  color: getBloodTypeColor(item.blood_type),
+                                }}
+                              >
+                                {item.blood_type}: {item.units_available}
+                              </span>
+                            ))}
                           </div>
+                          <button
+                            className="ubm-popup__btn"
+                            onClick={() =>
+                              handleViewLocation(location.location_name)
+                            }
+                          >
+                            View Details
+                          </button>
                         </div>
-                        <div className="ubm-popup__blood-types">
-                          {location.bloodTypes.slice(0, 3).map((item) => (
-                            <span
-                              key={item.id}
-                              className="ubm-popup__blood-type"
-                              style={{
-                                backgroundColor: `${getBloodTypeColor(item.blood_type)}15`,
-                                color: getBloodTypeColor(item.blood_type),
-                              }}
-                            >
-                              {item.blood_type}: {item.units_available}
-                            </span>
-                          ))}
-                        </div>
-                        <button
-                          className="ubm-popup__btn"
-                          onClick={() =>
-                            handleViewLocation(location.location_name)
-                          }
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </Popup>
-                  </Marker>
-                );
-              })}
-            </MapContainer>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
+            )}
           </div>
         </div>
 

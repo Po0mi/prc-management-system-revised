@@ -25,10 +25,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`abb-toast abb-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="abb-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="abb-toast__content">
+        <div className="abb-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="abb-toast__message">{message}</div>
+      </div>
       <button className="abb-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -177,12 +184,12 @@ function InventoryModal({ item, onClose, onSuccess }) {
     <div className="abb-overlay" onClick={onClose}>
       <div className="abb-modal" onClick={(e) => e.stopPropagation()}>
         <div className="abb-modal__header">
-          <span className="abb-modal__title">
+          <div className="abb-modal__title">
             <i
-              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus"}`}
+              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus-circle"}`}
             />
             {item ? "Edit Blood Inventory" : "Add Blood Inventory"}
-          </span>
+          </div>
           <button className="abb-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -196,45 +203,43 @@ function InventoryModal({ item, onClose, onSuccess }) {
             </div>
           )}
 
-          <div className="abb-form__row">
-            <div className="abb-form__field abb-form__field--full">
-              <label className="abb-form__label">
-                <i className="fa-solid fa-hospital" />
-                Location <span className="abb-form__required">*</span>
-              </label>
-              {!item && (
-                <select
-                  className="abb-form__select"
-                  onChange={handleLocationChange}
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    Select location or add new
+          <div className="abb-form__field abb-form__field--full">
+            <label className="abb-form__label">
+              <i className="fa-solid fa-hospital" />
+              Location <span className="abb-form__required">*</span>
+            </label>
+            {!item && (
+              <select
+                className="abb-form__select"
+                onChange={handleLocationChange}
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Select location or add new
+                </option>
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
                   </option>
-                  {locations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                  <option value="new">+ Add New Location</option>
-                </select>
-              )}
-              <input
-                type="text"
-                name="location_name"
-                value={formData.location_name}
-                onChange={handleChange}
-                className={`abb-form__input ${errors.location_name ? "abb-form__input--error" : ""}`}
-                placeholder="Enter location name"
-                readOnly={!newLocation && !item && locations.length > 0}
-              />
-              {errors.location_name && (
-                <span className="abb-form__error-text">
-                  <i className="fa-solid fa-circle-exclamation" />
-                  {errors.location_name}
-                </span>
-              )}
-            </div>
+                ))}
+                <option value="new">+ Add New Location</option>
+              </select>
+            )}
+            <input
+              type="text"
+              name="location_name"
+              value={formData.location_name}
+              onChange={handleChange}
+              className={`abb-form__input ${errors.location_name ? "abb-form__input--error" : ""}`}
+              placeholder="Enter location name"
+              readOnly={!newLocation && !item && locations.length > 0}
+            />
+            {errors.location_name && (
+              <span className="abb-form__error-text">
+                <i className="fa-solid fa-circle-exclamation" />
+                {errors.location_name}
+              </span>
+            )}
           </div>
 
           <div className="abb-form__row">
@@ -286,27 +291,25 @@ function InventoryModal({ item, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="abb-form__row">
-            <div className="abb-form__field">
-              <label className="abb-form__label">
-                <i className="fa-solid fa-phone" />
-                Contact Number <span className="abb-form__required">*</span>
-              </label>
-              <input
-                type="text"
-                name="contact_number"
-                value={formData.contact_number}
-                onChange={handleChange}
-                className={`abb-form__input ${errors.contact_number ? "abb-form__input--error" : ""}`}
-                placeholder="e.g., (032) 123-4567"
-              />
-              {errors.contact_number && (
-                <span className="abb-form__error-text">
-                  <i className="fa-solid fa-circle-exclamation" />
-                  {errors.contact_number}
-                </span>
-              )}
-            </div>
+          <div className="abb-form__field">
+            <label className="abb-form__label">
+              <i className="fa-solid fa-phone" />
+              Contact Number <span className="abb-form__required">*</span>
+            </label>
+            <input
+              type="text"
+              name="contact_number"
+              value={formData.contact_number}
+              onChange={handleChange}
+              className={`abb-form__input ${errors.contact_number ? "abb-form__input--error" : ""}`}
+              placeholder="e.g., (032) 123-4567"
+            />
+            {errors.contact_number && (
+              <span className="abb-form__error-text">
+                <i className="fa-solid fa-circle-exclamation" />
+                {errors.contact_number}
+              </span>
+            )}
           </div>
 
           <div className="abb-form__field">
@@ -376,12 +379,12 @@ function InventoryModal({ item, onClose, onSuccess }) {
             </div>
           </div>
 
-          <div className="abb-form__field">
-            <small className="abb-form__hint">
-              <i className="fa-solid fa-info-circle" />
+          <div className="abb-form__hint">
+            <i className="fa-solid fa-info-circle" />
+            <span>
               You can get latitude and longitude from Google Maps by
               right-clicking on the location.
-            </small>
+            </span>
           </div>
 
           <button
@@ -428,6 +431,11 @@ function ViewModal({ item, onClose }) {
     );
   };
 
+  const handleCopy = (text, field) => {
+    navigator.clipboard.writeText(text);
+    // You could add a toast notification here
+  };
+
   return (
     <div className="abb-overlay" onClick={onClose}>
       <div
@@ -435,10 +443,10 @@ function ViewModal({ item, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="abb-modal__header">
-          <span className="abb-modal__title">
+          <div className="abb-modal__title">
             <i className="fa-solid fa-eye" />
             Blood Inventory Details
-          </span>
+          </div>
           <button className="abb-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -447,7 +455,10 @@ function ViewModal({ item, onClose }) {
         <div className="abb-modal__body">
           <div className="abb-view__section">
             <h3 className="abb-view__section-title">
-              <i className="fa-solid fa-hospital" />
+              <i
+                className="fa-solid fa-hospital"
+                style={{ color: bloodTypeColor }}
+              />
               {item.location_name}
             </h3>
 
@@ -455,9 +466,9 @@ function ViewModal({ item, onClose }) {
               <span
                 className="abb-view__badge"
                 style={{
-                  background: `${bloodTypeColor}15`,
+                  background: `${bloodTypeColor}12`,
                   color: bloodTypeColor,
-                  border: `1px solid ${bloodTypeColor}33`,
+                  border: `1px solid ${bloodTypeColor}25`,
                 }}
               >
                 <i className="fa-solid fa-droplet" />
@@ -467,9 +478,9 @@ function ViewModal({ item, onClose }) {
               <span
                 className="abb-view__badge"
                 style={{
-                  background: `${stockStatus.color}15`,
+                  background: `${stockStatus.color}12`,
                   color: stockStatus.color,
-                  border: `1px solid ${stockStatus.color}33`,
+                  border: `1px solid ${stockStatus.color}25`,
                 }}
               >
                 <i className="fa-solid fa-boxes" />
@@ -481,12 +492,12 @@ function ViewModal({ item, onClose }) {
                 style={{
                   background:
                     item.units_available === 0
-                      ? "#6b728015"
+                      ? "#6b728012"
                       : item.units_available < 10
-                        ? "#ef444415"
+                        ? "#ef444412"
                         : item.units_available < 20
-                          ? "#f59e0b15"
-                          : "#10b98115",
+                          ? "#f59e0b12"
+                          : "#10b98112",
                   color:
                     item.units_available === 0
                       ? "#6b7280"
@@ -512,28 +523,60 @@ function ViewModal({ item, onClose }) {
           <div className="abb-view__grid">
             <div className="abb-view__item">
               <div className="abb-view__item-label">Contact Number</div>
-              <button
-                className="abb-view__item-value abb-view__item-value--clickable"
-                onClick={handleCall}
-              >
-                <i className="fa-solid fa-phone" />
-                {item.contact_number}
-              </button>
+              <div className="abb-view__item-value-group">
+                <button
+                  className="abb-view__item-value abb-view__item-value--clickable"
+                  onClick={handleCall}
+                >
+                  <i className="fa-solid fa-phone" />
+                  {item.contact_number}
+                </button>
+                <button
+                  className="abb-view__copy-btn"
+                  onClick={() => handleCopy(item.contact_number, "phone")}
+                  title="Copy phone number"
+                >
+                  <i className="fa-regular fa-copy" />
+                </button>
+              </div>
             </div>
 
             <div className="abb-view__item">
               <div className="abb-view__item-label">Address</div>
-              <div className="abb-view__item-value">
-                <i className="fa-solid fa-location-dot" />
-                {item.address}
+              <div className="abb-view__item-value-group">
+                <span className="abb-view__item-value">
+                  <i className="fa-solid fa-location-dot" />
+                  {item.address}
+                </span>
+                <button
+                  className="abb-view__copy-btn"
+                  onClick={() => handleCopy(item.address, "address")}
+                  title="Copy address"
+                >
+                  <i className="fa-regular fa-copy" />
+                </button>
               </div>
             </div>
 
             <div className="abb-view__item">
               <div className="abb-view__item-label">Coordinates</div>
-              <div className="abb-view__item-value">
-                <i className="fa-solid fa-map-pin" />
-                {item.latitude}, {item.longitude}
+              <div className="abb-view__item-value-group">
+                <span className="abb-view__item-value">
+                  <i className="fa-solid fa-map-pin" />
+                  {item.latitude}, {item.longitude}
+                </span>
+                <button
+                  className="abb-view__copy-btn"
+                  onClick={() =>
+                    handleCopy(
+                      `${item.latitude}, ${item.longitude}`,
+                      "coordinates",
+                    )
+                  }
+                  title="Copy coordinates"
+                >
+                  <i className="fa-regular fa-copy" />
+                </button>
               </div>
             </div>
 
@@ -562,10 +605,10 @@ function ViewModal({ item, onClose }) {
 
           {item.created_at && (
             <div className="abb-view__footer">
-              <small>
-                <i className="fa-regular fa-calendar" />
+              <i className="fa-regular fa-calendar" />
+              <span>
                 Added on {new Date(item.created_at).toLocaleDateString()}
-              </small>
+              </span>
             </div>
           )}
         </div>
@@ -597,6 +640,7 @@ export default function AdminBloodBank() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -685,6 +729,7 @@ export default function AdminBloodBank() {
     let count = 0;
     if (bloodTypeFilter) count++;
     if (locationFilter) count++;
+    if (search) count++;
     return count;
   };
 
@@ -696,40 +741,61 @@ export default function AdminBloodBank() {
 
   return (
     <div className="abb-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="abb-header">
-        <div className="abb-header__inner">
-          <div>
-            <div className="abb-header__eyebrow">
-              <i className="fa-solid fa-droplet" />
-              Blood Bank Management
-            </div>
-            <h1 className="abb-header__title">Blood Inventory</h1>
-            <p className="abb-header__subtitle">
-              Manage blood inventory across all locations
-            </p>
-          </div>
-
-          <div className="abb-header__stats">
-            <div className="abb-header__stat">
-              <div className="abb-header__stat-num">
-                {stats.total_locations}
+        <div className="abb-header__container">
+          <div className="abb-header__content">
+            <div className="abb-header__left">
+              <div className="abb-header__badge">
+                <i className="fa-solid fa-droplet" />
+                Blood Bank Management
               </div>
-              <div className="abb-header__stat-label">Locations</div>
+              <h1 className="abb-header__title">Blood Inventory</h1>
+              <p className="abb-header__subtitle">
+                Manage blood inventory across all locations
+              </p>
             </div>
-            <div className="abb-header__stat">
-              <div className="abb-header__stat-num">{stats.total_units}</div>
-              <div className="abb-header__stat-label">Total Units</div>
-            </div>
-            <div className="abb-header__stat">
-              <div className="abb-header__stat-num">{stats.low_stock}</div>
-              <div className="abb-header__stat-label">Low Stock</div>
-            </div>
-            <div className="abb-header__stat">
-              <div className="abb-header__stat-num">{stats.critical_stock}</div>
-              <div className="abb-header__stat-label">Critical</div>
+
+            <div className="abb-header__stats">
+              <div className="abb-header-stat">
+                <span className="abb-header-stat__value">
+                  {stats.total_locations}
+                </span>
+                <span className="abb-header-stat__label">Locations</span>
+              </div>
+              <div className="abb-header-stat">
+                <span className="abb-header-stat__value">
+                  {stats.total_units}
+                </span>
+                <span className="abb-header-stat__label">Total Units</span>
+              </div>
+              <div className="abb-header-stat">
+                <span className="abb-header-stat__value">
+                  {stats.low_stock}
+                </span>
+                <span className="abb-header-stat__label">Low Stock</span>
+              </div>
+              <div className="abb-header-stat">
+                <span className="abb-header-stat__value">
+                  {stats.critical_stock}
+                </span>
+                <span className="abb-header-stat__label">Critical</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="abb-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -742,10 +808,14 @@ export default function AdminBloodBank() {
             const locations = stats.by_blood_type[type.value]?.locations || 0;
 
             return (
-              <div key={type.value} className="abb-card">
+              <div
+                key={type.value}
+                className="abb-card"
+                style={{ borderColor: type.color }}
+              >
                 <div
                   className="abb-card__icon"
-                  style={{ background: `${type.color}15` }}
+                  style={{ background: `${type.color}12` }}
                 >
                   <i
                     className="fa-solid fa-droplet"
@@ -753,9 +823,14 @@ export default function AdminBloodBank() {
                   />
                 </div>
                 <div>
-                  <div className="abb-card__num">{units}</div>
+                  <div className="abb-card__num" style={{ color: type.color }}>
+                    {units}
+                  </div>
                   <div className="abb-card__label">Type {type.value}</div>
-                  <div className="abb-card__sub">{locations} locations</div>
+                  <div className="abb-card__sub">
+                    <i className="fa-solid fa-location-dot" />
+                    {locations} {locations === 1 ? "location" : "locations"}
+                  </div>
                 </div>
               </div>
             );
@@ -769,7 +844,7 @@ export default function AdminBloodBank() {
             <input
               type="text"
               className="abb-toolbar__search-input"
-              placeholder="Search by location..."
+              placeholder="Search by location or address..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -787,13 +862,15 @@ export default function AdminBloodBank() {
             {/* Blood Type Filter Dropdown */}
             <div className="abb-toolbar__filter-dropdown">
               <button
-                className="abb-toolbar__filter-dropdown-btn"
+                className={`abb-toolbar__filter-dropdown-btn ${bloodTypeFilter ? "abb-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowBloodTypeDropdown(!showBloodTypeDropdown)}
               >
                 <i className="fa-solid fa-droplet" />
-                {bloodTypeFilter
-                  ? `Type ${bloodTypeFilter}`
-                  : "All Blood Types"}
+                <span>
+                  {bloodTypeFilter
+                    ? `Type ${bloodTypeFilter}`
+                    : "All Blood Types"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showBloodTypeDropdown && (
@@ -805,6 +882,7 @@ export default function AdminBloodBank() {
                     }}
                     className={!bloodTypeFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-droplet" />
                     All Blood Types
                   </button>
                   {BLOOD_TYPES.map((type) => (
@@ -831,11 +909,11 @@ export default function AdminBloodBank() {
             {locations.length > 0 && (
               <div className="abb-toolbar__filter-dropdown">
                 <button
-                  className="abb-toolbar__filter-dropdown-btn"
+                  className={`abb-toolbar__filter-dropdown-btn ${locationFilter ? "abb-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                 >
                   <i className="fa-solid fa-hospital" />
-                  {locationFilter || "All Locations"}
+                  <span>{locationFilter || "All Locations"}</span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showLocationDropdown && (
@@ -847,6 +925,7 @@ export default function AdminBloodBank() {
                       }}
                       className={!locationFilter ? "active" : ""}
                     >
+                      <i className="fa-solid fa-hospital" />
                       All Locations
                     </button>
                     {locations.map((loc) => (
@@ -869,10 +948,10 @@ export default function AdminBloodBank() {
 
             {getActiveFilterCount() > 0 && (
               <button
-                className="abb-toolbar__filter-btn"
+                className="abb-toolbar__filter-clear"
                 onClick={clearFilters}
               >
-                <i className="fa-solid fa-xmark" />
+                <i className="fa-solid fa-times" />
                 Clear Filters ({getActiveFilterCount()})
               </button>
             )}
@@ -891,9 +970,20 @@ export default function AdminBloodBank() {
               <i className="fa-solid fa-droplet" />
               Blood Inventory List
             </div>
-            <span className="abb-table-panel__count">
-              {inventory.length} {inventory.length === 1 ? "item" : "items"}
-            </span>
+            <div className="abb-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="abb-table-panel__count">
+                    {inventory.length}{" "}
+                    {inventory.length === 1 ? "item" : "items"}
+                  </span>
+                  <span className="abb-table-panel__divider">•</span>
+                  <span className="abb-table-panel__sub">
+                    Page 1 of {Math.ceil(inventory.length / 10) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="abb-table-panel__scroll">
@@ -912,16 +1002,42 @@ export default function AdminBloodBank() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="abb-table__loading">
-                      <i className="fa-solid fa-spinner fa-spin" />
-                      <p>Loading inventory...</p>
+                    <td colSpan="7">
+                      <div className="abb-table__loading">
+                        <div className="abb-table__loading-spinner">
+                          <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading inventory...</p>
+                        <span className="abb-table__loading-sub">
+                          Fetching blood inventory data
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ) : inventory.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="abb-table__empty">
-                      <i className="fa-regular fa-face-frown" />
-                      <p>No inventory items found</p>
+                    <td colSpan="7">
+                      <div className="abb-table__empty">
+                        <div className="abb-table__empty-icon">
+                          <i className="fa-regular fa-face-frown" />
+                        </div>
+                        <h3 className="abb-table__empty-title">
+                          No Inventory Found
+                        </h3>
+                        <p className="abb-table__empty-message">
+                          {search || bloodTypeFilter || locationFilter
+                            ? "Try adjusting your search or filter criteria"
+                            : "Get started by adding your first inventory item"}
+                        </p>
+                        {(search || bloodTypeFilter || locationFilter) && (
+                          <button
+                            className="abb-table__empty-action"
+                            onClick={clearFilters}
+                          >
+                            <i className="fa-solid fa-times" /> Clear Filters
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -930,13 +1046,27 @@ export default function AdminBloodBank() {
                     const stockStatus = getStockStatus(item.units_available);
 
                     return (
-                      <tr key={item.id}>
+                      <tr
+                        key={item.id}
+                        onMouseEnter={() => setHoveredRow(item.id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === item.id
+                            ? "abb-table__row--hovered"
+                            : ""
+                        }
+                      >
                         <td>
                           <div className="abb-location-cell">
                             <div className="abb-location-cell__name">
+                              <i className="fa-solid fa-building" />
                               {item.location_name}
                             </div>
-                            <div className="abb-location-cell__address">
+                            <div
+                              className="abb-location-cell__address"
+                              title={item.address}
+                            >
+                              <i className="fa-solid fa-location-dot" />
                               {item.address.substring(0, 50)}
                               {item.address.length > 50 ? "..." : ""}
                             </div>
@@ -946,9 +1076,9 @@ export default function AdminBloodBank() {
                           <span
                             className="abb-badge"
                             style={{
-                              background: `${bloodTypeColor}15`,
+                              background: `${bloodTypeColor}12`,
                               color: bloodTypeColor,
-                              border: `1px solid ${bloodTypeColor}33`,
+                              border: `1px solid ${bloodTypeColor}25`,
                             }}
                           >
                             <i className="fa-solid fa-droplet" />
@@ -964,9 +1094,9 @@ export default function AdminBloodBank() {
                           <span
                             className="abb-badge"
                             style={{
-                              background: `${stockStatus.color}15`,
+                              background: `${stockStatus.color}12`,
                               color: stockStatus.color,
-                              border: `1px solid ${stockStatus.color}33`,
+                              border: `1px solid ${stockStatus.color}25`,
                             }}
                           >
                             <i className="fa-solid fa-chart-line" />
@@ -985,6 +1115,7 @@ export default function AdminBloodBank() {
                         </td>
                         <td>
                           <div className="abb-date">
+                            <i className="fa-regular fa-calendar" />
                             {new Date(item.updated_at).toLocaleDateString()}
                           </div>
                         </td>
@@ -994,6 +1125,11 @@ export default function AdminBloodBank() {
                               className="abb-action-btn abb-action-btn--view"
                               onClick={() => handleView(item)}
                               title="View Details"
+                              style={{
+                                background: "#10b98112",
+                                color: "#10b981",
+                                border: "1px solid #10b98125",
+                              }}
                             >
                               <i className="fa-solid fa-eye" />
                             </button>
@@ -1001,6 +1137,11 @@ export default function AdminBloodBank() {
                               className="abb-action-btn abb-action-btn--edit"
                               onClick={() => handleEdit(item)}
                               title="Edit Item"
+                              style={{
+                                background: "#3b82f612",
+                                color: "#3b82f6",
+                                border: "1px solid #3b82f625",
+                              }}
                             >
                               <i className="fa-solid fa-pen" />
                             </button>
@@ -1008,6 +1149,11 @@ export default function AdminBloodBank() {
                               className="abb-action-btn abb-action-btn--delete"
                               onClick={() => handleDelete(item.id)}
                               title="Delete Item"
+                              style={{
+                                background: "#ef444412",
+                                color: "#ef4444",
+                                border: "1px solid #ef444425",
+                              }}
                             >
                               <i className="fa-solid fa-trash" />
                             </button>

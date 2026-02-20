@@ -3,7 +3,7 @@
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
 @keyframes slideUp {
   from {
-    transform: translateY(16px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -21,6 +21,33 @@
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 2px 4px rgba($primary-red, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 2px 12px rgba($primary-red, 0.4),
+      0 0 20px rgba($primary-red, 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 // ─── ROOT ────────────────────────────────────────────────────────────────────
 .abb-root {
   * {
@@ -29,14 +56,15 @@
 
   font-family: $font-family-base;
   min-height: 100vh;
-  background: $gray-100;
+  background: linear-gradient(135deg, $gray-100 0%, $white 100%);
   font-size: $font-size-base;
 
   input:focus,
   select:focus,
-  textarea:focus {
+  textarea:focus,
+  button:focus {
     outline: 2px solid $primary-red !important;
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
 
   table {
@@ -69,19 +97,56 @@
   background: linear-gradient(
     135deg,
     $primary-dark 0%,
-    $primary-red 60%,
+    $primary-red 70%,
     $primary-light 100%
   );
-  padding: $space-xl $space-2xl $space-lg;
+  padding: $space-2xl $space-2xl $space-xl;
   color: $white;
   box-shadow: $shadow-lg;
+  position: relative;
+  overflow: hidden;
 
-  &__inner {
+  &__container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__content {
     display: flex;
-    align-items: flex-start;
     justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
-    gap: $space-md;
+    gap: $space-xl;
+
+    @media (max-width: $breakpoint-lg) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  &__left {
+    flex: 1;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    background: rgba($white, 0.15);
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $space-md;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($white, 0.2);
+    animation: slideUp 500ms ease;
+
+    i {
+      font-size: $font-size-xs;
+    }
   }
 
   &__eyebrow {
@@ -101,101 +166,154 @@
   }
 
   &__title {
-    margin: 0;
+    margin: 0 0 $space-xs;
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
     line-height: 1.2;
+    text-shadow: 0 2px 4px rgba($gray-900, 0.2);
+    animation: slideUp 600ms ease;
   }
 
   &__subtitle {
-    margin: $space-xs 0 0;
-    opacity: 0.7;
-    font-size: $font-size-sm;
+    margin: 0;
+    opacity: 0.8;
+    font-size: $font-size-base;
+    max-width: 600px;
+    animation: slideUp 700ms ease;
   }
 
   &__stats {
     display: flex;
     gap: $space-xl;
-    text-align: center;
-    align-items: center;
+    background: rgba($white, 0.1);
+    padding: $space-lg $space-xl;
+    border-radius: $radius-lg;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($white, 0.15);
+    animation: slideUp 800ms ease;
+
+    @media (max-width: $breakpoint-md) {
+      width: 100%;
+      justify-content: space-around;
+    }
   }
 
-  &__stat {
-    &-num {
+  &-stat {
+    text-align: center;
+
+    &__value {
+      display: block;
       font-size: $font-size-2xl;
       font-weight: $font-weight-bold;
-      line-height: 1;
+      line-height: 1.2;
     }
-    &-label {
+
+    &__label {
       font-size: $font-size-xs;
-      opacity: 0.65;
-      font-weight: $font-weight-medium;
-      margin-top: 3px;
+      opacity: 0.8;
+    }
+  }
+
+  &__wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    line-height: 0;
+    pointer-events: none;
+
+    svg {
+      width: 100%;
+      height: auto;
     }
   }
 }
 
 // ─── PAGE BODY ────────────────────────────────────────────────────────────────
 .abb-body {
-  padding: $space-lg $space-2xl;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $space-xl;
+  position: relative;
+  z-index: 3;
 }
 
 // ─── STAT CARDS ───────────────────────────────────────────────────────────────
 .abb-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: $space-md;
-  margin-bottom: $space-lg;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: $space-lg;
+  margin-bottom: $space-xl;
 }
 
 .abb-card {
   background: $white;
   border-radius: $radius-lg;
-  padding: $space-md $space-lg;
+  padding: $space-lg;
   border: 1px solid $gray-200;
   box-shadow: $shadow-sm;
   display: flex;
   align-items: center;
-  gap: $space-md;
+  gap: $space-lg;
   transition: $transition-base;
+  animation: slideUp 400ms ease;
+  animation-fill-mode: both;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 50}ms;
+    }
+  }
 
   &:hover {
-    box-shadow: $shadow-md;
-    transform: translateY(-1px);
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
   }
 
   &__icon {
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
     border-radius: $radius-md;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: $transition-base;
 
     i {
-      font-size: 18px;
+      font-size: $font-size-xl;
     }
+  }
+
+  &:hover &__icon {
+    transform: scale(1.1) rotate(5deg);
   }
 
   &__num {
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
     color: $gray-900;
-    line-height: 1;
+    line-height: 1.2;
+    margin-bottom: 2px;
   }
 
   &__label {
     font-size: $font-size-xs;
     color: $gray-500;
     font-weight: $font-weight-medium;
-    margin-top: 3px;
+    margin-bottom: 2px;
   }
 
   &__sub {
     font-size: $font-size-xs;
     color: $gray-400;
-    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: 8px;
+    }
   }
 }
 
@@ -203,20 +321,25 @@
 .abb-toolbar {
   background: $white;
   border-radius: $radius-lg;
-  padding: $space-sm $space-md;
+  padding: $space-lg;
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: $space-lg;
   flex-wrap: wrap;
-  margin-bottom: $space-md;
+  margin-bottom: $space-xl;
   border: 1px solid $gray-200;
   box-shadow: $shadow-sm;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    border-color: $primary-red;
+  }
 
   &__search {
     position: relative;
     flex: 1;
-    min-width: 200px;
-    max-width: 320px;
+    min-width: 250px;
 
     &-icon {
       position: absolute;
@@ -225,12 +348,12 @@
       transform: translateY(-50%);
       color: $gray-400;
       pointer-events: none;
-      font-size: $font-size-xs;
+      font-size: $font-size-sm;
     }
 
     &-input {
       width: 100%;
-      padding: $space-sm $space-md $space-sm 2.4rem;
+      padding: $space-sm $space-md $space-sm $space-xl * 2;
       border-radius: $radius-full;
       border: 1.5px solid $gray-200;
       font-size: $font-size-sm;
@@ -240,7 +363,14 @@
       transition: $transition-fast;
 
       &:focus {
+        outline: none;
+        border-color: $primary-red;
         background: $white;
+        box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+      }
+
+      &::placeholder {
+        color: $gray-400;
       }
     }
 
@@ -255,10 +385,12 @@
       color: $gray-400;
       display: flex;
       align-items: center;
-      padding: 0;
+      padding: $space-xs;
+      transition: $transition-fast;
 
       &:hover {
-        color: $gray-600;
+        color: $primary-red;
+        transform: translateY(-50%) scale(1.1);
       }
 
       i {
@@ -271,43 +403,10 @@
     display: flex;
     gap: $space-xs;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   &__filter {
-    &-btn {
-      padding: $space-xs $space-md;
-      border-radius: $radius-full;
-      border: 1.5px solid transparent;
-      cursor: pointer;
-      font-weight: $font-weight-semibold;
-      font-size: $font-size-xs;
-      font-family: $font-family-base;
-      background: $gray-100;
-      color: $gray-600;
-      transition: $transition-fast;
-      display: flex;
-      align-items: center;
-      gap: $space-xs;
-
-      &:hover {
-        background: $gray-200;
-        color: $gray-900;
-      }
-
-      &--active {
-        background: $primary-red;
-        color: $white;
-        border-color: $primary-red;
-        &:hover {
-          background: $primary-dark;
-        }
-      }
-
-      i {
-        font-size: $font-size-xs;
-      }
-    }
-
     &-dropdown {
       position: relative;
 
@@ -317,7 +416,7 @@
         border: 1.5px solid $gray-200;
         cursor: pointer;
         font-weight: $font-weight-semibold;
-        font-size: $font-size-xs;
+        font-size: $font-size-sm;
         font-family: $font-family-base;
         background: $white;
         color: $gray-700;
@@ -325,13 +424,50 @@
         display: flex;
         align-items: center;
         gap: $space-xs;
+        position: relative;
+        overflow: hidden;
 
         i {
           font-size: $font-size-xs;
         }
 
-        &:hover {
+        span {
+          white-space: nowrap;
+        }
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba($primary-red, 0.1);
+          transform: translate(-50%, -50%);
+          transition:
+            width 0.6s,
+            height 0.6s;
+        }
+
+        &:hover:not(.abb-toolbar__filter-dropdown-btn--active) {
           background: $gray-100;
+          border-color: $gray-300;
+
+          &::before {
+            width: 300px;
+            height: 300px;
+          }
+        }
+
+        &--active {
+          background: rgba($primary-red, 0.08);
+          border-color: $primary-red;
+          color: $primary-red;
+
+          i {
+            color: $primary-red;
+          }
         }
       }
 
@@ -349,6 +485,7 @@
         max-height: 300px;
         overflow-y: auto;
         overflow-x: hidden;
+        animation: fadeIn 200ms ease;
 
         button {
           width: 100%;
@@ -392,12 +529,37 @@
     }
   }
 
+  &__filter-clear {
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    border: 1.5px solid $gray-200;
+    cursor: pointer;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    background: $white;
+    color: $error;
+    transition: $transition-fast;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover {
+      background: rgba($error, 0.08);
+      border-color: $error;
+      transform: translateY(-2px);
+    }
+  }
+
   &__create-btn {
-    margin-left: auto;
-    padding: $space-sm $space-md;
+    padding: $space-sm $space-xl;
     border-radius: $radius-md;
     border: none;
-    background: $primary-red;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
     color: $white;
     font-weight: $font-weight-semibold;
     font-size: $font-size-sm;
@@ -406,17 +568,38 @@
     display: flex;
     align-items: center;
     gap: $space-sm;
-    box-shadow: 0 2px 8px rgba($primary-red, 0.28);
+    box-shadow: $shadow-sm;
     transition: $transition-fast;
+    position: relative;
+    overflow: hidden;
 
     i {
       font-size: $font-size-xs;
     }
 
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba($white, 0.2);
+      transform: translate(-50%, -50%);
+      transition:
+        width 0.6s,
+        height 0.6s;
+    }
+
     &:hover {
-      background: $primary-dark;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba($primary-red, 0.35);
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
     }
     &:active {
       transform: translateY(0);
@@ -431,13 +614,20 @@
   border: 1px solid $gray-200;
   box-shadow: $shadow-sm;
   overflow: hidden;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    border-color: $primary-red;
+  }
 
   &__head {
-    padding: $space-sm $space-md;
+    padding: $space-md $space-lg;
     border-bottom: 1px solid $gray-200;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background: linear-gradient(135deg, $gray-100, $white);
   }
 
   &__title {
@@ -450,17 +640,32 @@
 
     i {
       color: $primary-red;
-      font-size: $font-size-sm;
+      font-size: $font-size-base;
+      background: rgba($primary-red, 0.1);
+      padding: $space-xs;
+      border-radius: $radius-md;
     }
   }
 
-  &__count {
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
     font-size: $font-size-xs;
+    color: $gray-500;
+  }
+
+  &__count {
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+  }
+
+  &__divider {
+    color: $gray-300;
+  }
+
+  &__sub {
     color: $gray-400;
-    background: $gray-100;
-    padding: 2px $space-sm;
-    border-radius: $radius-full;
-    font-weight: $font-weight-medium;
   }
 
   &__scroll {
@@ -478,7 +683,7 @@
   }
 
   th {
-    padding: $space-sm $space-md;
+    padding: $space-md;
     text-align: left;
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
@@ -490,10 +695,15 @@
   }
 
   td {
-    padding: $space-sm $space-md;
+    padding: $space-md;
     border-bottom: 1px solid $gray-100;
     color: $gray-700;
     transition: background $transition-fast;
+    vertical-align: middle;
+  }
+
+  &__row--hovered {
+    background: rgba($primary-red, 0.02);
   }
 
   &__empty,
@@ -501,16 +711,74 @@
     padding: $space-2xl $space-md;
     text-align: center;
     color: $gray-400;
+  }
 
-    i {
-      font-size: $font-size-xl;
+  &__empty {
+    &-icon {
+      font-size: $font-size-2xl;
       display: block;
-      margin-bottom: $space-sm;
+      margin-bottom: $space-md;
       opacity: 0.4;
     }
-    p {
-      margin: $space-xs 0 0;
+
+    &-title {
+      font-size: $font-size-lg;
+      color: $gray-600;
+      margin-bottom: $space-xs;
+    }
+
+    &-message {
       font-size: $font-size-sm;
+      color: $gray-500;
+      margin-bottom: $space-lg;
+    }
+
+    &-action {
+      padding: $space-sm $space-xl;
+      background: $primary-red;
+      color: $white;
+      border: none;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      transition: $transition-fast;
+      display: inline-flex;
+      align-items: center;
+      gap: $space-xs;
+
+      i {
+        font-size: $font-size-sm;
+      }
+
+      &:hover {
+        background: $primary-dark;
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+      }
+    }
+  }
+
+  &__loading {
+    &-spinner {
+      i {
+        font-size: $font-size-2xl;
+        margin-bottom: $space-md;
+        color: $primary-red;
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    p {
+      margin: 0 0 $space-xs;
+      font-size: $font-size-base;
+      color: $gray-600;
+      font-weight: $font-weight-semibold;
+    }
+
+    &-sub {
+      font-size: $font-size-sm;
+      color: $gray-400;
     }
   }
 }
@@ -521,11 +789,27 @@
     font-weight: $font-weight-semibold;
     color: $gray-900;
     font-size: $font-size-sm;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+      font-size: $font-size-xs;
+    }
   }
   &__address {
     color: $gray-500;
     font-size: $font-size-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+      font-size: 8px;
+    }
   }
 }
 
@@ -533,15 +817,20 @@
 .abb-badge {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px $space-sm;
+  gap: $space-xs;
+  padding: $space-xs $space-md;
   border-radius: $radius-full;
   font-size: $font-size-xs;
   font-weight: $font-weight-bold;
   white-space: nowrap;
+  transition: $transition-fast;
 
   i {
     font-size: 9px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
   }
 }
 
@@ -563,6 +852,7 @@
 
     i {
       color: $gray-400;
+      width: 14px;
     }
   }
 }
@@ -572,6 +862,14 @@
   font-size: $font-size-xs;
   color: $gray-600;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+
+  i {
+    color: $gray-400;
+    font-size: 8px;
+  }
 }
 
 // ─── ACTION BUTTONS ───────────────────────────────────────────────────────────
@@ -581,8 +879,8 @@
 }
 
 .abb-action-btn {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: $radius-md;
   border: 1px solid transparent;
   cursor: pointer;
@@ -590,48 +888,62 @@
   align-items: center;
   justify-content: center;
   transition: $transition-fast;
+  position: relative;
+  overflow: hidden;
 
   i {
-    font-size: 11px;
+    font-size: $font-size-sm;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba($white, 0.2);
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.6s,
+      height 0.6s;
   }
 
   &:disabled {
     opacity: 0.3;
     cursor: not-allowed;
+
+    &::before {
+      display: none;
+    }
   }
 
   &:not(:disabled):hover {
-    transform: translateY(-1px);
-    box-shadow: $shadow-sm;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+
+    &::before {
+      width: 100px;
+      height: 100px;
+    }
   }
 
   &--view {
-    background: rgba($success, 0.08);
-    color: $success;
-    border-color: rgba($success, 0.15);
-    &:not(:disabled):hover {
-      background: rgba($success, 0.15);
-      border-color: rgba($success, 0.3);
+    &:hover {
+      filter: brightness(1.1);
     }
   }
 
   &--edit {
-    background: rgba($info, 0.08);
-    color: $info;
-    border-color: rgba($info, 0.15);
-    &:not(:disabled):hover {
-      background: rgba($info, 0.15);
-      border-color: rgba($info, 0.3);
+    &:hover {
+      filter: brightness(1.1);
     }
   }
 
   &--delete {
-    background: rgba($error, 0.08);
-    color: $error;
-    border-color: rgba($error, 0.15);
-    &:not(:disabled):hover {
-      background: rgba($error, 0.15);
-      border-color: rgba($error, 0.3);
+    &:hover {
+      filter: brightness(1.1);
     }
   }
 }
@@ -641,8 +953,8 @@
   position: fixed;
   inset: 0;
   z-index: $z-modal-backdrop;
-  background: rgba($gray-900, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba($gray-900, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -656,7 +968,7 @@
   width: 100%;
   max-width: 700px;
   box-shadow: $shadow-xl;
-  animation: slideUp 200ms ease;
+  animation: slideUp 300ms ease;
   max-height: 92vh;
   display: flex;
   flex-direction: column;
@@ -666,35 +978,36 @@
   }
 
   &__header {
-    padding: $space-md $space-lg;
+    padding: $space-lg $space-xl;
     border-radius: $radius-lg $radius-lg 0 0;
     background: linear-gradient(135deg, $primary-dark, $primary-red);
     color: $white;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-weight: $font-weight-bold;
-    font-size: $font-size-base;
     flex-shrink: 0;
     gap: $space-sm;
-
-    i {
-      margin-right: $space-xs;
-    }
   }
 
   &__title {
     display: flex;
     align-items: center;
+    gap: $space-sm;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+
+    i {
+      font-size: $font-size-lg;
+    }
   }
 
   &__close {
     background: rgba($white, 0.15);
     border: 1px solid rgba($white, 0.2);
     color: $white;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-md;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -703,16 +1016,17 @@
     flex-shrink: 0;
 
     i {
-      font-size: $font-size-xs;
+      font-size: $font-size-base;
       margin: 0;
     }
     &:hover {
       background: rgba($white, 0.3);
+      transform: rotate(90deg);
     }
   }
 
   &__body {
-    padding: $space-lg;
+    padding: $space-xl;
     overflow-y: auto;
   }
 }
@@ -720,23 +1034,27 @@
 // ─── FORM ─────────────────────────────────────────────────────────────────────
 .abb-form {
   &__error-banner {
-    padding: $space-sm $space-md;
-    background: rgba($error, 0.06);
-    border: 1px solid rgba($error, 0.25);
+    padding: $space-md $space-lg;
+    background: rgba($error, 0.08);
+    border: 1px solid rgba($error, 0.2);
     border-radius: $radius-md;
     color: $error;
-    margin-bottom: $space-md;
+    margin-bottom: $space-xl;
     font-size: $font-size-sm;
     display: flex;
     align-items: center;
     gap: $space-sm;
+
+    i {
+      font-size: $font-size-base;
+    }
   }
 
   &__row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: $space-md;
-    margin-bottom: $space-md;
+    gap: $space-lg;
+    margin-bottom: $space-lg;
 
     @media (max-width: $breakpoint-md) {
       grid-template-columns: 1fr;
@@ -747,7 +1065,7 @@
     display: flex;
     flex-direction: column;
     gap: $space-xs;
-    margin-bottom: $space-md;
+    margin-bottom: $space-lg;
 
     &--full {
       grid-column: 1 / -1;
@@ -776,7 +1094,7 @@
   &__input,
   &__select,
   &__textarea {
-    padding: $space-sm $space-md;
+    padding: $space-md;
     border-radius: $radius-md;
     font-size: $font-size-sm;
     font-family: $font-family-base;
@@ -784,21 +1102,23 @@
     border: 1.5px solid $gray-200;
     background: $gray-100;
     width: 100%;
-    transition:
-      border-color $transition-fast,
-      background $transition-fast;
+    transition: $transition-fast;
 
     &:focus {
+      outline: none;
+      border-color: $primary-red;
       background: $white;
+      box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
     }
     &--error {
-      border-color: rgba($error, 0.5) !important;
+      border-color: $error !important;
       background: rgba($error, 0.04);
     }
 
     &:read-only {
       background: $gray-200;
       cursor: not-allowed;
+      color: $gray-600;
     }
   }
 
@@ -812,7 +1132,7 @@
     color: $error;
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: $space-xs;
 
     i {
       font-size: 9px;
@@ -822,43 +1142,74 @@
   &__hint {
     font-size: $font-size-xs;
     color: $gray-500;
-    margin-top: 2px;
+    margin-top: $space-xs;
     display: flex;
     align-items: center;
     gap: $space-xs;
+
+    i {
+      font-size: 8px;
+      color: $gray-400;
+    }
   }
 
   &__submit {
     width: 100%;
     padding: $space-md;
     border-radius: $radius-md;
-    background: $primary-red;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
     color: $white;
     font-weight: $font-weight-bold;
     font-size: $font-size-base;
     font-family: $font-family-base;
     border: none;
     cursor: pointer;
-    margin-top: $space-xs;
+    margin-top: $space-md;
     transition: $transition-fast;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: $space-sm;
-    box-shadow: 0 2px 8px rgba($primary-red, 0.25);
+    box-shadow: $shadow-sm;
+    position: relative;
+    overflow: hidden;
 
     i {
-      font-size: $font-size-sm;
+      font-size: $font-size-base;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba($white, 0.2);
+      transform: translate(-50%, -50%);
+      transition:
+        width 0.6s,
+        height 0.6s;
     }
 
     &:hover:not(:disabled) {
-      background: $primary-dark;
-      box-shadow: 0 4px 12px rgba($primary-red, 0.35);
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
     }
     &:disabled {
       background: $gray-400;
       cursor: not-allowed;
       box-shadow: none;
+
+      &::before {
+        display: none;
+      }
     }
   }
 }
@@ -866,8 +1217,8 @@
 // ─── VIEW MODAL ───────────────────────────────────────────────────────────────
 .abb-view {
   &__section {
-    margin-bottom: $space-lg;
-    padding-bottom: $space-lg;
+    margin-bottom: $space-xl;
+    padding-bottom: $space-xl;
     border-bottom: 1px solid $gray-200;
 
     &:last-child {
@@ -886,7 +1237,10 @@
       gap: $space-sm;
 
       i {
-        color: $primary-red;
+        font-size: $font-size-lg;
+        background: rgba($primary-red, 0.1);
+        padding: $space-xs;
+        border-radius: $radius-md;
       }
     }
   }
@@ -906,9 +1260,14 @@
     border-radius: $radius-full;
     font-size: $font-size-xs;
     font-weight: $font-weight-bold;
+    transition: $transition-fast;
 
     i {
       font-size: $font-size-xs;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
     }
   }
 
@@ -924,7 +1283,15 @@
       font-size: $font-size-xs;
       color: $gray-500;
       margin-bottom: $space-xs;
+      font-weight: $font-weight-medium;
     }
+
+    &-value-group {
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+    }
+
     &-value {
       font-size: $font-size-sm;
       color: $gray-900;
@@ -933,6 +1300,7 @@
       display: flex;
       align-items: center;
       gap: $space-xs;
+      flex: 1;
 
       i {
         color: $gray-400;
@@ -945,6 +1313,8 @@
         padding: 0;
         cursor: pointer;
         color: $primary-red;
+        font-family: inherit;
+        text-align: left;
 
         &:hover {
           text-decoration: underline;
@@ -953,10 +1323,36 @@
     }
   }
 
+  &__copy-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: $radius-md;
+    border: 1px solid $gray-200;
+    background: $white;
+    color: $gray-600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: $transition-fast;
+    flex-shrink: 0;
+
+    i {
+      font-size: $font-size-xs;
+    }
+
+    &:hover {
+      background: $gray-100;
+      color: $primary-red;
+      border-color: $primary-red;
+      transform: scale(1.05);
+    }
+  }
+
   &__actions {
     display: flex;
     gap: $space-md;
-    margin: $space-lg 0;
+    margin: $space-xl 0;
   }
 
   &__footer {
@@ -964,12 +1360,19 @@
     border-top: 1px solid $gray-200;
     color: $gray-500;
     font-size: $font-size-xs;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+
+    i {
+      color: $gray-400;
+    }
   }
 }
 
 // ─── BUTTONS ──────────────────────────────────────────────────────────────────
 .abb-btn {
-  padding: $space-sm $space-lg;
+  padding: $space-sm $space-xl;
   border-radius: $radius-md;
   font-weight: $font-weight-semibold;
   font-size: $font-size-sm;
@@ -979,9 +1382,26 @@
   align-items: center;
   gap: $space-sm;
   border: none;
+  position: relative;
+  overflow: hidden;
 
   i {
     font-size: $font-size-sm;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba($white, 0.2);
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.6s,
+      height 0.6s;
   }
 
   &--primary {
@@ -991,7 +1411,12 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: $shadow-md;
+      box-shadow: $shadow-lg;
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
     }
   }
 
@@ -1003,7 +1428,13 @@
     &:hover {
       background: rgba($primary-red, 0.04);
       transform: translateY(-2px);
-      box-shadow: $shadow-sm;
+      box-shadow: $shadow-md;
+
+      &::before {
+        background: rgba($primary-red, 0.1);
+        width: 300px;
+        height: 300px;
+      }
     }
   }
 }
@@ -1011,55 +1442,97 @@
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 .abb-toast {
   position: fixed;
-  bottom: $space-lg;
-  right: $space-lg;
+  bottom: $space-xl;
+  right: $space-xl;
   z-index: $z-tooltip;
-  padding: $space-sm $space-md;
+  min-width: 320px;
+  max-width: 400px;
   border-radius: $radius-md;
-  font-weight: $font-weight-semibold;
-  font-size: $font-size-sm;
-  box-shadow: $shadow-lg;
-  animation: slideUp 200ms ease;
+  box-shadow: $shadow-xl;
+  animation: slideUp 300ms ease;
   display: flex;
   align-items: center;
-  gap: $space-sm;
-  max-width: 360px;
+  gap: $space-md;
+  overflow: hidden;
 
-  i {
-    flex-shrink: 0;
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
   }
 
   &--success {
     background: #f0fdf4;
-    color: darken($success, 12%);
-    border: 1px solid rgba($success, 0.25);
-    border-left: 4px solid $success;
+    border: 1px solid rgba($success, 0.2);
+
+    &::before {
+      background: $success;
+    }
+
+    .abb-toast__icon {
+      color: $success;
+    }
   }
 
   &--error {
     background: rgba($error, 0.06);
-    color: $error;
     border: 1px solid rgba($error, 0.2);
-    border-left: 4px solid $error;
+
+    &::before {
+      background: $error;
+    }
+
+    .abb-toast__icon {
+      color: $error;
+    }
+  }
+
+  &__icon {
+    padding-left: $space-lg;
+
+    i {
+      font-size: $font-size-xl;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: $space-md 0;
+  }
+
+  &__title {
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: 2px;
+    font-size: $font-size-sm;
+  }
+
+  &__message {
+    font-size: $font-size-xs;
+    color: $gray-600;
   }
 
   &__close {
     background: none;
     border: none;
     cursor: pointer;
-    font-weight: $font-weight-bold;
-    margin-left: auto;
-    opacity: 0.5;
-    color: inherit;
-    padding: 0;
+    color: $gray-400;
+    padding: $space-md;
     display: flex;
     align-items: center;
+    justify-content: center;
+    transition: $transition-fast;
 
-    &:hover {
-      opacity: 1;
-    }
     i {
       font-size: $font-size-sm;
+    }
+
+    &:hover {
+      color: $gray-600;
+      background: $gray-200;
     }
   }
 }
@@ -1067,19 +1540,19 @@
 // ─── RESPONSIVE ───────────────────────────────────────────────────────────────
 @media (max-width: $breakpoint-lg) {
   .abb-header {
-    padding: $space-lg $space-xl;
+    padding: $space-xl $space-lg;
 
     &__title {
       font-size: $font-size-xl;
     }
-
-    &__stats {
-      gap: $space-lg;
-    }
   }
 
   .abb-body {
-    padding: $space-lg $space-xl;
+    padding: $space-lg;
+  }
+
+  .abb-cards {
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .abb-toolbar {
@@ -1091,7 +1564,7 @@
     }
 
     &__filters {
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     &__create-btn {
@@ -1100,35 +1573,29 @@
       justify-content: center;
     }
   }
-
-  .abb-table {
-    th,
-    td {
-      white-space: nowrap;
-    }
-  }
 }
 
 @media (max-width: $breakpoint-md) {
   .abb-header {
-    padding: $space-md $space-lg;
+    padding: $space-lg;
 
-    &__inner {
+    &__content {
       flex-direction: column;
-    }
-
-    &__title {
-      font-size: $font-size-lg;
+      align-items: flex-start;
     }
 
     &__stats {
       width: 100%;
       justify-content: space-around;
     }
+
+    &__title {
+      font-size: $font-size-lg;
+    }
   }
 
   .abb-body {
-    padding: $space-md $space-lg;
+    padding: $space-md;
   }
 
   .abb-cards {
@@ -1152,6 +1619,11 @@
           width: 100%;
           left: 0;
         }
+      }
+
+      .abb-toolbar__filter-clear {
+        width: 100%;
+        justify-content: center;
       }
     }
   }
@@ -1177,5 +1649,12 @@
 
   .abb-actions {
     flex-wrap: wrap;
+  }
+
+  .abb-toast {
+    left: $space-md;
+    right: $space-md;
+    min-width: auto;
+    max-width: none;
   }
 }

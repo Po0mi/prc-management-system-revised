@@ -20,10 +20,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ar-toast ar-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="ar-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="ar-toast__content">
+        <div className="ar-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ar-toast__message">{message}</div>
+      </div>
       <button className="ar-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -51,6 +58,7 @@ function StatCard({ icon, label, value, sub, color }) {
 function ReportTable({ data, columns, onExport, reportType }) {
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -75,10 +83,14 @@ function ReportTable({ data, columns, onExport, reportType }) {
 
   return (
     <div className="ar-report-table">
-      <div className="ar-report-table__toolbar">
-        <h3>{reportType} Report</h3>
+      <div className="ar-report-table__header">
+        <div className="ar-report-table__title">
+          <i className="fa-solid fa-file-alt" />
+          <span>{reportType} Report</span>
+        </div>
         <button className="ar-export-btn" onClick={onExport}>
-          <i className="fa-solid fa-download" /> Export to Excel
+          <i className="fa-solid fa-download" />
+          <span>Export to Excel</span>
         </button>
       </div>
       <div className="ar-table-container">
@@ -91,7 +103,7 @@ function ReportTable({ data, columns, onExport, reportType }) {
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                   className={col.sortable !== false ? "sortable" : ""}
                 >
-                  {col.label}
+                  <span>{col.label}</span>
                   {sortField === col.key && (
                     <i
                       className={`fa-solid fa-chevron-${sortDirection === "asc" ? "up" : "down"}`}
@@ -104,14 +116,28 @@ function ReportTable({ data, columns, onExport, reportType }) {
           <tbody>
             {sortedData.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="ar-table__empty">
-                  <i className="fa-regular fa-folder-open" />
-                  <p>No data available</p>
+                <td colSpan={columns.length}>
+                  <div className="ar-table__empty">
+                    <div className="ar-table__empty-icon">
+                      <i className="fa-regular fa-folder-open" />
+                    </div>
+                    <h3 className="ar-table__empty-title">No Data Available</h3>
+                    <p className="ar-table__empty-message">
+                      There are no records to display for this report.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (
               sortedData.map((row, index) => (
-                <tr key={index}>
+                <tr
+                  key={index}
+                  onMouseEnter={() => setHoveredRow(index)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                  className={
+                    hoveredRow === index ? "ar-table__row--hovered" : ""
+                  }
+                >
                   {columns.map((col) => (
                     <td key={col.key}>
                       {col.render
@@ -125,6 +151,15 @@ function ReportTable({ data, columns, onExport, reportType }) {
           </tbody>
         </table>
       </div>
+      {sortedData.length > 0 && (
+        <div className="ar-table__footer">
+          <span>
+            <i className="fa-regular fa-eye" />
+            Showing {sortedData.length}{" "}
+            {sortedData.length === 1 ? "record" : "records"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -137,18 +172,49 @@ export default function AdminReports() {
   const [toast, setToast] = useState(null);
   const [filters, setFilters] = useState({});
   const [reportData, setReportData] = useState([]);
+  const [hoveredTab, setHoveredTab] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
   };
 
   const tabs = [
-    { id: "dashboard", label: "Dashboard", icon: "fa-solid fa-chart-pie" },
-    { id: "users", label: "Users", icon: "fa-solid fa-users" },
-    { id: "events", label: "Events", icon: "fa-solid fa-calendar-days" },
-    { id: "training", label: "Training", icon: "fa-solid fa-graduation-cap" },
-    { id: "volunteers", label: "Volunteers", icon: "fa-solid fa-hand-peace" },
-    { id: "inventory", label: "Inventory", icon: "fa-solid fa-boxes" },
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: "fa-solid fa-chart-pie",
+      color: "#c41e3a",
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: "fa-solid fa-users",
+      color: "#0891b2",
+    },
+    {
+      id: "events",
+      label: "Events",
+      icon: "fa-solid fa-calendar-days",
+      color: "#f59e0b",
+    },
+    {
+      id: "training",
+      label: "Training",
+      icon: "fa-solid fa-graduation-cap",
+      color: "#7c3aed",
+    },
+    {
+      id: "volunteers",
+      label: "Volunteers",
+      icon: "fa-solid fa-hand-peace",
+      color: "#10b981",
+    },
+    {
+      id: "inventory",
+      label: "Inventory",
+      icon: "fa-solid fa-boxes",
+      color: "#c2410c",
+    },
   ];
 
   // Load summary data
@@ -282,19 +348,54 @@ export default function AdminReports() {
 
   return (
     <div className="ar-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="ar-header">
-        <div className="ar-header__inner">
-          <div>
-            <div className="ar-header__eyebrow">
-              <i className="fa-solid fa-chart-line" />
-              Reports & Analytics
+        <div className="ar-header__container">
+          <div className="ar-header__content">
+            <div className="ar-header__left">
+              <div className="ar-header__badge">
+                <i className="fa-solid fa-chart-line" />
+                Reports & Analytics
+              </div>
+              <h1 className="ar-header__title">Reports</h1>
+              <p className="ar-header__subtitle">
+                View and export comprehensive reports across all modules
+              </p>
             </div>
-            <h1 className="ar-header__title">Reports</h1>
-            <p className="ar-header__subtitle">
-              View and export comprehensive reports across all modules
-            </p>
+            <div className="ar-header__stats">
+              <div className="ar-header-stat">
+                <span className="ar-header-stat__value">
+                  {summary?.users?.total || 0}
+                </span>
+                <span className="ar-header-stat__label">Total Users</span>
+              </div>
+              <div className="ar-header-stat">
+                <span className="ar-header-stat__value">
+                  {summary?.events?.total || 0}
+                </span>
+                <span className="ar-header-stat__label">Events</span>
+              </div>
+              <div className="ar-header-stat">
+                <span className="ar-header-stat__value">
+                  {summary?.training?.total || 0}
+                </span>
+                <span className="ar-header-stat__label">Training</span>
+              </div>
+            </div>
           </div>
+        </div>
+        <div className="ar-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -305,6 +406,19 @@ export default function AdminReports() {
             key={tab.id}
             className={`ar-tab ${activeTab === tab.id ? "ar-tab--active" : ""}`}
             onClick={() => setActiveTab(tab.id)}
+            onMouseEnter={() => setHoveredTab(tab.id)}
+            onMouseLeave={() => setHoveredTab(null)}
+            style={{
+              borderColor:
+                activeTab === tab.id || hoveredTab === tab.id
+                  ? tab.color
+                  : undefined,
+              background: activeTab === tab.id ? `${tab.color}08` : undefined,
+              color:
+                activeTab === tab.id || hoveredTab === tab.id
+                  ? tab.color
+                  : undefined,
+            }}
           >
             <i className={tab.icon} />
             {tab.label}
@@ -316,15 +430,19 @@ export default function AdminReports() {
       <div className="ar-body">
         {loading ? (
           <div className="ar-loading">
-            <i className="fa-solid fa-spinner fa-spin" />
+            <div className="ar-loading__spinner">
+              <i className="fa-solid fa-spinner fa-spin" />
+            </div>
             <p>Loading reports...</p>
+            <span className="ar-loading__subtitle">Fetching your data</span>
           </div>
         ) : activeTab === "dashboard" ? (
           // Dashboard View
           <div className="ar-dashboard">
             <div className="ar-section">
               <h2 className="ar-section__title">
-                <i className="fa-solid fa-users" /> Users Overview
+                <i className="fa-solid fa-users" style={{ color: "#0891b2" }} />
+                Users Overview
               </h2>
               <div className="ar-grid ar-grid--4">
                 <StatCard
@@ -356,7 +474,11 @@ export default function AdminReports() {
 
             <div className="ar-section">
               <h2 className="ar-section__title">
-                <i className="fa-solid fa-calendar-days" /> Events & Training
+                <i
+                  className="fa-solid fa-calendar-days"
+                  style={{ color: "#f59e0b" }}
+                />
+                Events & Training
               </h2>
               <div className="ar-grid ar-grid--4">
                 <StatCard
@@ -390,7 +512,8 @@ export default function AdminReports() {
 
             <div className="ar-section">
               <h2 className="ar-section__title">
-                <i className="fa-solid fa-boxes" /> Inventory & Merchandise
+                <i className="fa-solid fa-boxes" style={{ color: "#c2410c" }} />
+                Inventory & Merchandise
               </h2>
               <div className="ar-grid ar-grid--4">
                 <StatCard
@@ -424,9 +547,13 @@ export default function AdminReports() {
 
             <div className="ar-section">
               <h2 className="ar-section__title">
-                <i className="fa-solid fa-hand-peace" /> Volunteers
+                <i
+                  className="fa-solid fa-hand-peace"
+                  style={{ color: "#10b981" }}
+                />
+                Volunteers
               </h2>
-              <div className="ar-grid ar-grid--4">
+              <div className="ar-grid ar-grid--3">
                 <StatCard
                   icon="fa-solid fa-users"
                   label="Total Volunteers"

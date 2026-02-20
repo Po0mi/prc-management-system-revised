@@ -42,10 +42,29 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 // ─── ROOT ────────────────────────────────────────────────────────────────────
 .ud-root {
   min-height: 100vh;
-  background: $gray-100;
+  background: linear-gradient(135deg, $gray-100 0%, $white 100%);
   font-family: $font-family-base;
 
   * {
@@ -75,76 +94,119 @@
   background: linear-gradient(
     135deg,
     $primary-dark 0%,
-    $primary-red 60%,
+    $primary-red 70%,
     $primary-light 100%
   );
-  padding: $space-xl $space-2xl;
+  padding: $space-2xl $space-2xl $space-xl;
   color: $white;
   box-shadow: $shadow-lg;
   animation: slideUp 400ms ease;
+  position: relative;
+  overflow: hidden;
 
-  &__content {
+  &__container {
     max-width: 1400px;
     margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__content {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: $space-lg;
+    gap: $space-xl;
 
-    @media (max-width: $breakpoint-md) {
+    @media (max-width: $breakpoint-lg) {
       flex-direction: column;
       align-items: flex-start;
     }
   }
 
-  &__eyebrow {
-    font-size: $font-size-xs;
-    font-weight: $font-weight-semibold;
-    opacity: 0.65;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: $space-xs;
-    display: flex;
+  &__left {
+    flex: 1;
+  }
+
+  &__badge {
+    display: inline-flex;
     align-items: center;
     gap: $space-xs;
+    background: rgba($white, 0.15);
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $space-md;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($white, 0.2);
+    animation: slideUp 500ms ease;
 
     i {
-      font-size: $font-size-sm;
+      font-size: $font-size-xs;
     }
   }
 
   &__title {
-    margin: 0;
+    margin: 0 0 $space-xs;
     font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
     line-height: 1.2;
+    text-shadow: 0 2px 4px rgba($gray-900, 0.2);
+    animation: slideUp 600ms ease;
   }
 
   &__subtitle {
-    margin: $space-xs 0 0;
-    opacity: 0.7;
-    font-size: $font-size-sm;
+    margin: 0;
+    opacity: 0.8;
+    font-size: $font-size-base;
+    max-width: 600px;
+    animation: slideUp 700ms ease;
   }
 
   &__stats {
     display: flex;
     gap: $space-xl;
-    text-align: center;
+    background: rgba($white, 0.1);
+    padding: $space-lg $space-xl;
+    border-radius: $radius-lg;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($white, 0.15);
+    animation: slideUp 800ms ease;
+
+    @media (max-width: $breakpoint-md) {
+      width: 100%;
+      justify-content: space-around;
+    }
   }
 
-  &__stat {
-    &-num {
+  &-stat {
+    text-align: center;
+
+    &__value {
+      display: block;
       font-size: $font-size-2xl;
       font-weight: $font-weight-bold;
-      line-height: 1;
+      line-height: 1.2;
     }
-    &-label {
+
+    &__label {
       font-size: $font-size-xs;
-      opacity: 0.65;
-      font-weight: $font-weight-medium;
-      margin-top: 3px;
-      max-width: 120px;
+      opacity: 0.8;
+    }
+  }
+
+  &__wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    line-height: 0;
+    pointer-events: none;
+
+    svg {
+      width: 100%;
+      height: auto;
     }
   }
 }
@@ -154,12 +216,18 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: $space-xl;
+  position: relative;
+  z-index: 3;
 }
 
 // ─── NOTICE ──────────────────────────────────────────────────────────────────
 .ud-notice {
-  background: rgba($warning, 0.06);
-  border: 1px solid rgba($warning, 0.25);
+  background: linear-gradient(
+    135deg,
+    rgba($warning, 0.08),
+    rgba($warning, 0.02)
+  );
+  border: 1px solid rgba($warning, 0.2);
   border-radius: $radius-lg;
   padding: $space-lg;
   margin-bottom: $space-xl;
@@ -218,22 +286,52 @@
   align-items: center;
   justify-content: center;
   gap: $space-sm;
+  position: relative;
+  overflow: hidden;
 
   i {
     font-size: $font-size-lg;
   }
 
+  span {
+    position: relative;
+    z-index: 1;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba($primary-red, 0.1);
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.6s,
+      height 0.6s;
+  }
+
   &:hover {
-    background: $gray-100;
-    border-color: $gray-300;
-    color: $gray-900;
+    border-color: $primary-red;
+    color: $primary-red;
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
   }
 
   &--active {
-    background: $primary-red;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
     border-color: $primary-red;
     color: $white;
     box-shadow: $shadow-md;
+
+    &::before {
+      display: none;
+    }
 
     &:hover {
       background: $primary-dark;
@@ -249,13 +347,28 @@
   margin-bottom: $space-xl;
   border: 1px solid $gray-200;
   box-shadow: $shadow-sm;
+  transition: $transition-base;
   animation: slideUp 400ms ease;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    border-color: $primary-red;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-xl;
+    flex-wrap: wrap;
+    gap: $space-md;
+  }
 
   &__title {
     font-size: $font-size-xl;
     font-weight: $font-weight-bold;
     color: $gray-900;
-    margin-bottom: $space-xl;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: $space-sm;
@@ -266,7 +379,21 @@
       background: rgba($primary-red, 0.1);
       padding: $space-xs;
       border-radius: $radius-md;
+      transition: $transition-fast;
     }
+
+    &:hover i {
+      transform: rotate(5deg) scale(1.1);
+    }
+  }
+
+  &__badge {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    background: $gray-100;
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-weight: $font-weight-medium;
   }
 }
 
@@ -275,11 +402,22 @@
   border: 1px solid $gray-200;
   border-radius: $radius-lg;
   overflow: hidden;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    transform: translateY(-2px);
+  }
 
   &__header {
     background: linear-gradient(135deg, $primary-red, $primary-dark);
     padding: $space-md $space-lg;
     color: $white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $space-md;
 
     h3 {
       font-size: $font-size-lg;
@@ -295,8 +433,36 @@
     }
   }
 
+  &__badge {
+    background: rgba($white, 0.2);
+    padding: $space-xs $space-md;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    letter-spacing: 0.5px;
+  }
+
   &__content {
     padding: $space-lg;
+  }
+}
+
+// ─── HOURS BADGE ─────────────────────────────────────────────────────────────
+.ud-hours-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  padding: $space-xs $space-md;
+  background: rgba($success, 0.1);
+  border: 1px solid rgba($success, 0.2);
+  border-radius: $radius-full;
+  margin-bottom: $space-lg;
+  color: $success;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+
+  i {
+    font-size: $font-size-xs;
   }
 }
 
@@ -334,6 +500,12 @@
   background: $gray-100;
   border-radius: $radius-md;
   border: 1px solid $gray-200;
+  transition: $transition-fast;
+
+  &:hover {
+    border-color: $primary-red;
+    background: $white;
+  }
 
   &--address {
     background: $white;
@@ -353,6 +525,7 @@
     display: flex;
     align-items: center;
     gap: $space-xs;
+    font-family: $font-family-base;
 
     i {
       color: $gray-400;
@@ -403,12 +576,14 @@
     background: $gray-100;
     color: $primary-red;
     border-color: $primary-red;
+    transform: scale(1.05);
   }
 
   &--copied {
     background: $success;
     border-color: $success;
     color: $white;
+    animation: pulse 0.3s ease;
 
     &:hover {
       background: darken($success, 5%);
@@ -436,9 +611,12 @@
   align-items: center;
   gap: $space-sm;
   border: none;
+  position: relative;
+  overflow: hidden;
 
   i {
     font-size: $font-size-base;
+    transition: transform $transition-fast;
   }
 
   &--primary {
@@ -446,9 +624,33 @@
     color: $white;
     box-shadow: $shadow-sm;
 
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba($white, 0.2);
+      transform: translate(-50%, -50%);
+      transition:
+        width 0.6s,
+        height 0.6s;
+    }
+
     &:hover {
       transform: translateY(-2px);
-      box-shadow: $shadow-md;
+      box-shadow: $shadow-lg;
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      i {
+        transform: translateX(2px);
+      }
     }
   }
 
@@ -460,7 +662,11 @@
     &:hover {
       background: rgba($primary-red, 0.04);
       transform: translateY(-2px);
-      box-shadow: $shadow-sm;
+      box-shadow: $shadow-md;
+
+      i {
+        transform: translateX(2px);
+      }
     }
   }
 }
@@ -476,24 +682,39 @@
   background: $white;
   border: 1px solid $gray-200;
   border-radius: $radius-lg;
-  padding: $space-md;
-  transition: $transition-fast;
+  padding: $space-lg;
+  transition: $transition-base;
+  text-align: center;
+  animation: slideUp 400ms ease;
+  animation-fill-mode: both;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 50}ms;
+    }
+  }
 
   &:hover {
-    box-shadow: $shadow-md;
-    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+    transform: translateY(-4px);
+    border-color: $primary-red;
   }
 
   &__badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    font-size: $font-size-xl;
+    font-size: $font-size-2xl;
     font-weight: $font-weight-bold;
-    margin-bottom: $space-sm;
+    margin-bottom: $space-md;
+    transition: $transition-base;
+  }
+
+  &:hover &__badge {
+    transform: scale(1.1);
   }
 
   &__description {
@@ -516,24 +737,36 @@
   align-items: flex-start;
   gap: $space-md;
   padding: $space-md;
-  background: $gray-100;
+  background: $white;
   border-radius: $radius-lg;
   border: 1px solid $gray-200;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+    border-color: $primary-red;
+  }
 
   &__icon {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: rgba($primary-red, 0.1);
     border-radius: $radius-md;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: $transition-base;
 
     i {
-      font-size: $font-size-lg;
+      font-size: $font-size-xl;
       color: $primary-red;
     }
+  }
+
+  &:hover &__icon {
+    transform: scale(1.1) rotate(5deg);
   }
 
   &__text {
@@ -555,16 +788,24 @@
 .ud-guideline {
   display: flex;
   align-items: flex-start;
-  gap: $space-sm;
-  padding: $space-sm;
+  gap: $space-md;
+  padding: $space-md;
   background: $gray-100;
   border-radius: $radius-md;
+  border: 1px solid $gray-200;
+  transition: $transition-base;
 
-  i {
-    color: $success;
-    font-size: $font-size-base;
-    flex-shrink: 0;
-    margin-top: 2px;
+  &:hover {
+    background: $white;
+    border-color: $primary-red;
+    transform: translateX(4px);
+  }
+
+  &__icon {
+    i {
+      font-size: $font-size-base;
+      color: $success;
+    }
   }
 
   p {
@@ -572,6 +813,7 @@
     color: $gray-700;
     line-height: 1.5;
     margin: 0;
+    flex: 1;
   }
 }
 
@@ -583,15 +825,16 @@
 }
 
 .ud-category {
-  background: $gray-100;
+  background: $white;
   border-radius: $radius-lg;
   padding: $space-lg;
   border: 1px solid $gray-200;
-  transition: $transition-fast;
+  transition: $transition-base;
 
   &:hover {
-    box-shadow: $shadow-md;
-    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+    transform: translateY(-4px);
+    border-color: $primary-red;
   }
 
   &__header {
@@ -599,18 +842,28 @@
     align-items: center;
     gap: $space-sm;
     margin-bottom: $space-md;
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    background: rgba($primary-red, 0.1);
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     i {
       font-size: $font-size-xl;
       color: $primary-red;
     }
+  }
 
-    h3 {
-      font-size: $font-size-base;
-      font-weight: $font-weight-bold;
-      color: $gray-900;
-      margin: 0;
-    }
+  h3 {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin: 0;
   }
 
   &__list {
@@ -630,6 +883,11 @@
         color: $success;
         font-size: $font-size-xs;
       }
+
+      &:hover {
+        color: $primary-red;
+        transform: translateX(4px);
+      }
     }
   }
 }
@@ -637,37 +895,56 @@
 // ─── DROPOFF ─────────────────────────────────────────────────────────────────
 .ud-dropoff {
   &__card {
-    background: $gray-100;
+    background: linear-gradient(135deg, $white, $gray-100);
     border-radius: $radius-lg;
-    padding: $space-lg;
+    padding: $space-xl;
     border: 1px solid $gray-200;
+    transition: $transition-base;
+
+    &:hover {
+      box-shadow: $shadow-lg;
+      transform: translateY(-2px);
+      border-color: $primary-red;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    margin-bottom: $space-lg;
+
+    i {
+      font-size: $font-size-xl;
+      color: $primary-red;
+    }
 
     h4 {
       font-size: $font-size-lg;
       font-weight: $font-weight-bold;
       color: $gray-900;
-      margin-bottom: $space-md;
-      display: flex;
-      align-items: center;
-      gap: $space-sm;
-
-      i {
-        color: $primary-red;
-      }
+      margin: 0;
     }
+  }
 
-    p {
-      font-size: $font-size-sm;
-      color: $gray-700;
-      margin-bottom: $space-sm;
-      display: flex;
-      align-items: center;
-      gap: $space-sm;
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    margin-bottom: $space-xl;
+  }
 
-      i {
-        color: $gray-500;
-        width: 20px;
-      }
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    font-size: $font-size-sm;
+    color: $gray-700;
+
+    i {
+      color: $primary-red;
+      width: 20px;
+      font-size: $font-size-base;
     }
   }
 }
@@ -680,15 +957,16 @@
 }
 
 .ud-cash-option {
-  background: $gray-100;
+  background: $white;
   border-radius: $radius-lg;
   overflow: hidden;
   border: 1px solid $gray-200;
-  transition: $transition-fast;
+  transition: $transition-base;
 
   &:hover {
-    box-shadow: $shadow-md;
-    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+    transform: translateY(-4px);
+    border-color: $primary-red;
   }
 
   &__header {
@@ -715,17 +993,24 @@
   }
 
   &__detail {
-    margin-bottom: $space-sm;
+    margin-bottom: $space-md;
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: $space-xs;
+    padding: $space-xs 0;
+    border-bottom: 1px dashed $gray-200;
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
   &__label {
     font-size: $font-size-xs;
     color: $gray-500;
     min-width: 100px;
+    font-weight: $font-weight-medium;
   }
 
   &__value-group {
@@ -744,15 +1029,21 @@
 
 // ─── CONTACT CARD ────────────────────────────────────────────────────────────
 .ud-contact-card {
-  background: $gray-100;
+  background: linear-gradient(135deg, $white, rgba($primary-red, 0.02));
   border-radius: $radius-lg;
-  padding: $space-lg;
+  padding: $space-xl;
   border: 1px solid $gray-200;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-lg;
+    border-color: $primary-red;
+  }
 
   p {
-    font-size: $font-size-sm;
+    font-size: $font-size-base;
     color: $gray-700;
-    margin-bottom: $space-md;
+    margin-bottom: $space-lg;
     line-height: 1.6;
   }
 }
@@ -760,18 +1051,29 @@
 .ud-contact-info {
   display: flex;
   flex-direction: column;
-  gap: $space-sm;
+  gap: $space-md;
 
-  .ud-contact-item {
+  &-item {
     display: flex;
     align-items: center;
-    gap: $space-sm;
+    gap: $space-md;
+    padding: $space-sm $space-md;
+    background: $gray-100;
+    border-radius: $radius-md;
     font-size: $font-size-sm;
     color: $gray-900;
+    border: 1px solid $gray-200;
 
     i {
       color: $primary-red;
       width: 20px;
+      font-size: $font-size-base;
+    }
+
+    &:hover {
+      background: $white;
+      border-color: $primary-red;
+      transform: translateX(4px);
     }
   }
 }
@@ -787,22 +1089,40 @@
   display: flex;
   gap: $space-md;
   align-items: flex-start;
+  padding: $space-md;
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+    border-color: $primary-red;
+
+    .ud-step__number {
+      transform: scale(1.1);
+    }
+  }
 
   &__number {
-    width: 36px;
-    height: 36px;
-    background: $primary-red;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, $primary-red, $primary-dark);
     color: $white;
-    border-radius: 50%;
+    border-radius: $radius-md;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: $font-weight-bold;
     font-size: $font-size-lg;
     flex-shrink: 0;
+    transition: $transition-base;
   }
 
   &__content {
+    flex: 1;
+
     h4 {
       font-size: $font-size-base;
       font-weight: $font-weight-bold;
@@ -822,44 +1142,68 @@
 // ─── FAQ ─────────────────────────────────────────────────────────────────────
 .ud-faq {
   display: grid;
-  gap: $space-lg;
+  gap: $space-md;
 }
 
 .ud-faq-item {
-  padding: $space-md;
-  background: $gray-100;
-  border-radius: $radius-lg;
+  background: $white;
   border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  cursor: pointer;
+  transition: $transition-base;
 
-  h4 {
-    font-size: $font-size-base;
-    font-weight: $font-weight-bold;
-    color: $gray-900;
-    margin-bottom: $space-xs;
-    display: flex;
-    align-items: center;
-    gap: $space-xs;
+  &:hover {
+    border-color: $primary-red;
+    box-shadow: $shadow-md;
+  }
 
-    &::before {
-      content: "Q:";
-      color: $primary-red;
-      font-weight: $font-weight-bold;
+  &--expanded {
+    border-color: $primary-red;
+    box-shadow: $shadow-md;
+
+    .ud-faq-item__answer {
+      max-height: 500px;
+      padding: $space-md $space-lg $space-lg;
+      opacity: 1;
+    }
+
+    .ud-faq-item__question i {
+      transform: rotate(180deg);
     }
   }
 
-  p {
-    font-size: $font-size-sm;
-    color: $gray-700;
-    line-height: 1.6;
-    margin: 0;
+  &__question {
+    padding: $space-md $space-lg;
     display: flex;
-    align-items: flex-start;
-    gap: $space-xs;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: $font-weight-semibold;
+    color: $gray-900;
+    background: $gray-100;
 
-    &::before {
-      content: "A:";
-      color: $success;
-      font-weight: $font-weight-bold;
+    span {
+      font-size: $font-size-base;
+    }
+
+    i {
+      color: $primary-red;
+      transition: transform $transition-fast;
+    }
+  }
+
+  &__answer {
+    max-height: 0;
+    padding: 0 $space-lg;
+    overflow: hidden;
+    opacity: 0;
+    transition: all $transition-base;
+
+    p {
+      font-size: $font-size-sm;
+      color: $gray-700;
+      line-height: 1.6;
+      margin: 0;
     }
   }
 }
@@ -867,16 +1211,20 @@
 // ─── REMINDER ────────────────────────────────────────────────────────────────
 .ud-reminder {
   text-align: center;
-  padding: $space-xl;
+  padding: $space-2xl;
   background: linear-gradient(135deg, $primary-red, $primary-dark);
   border-radius: $radius-lg;
   color: $white;
-  animation: pulse 2s ease-in-out infinite;
+  animation: float 3s ease-in-out infinite;
+  margin-top: $space-xl;
 
-  i {
-    font-size: $font-size-2xl;
-    margin-bottom: $space-md;
-    display: block;
+  &__icon {
+    i {
+      font-size: $font-size-2xl;
+      margin-bottom: $space-md;
+      display: block;
+      animation: pulse 2s ease-in-out infinite;
+    }
   }
 
   p {
@@ -892,55 +1240,97 @@
 // ─── TOAST ───────────────────────────────────────────────────────────────────
 .ud-toast {
   position: fixed;
-  bottom: $space-lg;
-  right: $space-lg;
+  bottom: $space-xl;
+  right: $space-xl;
   z-index: $z-tooltip;
-  padding: $space-sm $space-md;
+  min-width: 320px;
+  max-width: 400px;
   border-radius: $radius-md;
-  font-weight: $font-weight-semibold;
-  font-size: $font-size-sm;
-  box-shadow: $shadow-lg;
+  box-shadow: $shadow-xl;
   animation: slideIn 300ms ease;
   display: flex;
   align-items: center;
-  gap: $space-sm;
-  max-width: 360px;
+  gap: $space-md;
+  overflow: hidden;
 
-  i {
-    flex-shrink: 0;
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
   }
 
   &--success {
     background: #f0fdf4;
-    color: darken($success, 12%);
-    border: 1px solid rgba($success, 0.25);
-    border-left: 4px solid $success;
+    border: 1px solid rgba($success, 0.2);
+
+    &::before {
+      background: $success;
+    }
+
+    .ud-toast__icon {
+      color: $success;
+    }
   }
 
   &--error {
     background: rgba($error, 0.06);
-    color: $error;
     border: 1px solid rgba($error, 0.2);
-    border-left: 4px solid $error;
+
+    &::before {
+      background: $error;
+    }
+
+    .ud-toast__icon {
+      color: $error;
+    }
+  }
+
+  &__icon {
+    padding-left: $space-lg;
+
+    i {
+      font-size: $font-size-xl;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: $space-md 0;
+  }
+
+  &__title {
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: 2px;
+    font-size: $font-size-sm;
+  }
+
+  &__message {
+    font-size: $font-size-xs;
+    color: $gray-600;
   }
 
   &__close {
     background: none;
     border: none;
     cursor: pointer;
-    font-weight: $font-weight-bold;
-    margin-left: auto;
-    opacity: 0.5;
-    color: inherit;
-    padding: 0;
+    color: $gray-400;
+    padding: $space-md;
     display: flex;
     align-items: center;
+    justify-content: center;
+    transition: $transition-fast;
 
-    &:hover {
-      opacity: 1;
-    }
     i {
       font-size: $font-size-sm;
+    }
+
+    &:hover {
+      color: $gray-600;
+      background: $gray-200;
     }
   }
 }
@@ -948,7 +1338,7 @@
 // ─── RESPONSIVE ──────────────────────────────────────────────────────────────
 @media (max-width: $breakpoint-lg) {
   .ud-header {
-    padding: $space-lg $space-xl;
+    padding: $space-xl $space-lg;
 
     &__title {
       font-size: $font-size-xl;
@@ -962,15 +1352,17 @@
 
 @media (max-width: $breakpoint-md) {
   .ud-header {
-    padding: $space-md $space-lg;
-
-    &__title {
-      font-size: $font-size-lg;
-    }
+    padding: $space-lg;
 
     &__stats {
       flex-wrap: wrap;
       gap: $space-md;
+    }
+
+    &-stat {
+      &__value {
+        font-size: $font-size-xl;
+      }
     }
   }
 
@@ -1022,6 +1414,13 @@
   .ud-cash-option__detail {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .ud-toast {
+    left: $space-md;
+    right: $space-md;
+    min-width: auto;
+    max-width: none;
   }
 }
 

@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import authService from "../services/auth.service";
 import FloatingChat from "../components/FloatingChat";
@@ -8,9 +8,12 @@ import "./styles/UserLayout.scss";
 
 function UserLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = authService.getCurrentUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [scrolled, setScrolled] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -20,12 +23,24 @@ function UserLayout() {
       }
     };
 
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleLogout = () => {
-    authService.logout();
+    if (window.confirm("Are you sure you want to logout?")) {
+      authService.logout();
+      navigate("/login");
+    }
   };
 
   const isActive = (path) => {
@@ -37,39 +52,62 @@ function UserLayout() {
       path: "/user/dashboard",
       icon: "fa-solid fa-chart-pie",
       label: "Dashboard",
+      color: "#c41e3a",
     },
     {
       path: "/user/events",
       icon: "fa-solid fa-calendar-days",
       label: "Events",
+      color: "#f59e0b",
     },
     {
       path: "/user/training",
       icon: "fa-solid fa-graduation-cap",
       label: "Training",
+      color: "#7c3aed",
     },
     {
       path: "/user/donations",
       icon: "fa-solid fa-hand-holding-heart",
       label: "Donations",
+      color: "#10b981",
     },
     {
       path: "/user/merchandise",
       icon: "fa-solid fa-shirt",
       label: "Merchandise",
+      color: "#0891b2",
     },
     {
       path: "/user/blood-map",
       icon: "fa-solid fa-map-location-dot",
       label: "Blood Map",
+      color: "#c2410c",
     },
     {
       path: "/user/announcements",
       icon: "fa-solid fa-bullhorn",
       label: "Announcements",
+      color: "#f97316",
     },
-    { path: "/user/profile", icon: "fa-regular fa-user", label: "Profile" },
+    {
+      path: "/user/profile",
+      icon: "fa-regular fa-user",
+      label: "Profile",
+      color: "#6b7280",
+    },
   ];
+
+  // Get user initials for avatar
+  const getInitials = () => {
+    if (!user?.full_name) return "U";
+    return user.full_name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   // Get first name only
   const firstName = user?.full_name?.split(" ")[0] || "User";
@@ -77,7 +115,9 @@ function UserLayout() {
   return (
     <>
       <div className="user-layout">
-        <header className="user-header">
+        <header
+          className={`user-header ${scrolled ? "user-header--scrolled" : ""}`}
+        >
           <div className="user-header__container">
             <div className="user-header__content">
               {/* Logo with Image */}
@@ -110,8 +150,22 @@ function UserLayout() {
                               ? "user-header__nav-link--active"
                               : ""
                           }`}
+                          onMouseEnter={() => setHoveredItem(item.path)}
+                          onMouseLeave={() => setHoveredItem(null)}
+                          style={
+                            hoveredItem === item.path && !isActive(item.path)
+                              ? { color: item.color }
+                              : {}
+                          }
                         >
-                          <i className={item.icon}></i>
+                          <i
+                            className={item.icon}
+                            style={
+                              hoveredItem === item.path && !isActive(item.path)
+                                ? { color: item.color }
+                                : {}
+                            }
+                          ></i>
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -143,8 +197,12 @@ function UserLayout() {
 
                 {windowWidth > 992 && (
                   <div className="user-header__actions-user">
-                    <i className="fa-regular fa-circle-user"></i>
-                    <span>{firstName}</span>
+                    <div className="user-avatar">{getInitials()}</div>
+                    <div className="user-info">
+                      <span className="user-name">{firstName}</span>
+                      <span className="user-role">Member</span>
+                    </div>
+                    <i className="fa-solid fa-chevron-down"></i>
                   </div>
                 )}
 
@@ -163,6 +221,17 @@ function UserLayout() {
         {/* Mobile Menu - Show when menu is open and screen is tablet/mobile */}
         {mobileMenuOpen && windowWidth <= 992 && (
           <div className="user-mobile-menu">
+            <div className="user-mobile-menu__header">
+              <div className="user-mobile-menu__user">
+                <div className="user-mobile-menu__avatar">{getInitials()}</div>
+                <div className="user-mobile-menu__info">
+                  <span className="user-mobile-menu__name">
+                    {user?.full_name || "User"}
+                  </span>
+                  <span className="user-mobile-menu__role">Member</span>
+                </div>
+              </div>
+            </div>
             <nav className="user-mobile-menu__nav">
               <ul className="user-mobile-menu__nav-list">
                 {navItems.map((item) => (
@@ -199,13 +268,20 @@ function UserLayout() {
             <div className="user-footer__content">
               <div className="user-footer__section">
                 <h4 className="user-footer__section-title">
-                  <img
-                    src={prcLogo}
-                    alt="PRC Logo"
-                    className="user-footer__logo-img"
-                  />
-                  PRC Iloilo
+                  <div className="footer-logo">
+                    <img
+                      src={prcLogo}
+                      alt="PRC Logo"
+                      className="user-footer__logo-img"
+                    />
+                    <span>PRC Iloilo</span>
+                  </div>
                 </h4>
+                <p className="user-footer__description">
+                  The Philippine Red Cross is committed to providing
+                  humanitarian services that help vulnerable communities become
+                  self-reliant.
+                </p>
                 <ul className="user-footer__section-links">
                   <li>
                     <Link to="/about">
@@ -261,6 +337,11 @@ function UserLayout() {
                       Donation
                     </Link>
                   </li>
+                  <li>
+                    <Link to="/user/merchandise">
+                      <i className="fa-solid fa-chevron-right"></i> Merchandise
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
@@ -271,28 +352,29 @@ function UserLayout() {
                 </h4>
                 <div className="user-footer__section-contact">
                   <p>
-                    <i className="fa-solid fa-location-dot"></i> Iloilo City,
-                    Philippines
+                    <i className="fa-solid fa-location-dot"></i>
+                    <span>Iloilo City, Philippines</span>
                   </p>
                   <p>
-                    <i className="fa-solid fa-phone"></i> (033) 123-4567
+                    <i className="fa-solid fa-phone"></i>
+                    <span>(033) 123-4567</span>
                   </p>
                   <p>
-                    <i className="fa-regular fa-envelope"></i>{" "}
-                    info@redcross.gov.ph
+                    <i className="fa-regular fa-envelope"></i>
+                    <span>info@redcross.gov.ph</span>
                   </p>
                 </div>
                 <div className="user-footer__section-social">
-                  <a href="#" aria-label="Facebook">
+                  <a href="#" aria-label="Facebook" title="Facebook">
                     <i className="fa-brands fa-facebook-f"></i>
                   </a>
-                  <a href="#" aria-label="Twitter">
+                  <a href="#" aria-label="Twitter" title="Twitter">
                     <i className="fa-brands fa-twitter"></i>
                   </a>
-                  <a href="#" aria-label="Instagram">
+                  <a href="#" aria-label="Instagram" title="Instagram">
                     <i className="fa-brands fa-instagram"></i>
                   </a>
-                  <a href="#" aria-label="YouTube">
+                  <a href="#" aria-label="YouTube" title="YouTube">
                     <i className="fa-brands fa-youtube"></i>
                   </a>
                 </div>
@@ -305,6 +387,13 @@ function UserLayout() {
                 {new Date().getFullYear()} Philippine Red Cross - Iloilo
                 Chapter. All rights reserved.
               </p>
+              <button
+                className="user-footer__scroll-top"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                aria-label="Scroll to top"
+              >
+                <i className="fa-solid fa-arrow-up"></i>
+              </button>
             </div>
           </div>
         </footer>

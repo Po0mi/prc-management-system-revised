@@ -30,10 +30,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`aa-toast aa-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="aa-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="aa-toast__content">
+        <div className="aa-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="aa-toast__message">{message}</div>
+      </div>
       <button className="aa-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -127,9 +134,7 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
     setSubmitting(true);
     try {
       if (announcement) {
-        // Check if there's a new image to upload
         if (imageFile) {
-          // Use multipart form data for update with image
           const formDataObj = new FormData();
           formDataObj.append("title", formData.title);
           formDataObj.append("content", formData.content);
@@ -144,12 +149,10 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
             formDataObj,
           );
         } else {
-          // Update without image - use JSON
           await updateAnnouncement(announcement.announcement_id, formData);
         }
         onSuccess("Announcement updated successfully");
       } else {
-        // Create - use FormData for file upload
         const formDataObj = new FormData();
         formDataObj.append("title", formData.title);
         formDataObj.append("content", formData.content);
@@ -176,12 +179,12 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
     <div className="aa-overlay" onClick={onClose}>
       <div className="aa-modal" onClick={(e) => e.stopPropagation()}>
         <div className="aa-modal__header">
-          <span className="aa-modal__title">
+          <div className="aa-modal__title">
             <i
-              className={`fa-solid ${announcement ? "fa-pen-to-square" : "fa-plus"}`}
+              className={`fa-solid ${announcement ? "fa-pen-to-square" : "fa-plus-circle"}`}
             />
             {announcement ? "Edit Announcement" : "Create New Announcement"}
-          </span>
+          </div>
           <button className="aa-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -312,7 +315,7 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Image Upload - Available for both create and edit */}
+          {/* Image Upload */}
           <div className="aa-form__field">
             <label className="aa-form__label">
               <i className="fa-regular fa-image" />
@@ -333,11 +336,18 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
                 className="aa-file-upload__label"
               >
                 <i className="fa-solid fa-cloud-upload-alt" />
-                {imageFile
-                  ? imageFile.name
-                  : announcement?.image_path
-                    ? "Change image"
-                    : "Choose an image"}
+                <span className="aa-file-upload__text">
+                  {imageFile
+                    ? imageFile.name
+                    : announcement?.image_path
+                      ? "Change image"
+                      : "Choose an image"}
+                </span>
+                {imageFile && (
+                  <span className="aa-file-upload__check">
+                    <i className="fa-solid fa-check-circle" />
+                  </span>
+                )}
               </label>
             </div>
 
@@ -358,19 +368,18 @@ function AnnouncementModal({ announcement, onClose, onSuccess }) {
 
             {/* Show current image for edit mode when no new image selected */}
             {announcement?.image_path && !imageFile && !imagePreview && (
-              <div className="aa-image-preview">
+              <div className="aa-image-preview aa-image-preview--current">
                 <img
                   src={`http://localhost/prc-management-system/${announcement.image_path}`}
                   alt={announcement.title}
                 />
-                <div className="aa-image-preview__current-label">
-                  Current Image
-                </div>
+                <div className="aa-image-preview__label">Current Image</div>
               </div>
             )}
 
             <small className="aa-form__hint">
-              Accepted formats: JPG, PNG, GIF (Max 5MB)
+              <i className="fa-solid fa-info-circle" /> Accepted formats: JPG,
+              PNG, GIF (Max 5MB)
             </small>
           </div>
 
@@ -405,6 +414,12 @@ function ViewModal({ announcement, onClose }) {
 
   const categoryColor = getCategoryColor(announcement.category);
   const targetRoleColor = getTargetRoleColor(announcement.target_role);
+  const categoryIcon =
+    CATEGORY_OPTIONS.find((o) => o.value === announcement.category)?.icon ||
+    "fa-solid fa-megaphone";
+  const targetIcon =
+    TARGET_ROLE_OPTIONS.find((o) => o.value === announcement.target_role)
+      ?.icon || "fa-solid fa-users";
 
   return (
     <div className="aa-overlay" onClick={onClose}>
@@ -413,10 +428,10 @@ function ViewModal({ announcement, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="aa-modal__header">
-          <span className="aa-modal__title">
+          <div className="aa-modal__title">
             <i className="fa-solid fa-eye" />
             Announcement Details
-          </span>
+          </div>
           <button className="aa-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -433,48 +448,28 @@ function ViewModal({ announcement, onClose }) {
           )}
 
           <div className="aa-view__section">
-            <h3 className="aa-view__section-title">
-              <i
-                className="fa-solid fa-heading"
-                style={{ color: categoryColor }}
-              />
-              {announcement.title}
-            </h3>
-
             <div className="aa-view__badges">
               <span
                 className="aa-view__badge"
                 style={{
-                  background: `${categoryColor}15`,
+                  background: `${categoryColor}12`,
                   color: categoryColor,
-                  border: `1px solid ${categoryColor}33`,
+                  border: `1px solid ${categoryColor}25`,
                 }}
               >
-                <i
-                  className={
-                    CATEGORY_OPTIONS.find(
-                      (o) => o.value === announcement.category,
-                    )?.icon || "fa-solid fa-megaphone"
-                  }
-                />
+                <i className={categoryIcon} />
                 {formatCategory(announcement.category)}
               </span>
 
               <span
                 className="aa-view__badge"
                 style={{
-                  background: `${targetRoleColor}15`,
+                  background: `${targetRoleColor}12`,
                   color: targetRoleColor,
-                  border: `1px solid ${targetRoleColor}33`,
+                  border: `1px solid ${targetRoleColor}25`,
                 }}
               >
-                <i
-                  className={
-                    TARGET_ROLE_OPTIONS.find(
-                      (o) => o.value === announcement.target_role,
-                    )?.icon || "fa-solid fa-users"
-                  }
-                />
+                <i className={targetIcon} />
                 {formatTargetRole(announcement.target_role)}
               </span>
 
@@ -483,14 +478,14 @@ function ViewModal({ announcement, onClose }) {
                 style={{
                   background:
                     announcement.status === "published"
-                      ? "#10b98115"
-                      : "#6b728015",
+                      ? "#10b98112"
+                      : "#6b728012",
                   color:
                     announcement.status === "published" ? "#10b981" : "#6b7280",
                   border:
                     announcement.status === "published"
-                      ? "1px solid #10b98133"
-                      : "1px solid #6b728033",
+                      ? "1px solid #10b98125"
+                      : "1px solid #6b728025",
                 }}
               >
                 <i
@@ -503,6 +498,16 @@ function ViewModal({ announcement, onClose }) {
                 {formatStatus(announcement.status)}
               </span>
             </div>
+          </div>
+
+          <div className="aa-view__section">
+            <h3 className="aa-view__section-title">
+              <i
+                className="fa-solid fa-heading"
+                style={{ color: categoryColor }}
+              />
+              {announcement.title}
+            </h3>
           </div>
 
           <div className="aa-view__section">
@@ -620,6 +625,7 @@ export default function AdminAnnouncements() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -751,38 +757,53 @@ export default function AdminAnnouncements() {
 
   return (
     <div className="aa-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="aa-header">
-        <div className="aa-header__inner">
-          <div>
-            <div className="aa-header__eyebrow">
-              <i className="fa-solid fa-bullhorn" />
-              Announcements Management
+        <div className="aa-header__container">
+          <div className="aa-header__content">
+            <div className="aa-header__left">
+              <div className="aa-header__badge">
+                <i className="fa-solid fa-bullhorn" />
+                Announcements Management
+              </div>
+              <h1 className="aa-header__title">Announcements</h1>
+              <p className="aa-header__subtitle">
+                Create and manage announcements for users and volunteers
+              </p>
             </div>
-            <h1 className="aa-header__title">Announcements</h1>
-            <p className="aa-header__subtitle">
-              Create and manage announcements for users and volunteers
-            </p>
-          </div>
 
-          <div className="aa-header__stats">
-            <div className="aa-header__stat">
-              <div className="aa-header__stat-num">{stats.total}</div>
-              <div className="aa-header__stat-label">Total</div>
-            </div>
-            <div className="aa-header__stat">
-              <div className="aa-header__stat-num">{stats.published}</div>
-              <div className="aa-header__stat-label">Published</div>
-            </div>
-            <div className="aa-header__stat">
-              <div className="aa-header__stat-num">{stats.draft}</div>
-              <div className="aa-header__stat-label">Drafts</div>
-            </div>
-            <div className="aa-header__stat">
-              <div className="aa-header__stat-num">{stats.archived}</div>
-              <div className="aa-header__stat-label">Archived</div>
+            <div className="aa-header__stats">
+              <div className="aa-header-stat">
+                <span className="aa-header-stat__value">{stats.total}</span>
+                <span className="aa-header-stat__label">Total</span>
+              </div>
+              <div className="aa-header-stat">
+                <span className="aa-header-stat__value">{stats.published}</span>
+                <span className="aa-header-stat__label">Published</span>
+              </div>
+              <div className="aa-header-stat">
+                <span className="aa-header-stat__value">{stats.draft}</span>
+                <span className="aa-header-stat__label">Drafts</span>
+              </div>
+              <div className="aa-header-stat">
+                <span className="aa-header-stat__value">{stats.archived}</span>
+                <span className="aa-header-stat__label">Archived</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="aa-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -791,10 +812,14 @@ export default function AdminAnnouncements() {
         {/* Stats Cards */}
         <div className="aa-cards">
           {CATEGORY_OPTIONS.map((category) => (
-            <div key={category.value} className="aa-card">
+            <div
+              key={category.value}
+              className="aa-card"
+              style={{ borderColor: category.color }}
+            >
               <div
                 className="aa-card__icon"
-                style={{ background: `${category.color}15` }}
+                style={{ background: `${category.color}12` }}
               >
                 <i
                   className={category.icon}
@@ -802,7 +827,7 @@ export default function AdminAnnouncements() {
                 />
               </div>
               <div>
-                <div className="aa-card__num">
+                <div className="aa-card__num" style={{ color: category.color }}>
                   {stats.by_category[category.value] || 0}
                 </div>
                 <div className="aa-card__label">{category.label}</div>
@@ -818,7 +843,7 @@ export default function AdminAnnouncements() {
             <input
               type="text"
               className="aa-toolbar__search-input"
-              placeholder="Search announcements..."
+              placeholder="Search announcements by title or content..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -836,13 +861,15 @@ export default function AdminAnnouncements() {
             {/* Category Filter Dropdown */}
             <div className="aa-toolbar__filter-dropdown">
               <button
-                className="aa-toolbar__filter-dropdown-btn"
+                className={`aa-toolbar__filter-dropdown-btn ${categoryFilter ? "aa-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
               >
                 <i className="fa-solid fa-tag" />
-                {categoryFilter
-                  ? formatCategory(categoryFilter)
-                  : "All Categories"}
+                <span>
+                  {categoryFilter
+                    ? formatCategory(categoryFilter)
+                    : "All Categories"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showCategoryDropdown && (
@@ -854,6 +881,7 @@ export default function AdminAnnouncements() {
                     }}
                     className={!categoryFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-tag" />
                     All Categories
                   </button>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -881,15 +909,17 @@ export default function AdminAnnouncements() {
             {/* Target Role Filter Dropdown */}
             <div className="aa-toolbar__filter-dropdown">
               <button
-                className="aa-toolbar__filter-dropdown-btn"
+                className={`aa-toolbar__filter-dropdown-btn ${targetRoleFilter ? "aa-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() =>
                   setShowTargetRoleDropdown(!showTargetRoleDropdown)
                 }
               >
                 <i className="fa-solid fa-bullseye" />
-                {targetRoleFilter
-                  ? formatTargetRole(targetRoleFilter)
-                  : "All Audiences"}
+                <span>
+                  {targetRoleFilter
+                    ? formatTargetRole(targetRoleFilter)
+                    : "All Audiences"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showTargetRoleDropdown && (
@@ -901,6 +931,7 @@ export default function AdminAnnouncements() {
                     }}
                     className={!targetRoleFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-bullseye" />
                     All Audiences
                   </button>
                   {TARGET_ROLE_OPTIONS.map((option) => (
@@ -928,13 +959,15 @@ export default function AdminAnnouncements() {
             {/* Status Filter Dropdown */}
             <div className="aa-toolbar__filter-dropdown">
               <button
-                className="aa-toolbar__filter-dropdown-btn"
+                className={`aa-toolbar__filter-dropdown-btn ${statusFilter !== "published" ? "aa-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
               >
                 <i className="fa-solid fa-flag" />
-                {statusFilter === "all"
-                  ? "All Status"
-                  : formatStatus(statusFilter)}
+                <span>
+                  {statusFilter === "all"
+                    ? "All Status"
+                    : formatStatus(statusFilter)}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showStatusDropdown && (
@@ -946,6 +979,7 @@ export default function AdminAnnouncements() {
                     }}
                     className={statusFilter === "all" ? "active" : ""}
                   >
+                    <i className="fa-solid fa-flag" />
                     All Status
                   </button>
                   {STATUS_OPTIONS.map((option) => (
@@ -978,8 +1012,11 @@ export default function AdminAnnouncements() {
             </button>
 
             {getActiveFilterCount() > 0 && (
-              <button className="aa-toolbar__filter-btn" onClick={clearFilters}>
-                <i className="fa-solid fa-xmark" />
+              <button
+                className="aa-toolbar__filter-clear"
+                onClick={clearFilters}
+              >
+                <i className="fa-solid fa-times" />
                 Clear Filters ({getActiveFilterCount()})
               </button>
             )}
@@ -996,12 +1033,24 @@ export default function AdminAnnouncements() {
           <div className="aa-table-panel__head">
             <div className="aa-table-panel__title">
               <i className="fa-solid fa-bullhorn" />
-              {showArchived ? "Archived Announcements" : "Announcements List"}
+              {showArchived ? "Archived Announcements" : "Announcements"}
             </div>
-            <span className="aa-table-panel__count">
-              {announcements.length}{" "}
-              {announcements.length === 1 ? "announcement" : "announcements"}
-            </span>
+            <div className="aa-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="aa-table-panel__count">
+                    {announcements.length}{" "}
+                    {announcements.length === 1
+                      ? "announcement"
+                      : "announcements"}
+                  </span>
+                  <span className="aa-table-panel__divider">•</span>
+                  <span className="aa-table-panel__sub">
+                    Page 1 of {Math.ceil(announcements.length / 10) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="aa-table-panel__scroll">
@@ -1020,16 +1069,50 @@ export default function AdminAnnouncements() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="aa-table__loading">
-                      <i className="fa-solid fa-spinner fa-spin" />
-                      <p>Loading announcements...</p>
+                    <td colSpan="7">
+                      <div className="aa-table__loading">
+                        <div className="aa-table__loading-spinner">
+                          <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading announcements...</p>
+                        <span className="aa-table__loading-sub">
+                          Fetching announcement data
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ) : announcements.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="aa-table__empty">
-                      <i className="fa-regular fa-face-frown" />
-                      <p>No announcements found</p>
+                    <td colSpan="7">
+                      <div className="aa-table__empty">
+                        <div className="aa-table__empty-icon">
+                          <i className="fa-regular fa-face-frown" />
+                        </div>
+                        <h3 className="aa-table__empty-title">
+                          No Announcements Found
+                        </h3>
+                        <p className="aa-table__empty-message">
+                          {search ||
+                          categoryFilter ||
+                          targetRoleFilter ||
+                          statusFilter !== "published" ||
+                          showArchived
+                            ? "Try adjusting your search or filter criteria"
+                            : "Get started by creating your first announcement"}
+                        </p>
+                        {(search ||
+                          categoryFilter ||
+                          targetRoleFilter ||
+                          statusFilter !== "published" ||
+                          showArchived) && (
+                          <button
+                            className="aa-table__empty-action"
+                            onClick={clearFilters}
+                          >
+                            <i className="fa-solid fa-times" /> Clear Filters
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -1040,16 +1123,36 @@ export default function AdminAnnouncements() {
                     const targetRoleColor = getTargetRoleColor(
                       announcement.target_role,
                     );
+                    const categoryIcon =
+                      CATEGORY_OPTIONS.find(
+                        (o) => o.value === announcement.category,
+                      )?.icon || "fa-solid fa-megaphone";
+                    const targetIcon =
+                      TARGET_ROLE_OPTIONS.find(
+                        (o) => o.value === announcement.target_role,
+                      )?.icon || "fa-solid fa-users";
 
                     return (
-                      <tr key={announcement.announcement_id}>
+                      <tr
+                        key={announcement.announcement_id}
+                        onMouseEnter={() =>
+                          setHoveredRow(announcement.announcement_id)
+                        }
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === announcement.announcement_id
+                            ? "aa-table__row--hovered"
+                            : ""
+                        }
+                      >
                         <td>
                           <div className="aa-title-cell">
                             <div className="aa-title-cell__title">
                               {announcement.title}
                             </div>
                             <div className="aa-title-cell__id">
-                              ID: #{announcement.announcement_id}
+                              <i className="fa-solid fa-hashtag" /> ID: #
+                              {announcement.announcement_id}
                             </div>
                           </div>
                         </td>
@@ -1057,18 +1160,12 @@ export default function AdminAnnouncements() {
                           <span
                             className="aa-badge"
                             style={{
-                              background: `${categoryColor}15`,
+                              background: `${categoryColor}12`,
                               color: categoryColor,
-                              border: `1px solid ${categoryColor}33`,
+                              border: `1px solid ${categoryColor}25`,
                             }}
                           >
-                            <i
-                              className={
-                                CATEGORY_OPTIONS.find(
-                                  (o) => o.value === announcement.category,
-                                )?.icon
-                              }
-                            />
+                            <i className={categoryIcon} />
                             {formatCategory(announcement.category)}
                           </span>
                         </td>
@@ -1076,18 +1173,12 @@ export default function AdminAnnouncements() {
                           <span
                             className="aa-badge"
                             style={{
-                              background: `${targetRoleColor}15`,
+                              background: `${targetRoleColor}12`,
                               color: targetRoleColor,
-                              border: `1px solid ${targetRoleColor}33`,
+                              border: `1px solid ${targetRoleColor}25`,
                             }}
                           >
-                            <i
-                              className={
-                                TARGET_ROLE_OPTIONS.find(
-                                  (o) => o.value === announcement.target_role,
-                                )?.icon
-                              }
-                            />
+                            <i className={targetIcon} />
                             {formatTargetRole(announcement.target_role)}
                           </span>
                         </td>
@@ -1097,16 +1188,16 @@ export default function AdminAnnouncements() {
                             style={{
                               background:
                                 announcement.status === "published"
-                                  ? "#10b98115"
-                                  : "#6b728015",
+                                  ? "#10b98112"
+                                  : "#6b728012",
                               color:
                                 announcement.status === "published"
                                   ? "#10b981"
                                   : "#6b7280",
                               border:
                                 announcement.status === "published"
-                                  ? "1px solid #10b98133"
-                                  : "1px solid #6b728033",
+                                  ? "1px solid #10b98125"
+                                  : "1px solid #6b728025",
                             }}
                           >
                             <i
@@ -1121,6 +1212,7 @@ export default function AdminAnnouncements() {
                         </td>
                         <td>
                           <div className="aa-date">
+                            <i className="fa-regular fa-calendar" />
                             {new Date(
                               announcement.posted_at,
                             ).toLocaleDateString("en-US", {
@@ -1135,6 +1227,7 @@ export default function AdminAnnouncements() {
                             className="aa-preview"
                             title={announcement.content}
                           >
+                            <i className="fa-regular fa-file-lines" />
                             {truncateContent(announcement.content)}
                           </div>
                         </td>
@@ -1144,6 +1237,11 @@ export default function AdminAnnouncements() {
                               className="aa-action-btn aa-action-btn--view"
                               onClick={() => handleView(announcement)}
                               title="View Details"
+                              style={{
+                                background: "#10b98112",
+                                color: "#10b981",
+                                border: "1px solid #10b98125",
+                              }}
                             >
                               <i className="fa-solid fa-eye" />
                             </button>
@@ -1154,6 +1252,11 @@ export default function AdminAnnouncements() {
                                   className="aa-action-btn aa-action-btn--edit"
                                   onClick={() => handleEdit(announcement)}
                                   title="Edit Announcement"
+                                  style={{
+                                    background: "#3b82f612",
+                                    color: "#3b82f6",
+                                    border: "1px solid #3b82f625",
+                                  }}
                                 >
                                   <i className="fa-solid fa-pen" />
                                 </button>
@@ -1163,6 +1266,11 @@ export default function AdminAnnouncements() {
                                     handleArchive(announcement.announcement_id)
                                   }
                                   title="Archive Announcement"
+                                  style={{
+                                    background: "#f59e0b12",
+                                    color: "#f59e0b",
+                                    border: "1px solid #f59e0b25",
+                                  }}
                                 >
                                   <i className="fa-solid fa-box-archive" />
                                 </button>
@@ -1178,9 +1286,9 @@ export default function AdminAnnouncements() {
                                   }
                                   title="Restore Announcement"
                                   style={{
-                                    background: "#10b98115",
+                                    background: "#10b98112",
                                     color: "#10b981",
-                                    border: "1px solid #10b98133",
+                                    border: "1px solid #10b98125",
                                   }}
                                 >
                                   <i className="fa-solid fa-trash-arrow-up" />
@@ -1193,6 +1301,11 @@ export default function AdminAnnouncements() {
                                     )
                                   }
                                   title="Delete Permanently"
+                                  style={{
+                                    background: "#ef444412",
+                                    color: "#ef4444",
+                                    border: "1px solid #ef444425",
+                                  }}
                                 >
                                   <i className="fa-solid fa-trash" />
                                 </button>

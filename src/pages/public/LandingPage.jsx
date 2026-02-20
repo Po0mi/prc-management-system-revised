@@ -20,6 +20,15 @@ function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Auto-changing impact section
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % impactSlides.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchAnnouncements = async () => {
     try {
       const response = await fetch(
@@ -44,20 +53,50 @@ function LandingPage() {
     {
       title: "Blood Donation Drives",
       description:
-        "Saving lives through voluntary blood donation campaigns nationwide",
+        "Saving lives through voluntary blood donation campaigns nationwide. Every donation can save up to three lives.",
       icon: "fa-solid fa-droplet",
+      stats: "500,000+ units collected",
+      action: "Donate Now",
     },
     {
       title: "Disaster Response",
       description:
-        "Rapid emergency response and relief operations across the Philippines",
+        "Rapid emergency response and relief operations across the Philippines. Ready to deploy 24/7 when disasters strike.",
       icon: "fa-solid fa-truck-fast",
+      stats: "1,000+ operations yearly",
+      action: "Learn More",
     },
     {
       title: "Community Training",
       description:
-        "Empowering communities with life-saving skills and knowledge",
+        "Empowering communities with life-saving skills and knowledge. Training programs in first aid, CPR, and disaster preparedness.",
       icon: "fa-solid fa-graduation-cap",
+      stats: "100,000+ trained annually",
+      action: "Join Training",
+    },
+    {
+      title: "Volunteer Network",
+      description:
+        "Join our growing network of dedicated volunteers making a difference in their communities every day.",
+      icon: "fa-solid fa-hand-holding-heart",
+      stats: "50,000+ active volunteers",
+      action: "Volunteer Now",
+    },
+    {
+      title: "Health Services",
+      description:
+        "Providing essential health services and medical missions to underserved communities across the nation.",
+      icon: "fa-solid fa-heart-pulse",
+      stats: "200+ communities served",
+      action: "Get Support",
+    },
+    {
+      title: "Red Cross Youth",
+      description:
+        "Developing future leaders through youth empowerment programs and character-building activities.",
+      icon: "fa-solid fa-users",
+      stats: "25,000+ youth members",
+      action: "Join Youth",
     },
   ];
 
@@ -152,7 +191,7 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Impact Section */}
+      {/* Impact Section - Auto-changing */}
       <section className="impact">
         <div className="container">
           <span className="section__badge">
@@ -172,13 +211,28 @@ function LandingPage() {
                     className={`fa-solid ${impactSlides[activeSlide].icon}`}
                   ></i>
                 </div>
+                <div className="impact__item-stats">
+                  <i className="fa-solid fa-chart-line"></i>
+                  <span>{impactSlides[activeSlide].stats}</span>
+                </div>
               </div>
               <div className="impact__item-content">
-                <h3>{impactSlides[activeSlide].title}</h3>
+                <div className="impact__item-header">
+                  <i
+                    className={`fa-solid ${impactSlides[activeSlide].icon} impact__item-icon`}
+                  ></i>
+                  <h3>{impactSlides[activeSlide].title}</h3>
+                </div>
                 <p>{impactSlides[activeSlide].description}</p>
-                <button className="impact__item-content-btn">
-                  Join Now <i className="fa-solid fa-arrow-right"></i>
-                </button>
+                <div className="impact__item-footer">
+                  <span className="impact__item-slide-indicator">
+                    {activeSlide + 1} / {impactSlides.length}
+                  </span>
+                  <button className="impact__item-content-btn">
+                    {impactSlides[activeSlide].action}{" "}
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
               </div>
             </div>
             <div className="impact__indicators">
@@ -187,8 +241,18 @@ function LandingPage() {
                   key={index}
                   className={`impact__indicator ${index === activeSlide ? "impact__indicator--active" : ""}`}
                   onClick={() => setActiveSlide(index)}
+                  aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
+            </div>
+            <div className="impact__timer">
+              <div
+                className="impact__timer-progress"
+                style={{
+                  animation: `timerProgress 5s linear infinite`,
+                  animationPlayState: "running",
+                }}
+              />
             </div>
           </div>
         </div>

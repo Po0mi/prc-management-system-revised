@@ -14,13 +14,50 @@ import {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const STATUS_OPTIONS = [
-  { key: "all", label: "All Requests", color: "#6b7280" },
-  { key: "pending", label: "Pending", color: "#f59e0b" },
-  { key: "under_review", label: "Under Review", color: "#3b82f6" },
-  { key: "approved", label: "Approved", color: "#10b981" },
-  { key: "scheduled", label: "Scheduled", color: "#8b5cf6" },
-  { key: "completed", label: "Completed", color: "#059669" },
-  { key: "rejected", label: "Rejected", color: "#ef4444" },
+  { key: "all", label: "All Requests", color: "#6b7280", icon: "fa-inbox" },
+  { key: "pending", label: "Pending", color: "#f59e0b", icon: "fa-clock" },
+  {
+    key: "under_review",
+    label: "Under Review",
+    color: "#3b82f6",
+    icon: "fa-magnifying-glass",
+  },
+  {
+    key: "approved",
+    label: "Approved",
+    color: "#10b981",
+    icon: "fa-check-circle",
+  },
+  {
+    key: "scheduled",
+    label: "Scheduled",
+    color: "#8b5cf6",
+    icon: "fa-calendar-check",
+  },
+  {
+    key: "completed",
+    label: "Completed",
+    color: "#059669",
+    icon: "fa-graduation-cap",
+  },
+  {
+    key: "rejected",
+    label: "Rejected",
+    color: "#ef4444",
+    icon: "fa-times-circle",
+  },
+];
+
+const URGENCY_OPTIONS = [
+  { key: "low", label: "Low", color: "#3b82f6", icon: "fa-arrow-down" },
+  { key: "normal", label: "Normal", color: "#8b5cf6", icon: "fa-equals" },
+  { key: "high", label: "High", color: "#f59e0b", icon: "fa-arrow-up" },
+  {
+    key: "urgent",
+    label: "Urgent",
+    color: "#ef4444",
+    icon: "fa-exclamation-triangle",
+  },
 ];
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
@@ -32,10 +69,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`atr-toast atr-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
-      />
-      {message}
+      <div className="atr-toast__icon">
+        <i
+          className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
+        />
+      </div>
+      <div className="atr-toast__content">
+        <div className="atr-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="atr-toast__message">{message}</div>
+      </div>
       <button className="atr-toast__close" onClick={onClose}>
         <i className="fas fa-xmark" />
       </button>
@@ -82,6 +126,12 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
     }
   }
 
+  const urgencyConfig =
+    URGENCY_OPTIONS.find((u) => u.key === request.urgency) ||
+    URGENCY_OPTIONS[1];
+  const statusConfig =
+    STATUS_OPTIONS.find((s) => s.key === request.status) || STATUS_OPTIONS[0];
+
   return (
     <div className="atr-overlay" onClick={onClose}>
       <div
@@ -89,22 +139,29 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="atr-modal__header">
-          <span>
+          <div className="atr-modal__title">
             <i className="fas fa-file-alt" /> Request Details #
             {request.request_id}
-          </span>
+          </div>
           <button className="atr-modal__close" onClick={onClose}>
             <i className="fas fa-xmark" />
           </button>
         </div>
 
         <div className="atr-modal__body atr-modal__body--details">
-          {/* Status Badge */}
-          <div className="atr-detail-section">
+          {/* Header with Status and Urgency */}
+          <div className="atr-detail-header">
             <span
               className={`atr-status-badge atr-status-badge--${request.status}`}
             >
-              {request.status.toUpperCase().replace("_", " ")}
+              <i className={`fas ${statusConfig.icon}`} />
+              {statusConfig.label}
+            </span>
+            <span
+              className={`atr-urgency-badge atr-urgency-badge--${request.urgency}`}
+            >
+              <i className={`fas ${urgencyConfig.icon}`} />
+              {urgencyConfig.label} Priority
             </span>
           </div>
 
@@ -116,20 +173,26 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
             <div className="atr-detail-grid">
               <div className="atr-detail-item">
                 <label>Service Type</label>
-                <span className="atr-badge">{request.service_type}</span>
+                <span className="atr-service-badge">
+                  {request.service_type}
+                </span>
               </div>
               <div className="atr-detail-item">
                 <label>Program</label>
-                <span>{request.training_program}</span>
+                <span className="atr-program-name">
+                  {request.training_program}
+                </span>
               </div>
               <div className="atr-detail-item">
                 <label>Type</label>
-                <span>{request.training_type?.replace("_", " ")}</span>
+                <span className="atr-training-type">
+                  {request.training_type?.replace("_", " ")}
+                </span>
               </div>
               <div className="atr-detail-item">
-                <label>Urgency</label>
-                <span className={`atr-urgency atr-urgency--${request.urgency}`}>
-                  {request.urgency?.toUpperCase()}
+                <label>Duration</label>
+                <span className="atr-duration">
+                  {request.duration_days} day(s)
                 </span>
               </div>
             </div>
@@ -144,29 +207,40 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
               {request.preferred_start_date && (
                 <div className="atr-detail-item">
                   <label>Start Date</label>
-                  <span>
-                    {new Date(
-                      request.preferred_start_date,
-                    ).toLocaleDateString()}
+                  <span className="atr-date">
+                    <i className="fas fa-calendar-alt" />
+                    {new Date(request.preferred_start_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      },
+                    )}
                   </span>
                 </div>
               )}
               {request.preferred_end_date && (
                 <div className="atr-detail-item">
                   <label>End Date</label>
-                  <span>
-                    {new Date(request.preferred_end_date).toLocaleDateString()}
+                  <span className="atr-date">
+                    <i className="fas fa-calendar-check" />
+                    {new Date(request.preferred_end_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      },
+                    )}
                   </span>
                 </div>
               )}
-              <div className="atr-detail-item">
-                <label>Duration</label>
-                <span>{request.duration_days} day(s)</span>
-              </div>
               {request.preferred_start_time && (
                 <div className="atr-detail-item">
                   <label>Time</label>
-                  <span>
+                  <span className="atr-time">
+                    <i className="fas fa-clock" />
                     {request.preferred_start_time} -{" "}
                     {request.preferred_end_time}
                   </span>
@@ -182,13 +256,19 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
             </h3>
             <div className="atr-detail-grid">
               <div className="atr-detail-item">
-                <label>Participant Count</label>
-                <span>{request.participant_count}</span>
+                <label>Number of Participants</label>
+                <span className="atr-participant-count">
+                  <i className="fas fa-user-group" />
+                  {request.participant_count}
+                </span>
               </div>
               {request.organization_name && (
                 <div className="atr-detail-item atr-detail-item--full">
                   <label>Organization</label>
-                  <span>{request.organization_name}</span>
+                  <span className="atr-organization">
+                    <i className="fas fa-building" />
+                    {request.organization_name}
+                  </span>
                 </div>
               )}
             </div>
@@ -199,18 +279,27 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
             <h3 className="atr-detail-section__title">
               <i className="fas fa-address-book" /> Contact Information
             </h3>
-            <div className="atr-detail-grid">
-              <div className="atr-detail-item">
-                <label>Contact Person</label>
-                <span>{request.contact_person}</span>
+            <div className="atr-contact-grid">
+              <div className="atr-contact-card">
+                <i className="fas fa-user-circle" />
+                <div>
+                  <label>Contact Person</label>
+                  <span>{request.contact_person}</span>
+                </div>
               </div>
-              <div className="atr-detail-item">
-                <label>Phone</label>
-                <span>{request.contact_number}</span>
+              <div className="atr-contact-card">
+                <i className="fas fa-phone" />
+                <div>
+                  <label>Phone</label>
+                  <span>{request.contact_number}</span>
+                </div>
               </div>
-              <div className="atr-detail-item atr-detail-item--full">
-                <label>Email</label>
-                <span>{request.email}</span>
+              <div className="atr-contact-card atr-contact-card--full">
+                <i className="fas fa-envelope" />
+                <div>
+                  <label>Email</label>
+                  <span>{request.email}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -227,19 +316,26 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
                 {request.location_preference && (
                   <div className="atr-detail-item atr-detail-item--full">
                     <label>Location Preference</label>
-                    <span>{request.location_preference}</span>
+                    <span className="atr-location">
+                      <i className="fas fa-map-pin" />
+                      {request.location_preference}
+                    </span>
                   </div>
                 )}
                 {request.venue_requirements && (
                   <div className="atr-detail-item atr-detail-item--full">
                     <label>Venue Requirements</label>
-                    <span>{request.venue_requirements}</span>
+                    <p className="atr-detail-text">
+                      {request.venue_requirements}
+                    </p>
                   </div>
                 )}
                 {request.equipment_needed && (
                   <div className="atr-detail-item atr-detail-item--full">
                     <label>Equipment Needed</label>
-                    <span>{request.equipment_needed}</span>
+                    <p className="atr-detail-text">
+                      {request.equipment_needed}
+                    </p>
                   </div>
                 )}
               </div>
@@ -254,7 +350,7 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
               </h3>
               {request.purpose && (
                 <div className="atr-detail-item atr-detail-item--full">
-                  <label>Purpose</label>
+                  <label>Purpose / Objective</label>
                   <p className="atr-detail-text">{request.purpose}</p>
                 </div>
               )}
@@ -277,15 +373,17 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
               <h3 className="atr-detail-section__title">
                 <i className="fas fa-file-upload" /> Uploaded Documents
               </h3>
-              <div className="atr-doc-list">
+              <div className="atr-doc-grid">
                 {request.valid_id_request_path && (
                   <a
                     href={`http://localhost/prc-management-system/${request.valid_id_request_path}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="atr-doc-link"
+                    className="atr-doc-card"
                   >
-                    <i className="fas fa-id-card" /> Valid ID
+                    <i className="fas fa-id-card" />
+                    <span>Valid ID</span>
+                    <small>View Document</small>
                   </a>
                 )}
                 {request.participant_list_path && (
@@ -293,9 +391,11 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
                     href={`http://localhost/prc-management-system/${request.participant_list_path}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="atr-doc-link"
+                    className="atr-doc-card"
                   >
-                    <i className="fas fa-users" /> Participant List
+                    <i className="fas fa-users" />
+                    <span>Participant List</span>
+                    <small>View Document</small>
                   </a>
                 )}
                 {request.additional_docs_paths &&
@@ -311,10 +411,11 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
                           href={`http://localhost/prc-management-system/${doc}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="atr-doc-link"
+                          className="atr-doc-card"
                         >
-                          <i className="fas fa-file-alt" />{" "}
-                          {filenames[idx] || `Document ${idx + 1}`}
+                          <i className="fas fa-file-alt" />
+                          <span>{filenames[idx] || `Document ${idx + 1}`}</span>
+                          <small>View Document</small>
                         </a>
                       ));
                     } catch (e) {
@@ -326,80 +427,76 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
           )}
 
           {/* Admin Actions */}
-          <div className="atr-detail-section">
+          <div className="atr-detail-section atr-detail-section--actions">
             <h3 className="atr-detail-section__title">
               <i className="fas fa-tasks" /> Admin Actions
             </h3>
 
-            <div className="atr-form__field">
-              <label className="atr-form__label">Update Status</label>
-              <select
-                className="atr-form__select"
-                value={statusAction}
-                onChange={(e) => setStatusAction(e.target.value)}
-              >
-                <option value="">Select new status...</option>
-                {STATUS_OPTIONS.filter((s) => s.key !== "all").map((opt) => (
-                  <option key={opt.key} value={opt.key}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="atr-form__field">
-              <label className="atr-form__label">Admin Notes</label>
-              <textarea
-                className="atr-form__textarea"
-                rows={3}
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Add notes about this request..."
-              />
-            </div>
-
-            <div className="atr-actions">
-              <button
-                className="atr-btn atr-btn--primary"
-                onClick={handleStatusUpdate}
-                disabled={!statusAction || processing}
-              >
-                {processing ? (
-                  <i className="fas fa-spinner fa-spin" />
-                ) : (
-                  <i className="fas fa-save" />
-                )}
-                Update Status
-              </button>
-
-              {request.status === "approved" && !request.created_session_id && (
-                <button
-                  className="atr-btn atr-btn--success"
-                  onClick={handleCreateSession}
-                  disabled={processing}
+            <div className="atr-admin-panel">
+              <div className="atr-form__field">
+                <label className="atr-form__label">Update Status</label>
+                <select
+                  className="atr-form__select"
+                  value={statusAction}
+                  onChange={(e) => setStatusAction(e.target.value)}
                 >
-                  <i className="fas fa-plus-circle" /> Create Training Session
+                  <option value="">Select new status...</option>
+                  {STATUS_OPTIONS.filter((s) => s.key !== "all").map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="atr-form__field">
+                <label className="atr-form__label">Admin Notes</label>
+                <textarea
+                  className="atr-form__textarea"
+                  rows={3}
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add internal notes about this request..."
+                />
+              </div>
+
+              <div className="atr-action-buttons">
+                <button
+                  className="atr-btn atr-btn--primary"
+                  onClick={handleStatusUpdate}
+                  disabled={!statusAction || processing}
+                >
+                  {processing ? (
+                    <i className="fas fa-spinner fa-spin" />
+                  ) : (
+                    <i className="fas fa-save" />
+                  )}
+                  Update Status
                 </button>
-              )}
+
+                {request.status === "approved" &&
+                  !request.created_session_id && (
+                    <button
+                      className="atr-btn atr-btn--success"
+                      onClick={handleCreateSession}
+                      disabled={processing}
+                    >
+                      <i className="fas fa-plus-circle" /> Create Training
+                      Session
+                    </button>
+                  )}
+              </div>
 
               {request.created_session_id && (
-                <div
-                  style={{
-                    padding: "0.75rem 1rem",
-                    background: "#d1fae5",
-                    color: "#047857",
-                    borderRadius: "0.5rem",
-                    fontSize: "0.875rem",
-                    fontWeight: "600",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
+                <div className="atr-session-created">
                   <i className="fas fa-check-circle" />
-                  Training session created (ID: #{request.created_session_id})
-                  {request.created_session_title &&
-                    ` - ${request.created_session_title}`}
+                  <div>
+                    <strong>Training session created</strong>
+                    <span>ID: #{request.created_session_id}</span>
+                    {request.created_session_title && (
+                      <span>{request.created_session_title}</span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -408,19 +505,33 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
           {/* Request Metadata */}
           <div className="atr-detail-section atr-detail-section--meta">
             <div className="atr-meta-grid">
-              <div>
-                <i className="fas fa-calendar-plus" /> Submitted:{" "}
-                {new Date(request.created_at).toLocaleString()}
+              <div className="atr-meta-item">
+                <i className="fas fa-calendar-plus" />
+                <div>
+                  <span className="atr-meta-label">Submitted</span>
+                  <span className="atr-meta-value">
+                    {new Date(request.created_at).toLocaleString()}
+                  </span>
+                </div>
               </div>
               {request.reviewed_date && (
-                <div>
-                  <i className="fas fa-check-circle" /> Reviewed:{" "}
-                  {new Date(request.reviewed_date).toLocaleString()}
+                <div className="atr-meta-item">
+                  <i className="fas fa-check-circle" />
+                  <div>
+                    <span className="atr-meta-label">Reviewed</span>
+                    <span className="atr-meta-value">
+                      {new Date(request.reviewed_date).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               )}
               {request.username && (
-                <div>
-                  <i className="fas fa-user" /> Submitted by: {request.username}
+                <div className="atr-meta-item">
+                  <i className="fas fa-user" />
+                  <div>
+                    <span className="atr-meta-label">Submitted by</span>
+                    <span className="atr-meta-value">{request.username}</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -441,6 +552,7 @@ export default function AdminTrainingRequest() {
   const [search, setSearch] = useState("");
   const [detailsRequest, setDetailsRequest] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
@@ -499,42 +611,66 @@ export default function AdminTrainingRequest() {
   const totalRequests = stats?.total ?? requests.length;
   const statusBreakdown = stats?.by_status || [];
 
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (statusFilter !== "all") count++;
+    if (search) count++;
+    return count;
+  };
+
+  const clearAllFilters = () => {
+    setStatusFilter("all");
+    setSearch("");
+  };
+
+  const pendingCount =
+    statusBreakdown.find((s) => s.status === "pending")?.count || 0;
+  const approvedCount =
+    statusBreakdown.find((s) => s.status === "approved")?.count || 0;
+
   return (
     <div className="atr-root">
-      {/* HEADER */}
+      {/* HEADER with Wave Effect */}
       <div className="atr-header">
-        <div className="atr-header__inner">
-          <div>
-            <div className="atr-header__eyebrow">
-              <i className="fas fa-inbox" /> Training Request Management
+        <div className="atr-header__container">
+          <div className="atr-header__content">
+            <div className="atr-header__left">
+              <div className="atr-header__badge">
+                <i className="fas fa-inbox" /> Training Request Management
+              </div>
+              <h1 className="atr-header__title">Manage Training Requests</h1>
+              <p className="atr-header__subtitle">
+                Review and process training program requests from users
+              </p>
             </div>
-            <h1 className="atr-header__title">Manage Training Requests</h1>
-            <p className="atr-header__subtitle">
-              Review and process training program requests from users
-            </p>
-          </div>
-          <div className="atr-header__stats">
-            <div>
-              <div className="atr-header__stat-num">{totalRequests ?? "—"}</div>
-              <div className="atr-header__stat-label">Total Requests</div>
+            <div className="atr-header__stats">
+              <div className="atr-header-stat">
+                <span className="atr-header-stat__value">{totalRequests}</span>
+                <span className="atr-header-stat__label">Total Requests</span>
+              </div>
+              <div className="atr-header-stat">
+                <span className="atr-header-stat__value">{pendingCount}</span>
+                <span className="atr-header-stat__label">Pending</span>
+              </div>
+              <div className="atr-header-stat">
+                <span className="atr-header-stat__value">{approvedCount}</span>
+                <span className="atr-header-stat__label">Approved</span>
+              </div>
             </div>
-            {statusBreakdown
-              .filter((s) => s.status === "pending")
-              .map((s) => (
-                <div key="pending">
-                  <div className="atr-header__stat-num">{s.count}</div>
-                  <div className="atr-header__stat-label">Pending</div>
-                </div>
-              ))}
-            {statusBreakdown
-              .filter((s) => s.status === "approved")
-              .map((s) => (
-                <div key="approved">
-                  <div className="atr-header__stat-num">{s.count}</div>
-                  <div className="atr-header__stat-label">Approved</div>
-                </div>
-              ))}
           </div>
+        </div>
+        <div className="atr-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -546,14 +682,26 @@ export default function AdminTrainingRequest() {
               opt.key === "all"
                 ? totalRequests
                 : statusBreakdown.find((s) => s.status === opt.key)?.count || 0;
+            const isActive = statusFilter === opt.key;
 
             return (
               <button
                 key={opt.key}
-                className={`atr-filter-card${statusFilter === opt.key ? " atr-filter-card--active" : ""}`}
-                style={{ borderColor: opt.color }}
+                className={`atr-filter-card ${isActive ? "atr-filter-card--active" : ""}`}
+                style={{
+                  borderColor: opt.color,
+                  background: isActive ? `${opt.color}08` : "white",
+                }}
                 onClick={() => setStatusFilter(opt.key)}
               >
+                <i
+                  className={`fas ${opt.icon}`}
+                  style={{
+                    color: opt.color,
+                    fontSize: "1.25rem",
+                    marginBottom: "0.5rem",
+                  }}
+                />
                 <div
                   className="atr-filter-card__count"
                   style={{ color: opt.color }}
@@ -569,19 +717,31 @@ export default function AdminTrainingRequest() {
         {/* TOOLBAR */}
         <div className="atr-toolbar">
           <div className="atr-toolbar__search">
-            <i className="fas fa-magnifying-glass atr-toolbar__search-icon" />
+            <i className="fas fa-search atr-toolbar__search-icon" />
             <input
               className="atr-toolbar__search-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search requests..."
+              placeholder="Search by program, contact person, or email..."
             />
             {search && (
               <button
                 className="atr-toolbar__search-clear"
                 onClick={() => setSearch("")}
               >
-                <i className="fas fa-xmark" />
+                <i className="fas fa-times" />
+              </button>
+            )}
+          </div>
+
+          <div className="atr-toolbar__actions">
+            {getActiveFilterCount() > 0 && (
+              <button
+                className="atr-toolbar__filter-clear"
+                onClick={clearAllFilters}
+              >
+                <i className="fas fa-times" />
+                Clear Filters ({getActiveFilterCount()})
               </button>
             )}
           </div>
@@ -590,14 +750,22 @@ export default function AdminTrainingRequest() {
         {/* TABLE */}
         <div className="atr-table-panel">
           <div className="atr-table-panel__head">
-            <span className="atr-table-panel__title">
-              <i className="fas fa-list" /> All Training Requests
-            </span>
-            {!loading && (
-              <span className="atr-table-panel__count">
-                {requests.length} request{requests.length !== 1 ? "s" : ""}
-              </span>
-            )}
+            <div className="atr-table-panel__title">
+              <i className="fas fa-list" /> Training Requests
+            </div>
+            <div className="atr-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="atr-table-panel__count">
+                    {requests.length} request{requests.length !== 1 ? "s" : ""}
+                  </span>
+                  <span className="atr-table-panel__divider">•</span>
+                  <span className="atr-table-panel__sub">
+                    Page 1 of {Math.ceil(requests.length / 10) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="atr-table-panel__scroll">
@@ -621,8 +789,13 @@ export default function AdminTrainingRequest() {
                   <tr>
                     <td colSpan={10}>
                       <div className="atr-table__loading">
-                        <i className="fas fa-spinner fa-spin" />
+                        <div className="atr-table__loading-spinner">
+                          <i className="fas fa-spinner fa-spin" />
+                        </div>
                         <p>Loading requests...</p>
+                        <span className="atr-table__loading-sub">
+                          Fetching training requests
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -630,148 +803,210 @@ export default function AdminTrainingRequest() {
                   <tr>
                     <td colSpan={10}>
                       <div className="atr-table__empty">
-                        <i className="fas fa-inbox" />
-                        <p>No training requests found</p>
+                        <div className="atr-table__empty-icon">
+                          <i className="fas fa-inbox" />
+                        </div>
+                        <h3 className="atr-table__empty-title">
+                          No Requests Found
+                        </h3>
+                        <p className="atr-table__empty-message">
+                          {search || statusFilter !== "all"
+                            ? "Try adjusting your search or filter criteria"
+                            : "No training requests have been submitted yet"}
+                        </p>
+                        {(search || statusFilter !== "all") && (
+                          <button
+                            className="atr-table__empty-action"
+                            onClick={clearAllFilters}
+                          >
+                            <i className="fas fa-times" /> Clear Filters
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  requests.map((req) => (
-                    <tr key={req.request_id}>
-                      <td>
-                        <span className="atr-req-id">#{req.request_id}</span>
-                      </td>
-                      <td>
-                        <div className="atr-program">
-                          <div className="atr-program__name">
-                            {req.training_program}
+                  requests.map((req) => {
+                    const statusConfig =
+                      STATUS_OPTIONS.find((s) => s.key === req.status) ||
+                      STATUS_OPTIONS[0];
+                    const urgencyConfig =
+                      URGENCY_OPTIONS.find((u) => u.key === req.urgency) ||
+                      URGENCY_OPTIONS[1];
+
+                    return (
+                      <tr
+                        key={req.request_id}
+                        onMouseEnter={() => setHoveredRow(req.request_id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === req.request_id
+                            ? "atr-table__row--hovered"
+                            : ""
+                        }
+                      >
+                        <td>
+                          <span className="atr-req-id">
+                            <i className="fas fa-hashtag" /> #{req.request_id}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="atr-program">
+                            <div className="atr-program__name">
+                              {req.training_program}
+                            </div>
+                            <div className="atr-program__type">
+                              {req.training_type?.replace("_", " ")}
+                            </div>
                           </div>
-                          <div className="atr-program__type">
-                            {req.training_type?.replace("_", " ")}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="atr-badge">{req.service_type}</span>
-                      </td>
-                      <td>
-                        <div className="atr-contact">
-                          <div>{req.contact_person}</div>
-                          <div className="atr-contact__email">{req.email}</div>
-                        </div>
-                      </td>
-                      <td>{req.participant_count}</td>
-                      <td>
-                        {req.preferred_start_date ? (
-                          <div className="atr-date">
-                            {new Date(
-                              req.preferred_start_date,
-                            ).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </div>
-                        ) : (
-                          <span className="atr-muted">Flexible</span>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className={`atr-urgency atr-urgency--${req.urgency}`}
-                        >
-                          {req.urgency?.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`atr-status atr-status--${req.status}`}
-                        >
-                          {req.status?.toUpperCase().replace("_", " ")}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="atr-date">
-                          {new Date(req.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", gap: "0.25rem" }}>
-                          <button
-                            className="atr-action-btn"
-                            onClick={() => handleViewDetails(req)}
-                            title="View Details"
-                          >
-                            <i className="fas fa-eye" />
-                          </button>
-                          {req.status === "approved" &&
-                            !req.created_session_id && (
-                              <button
-                                className="atr-action-btn"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (
-                                    !window.confirm(
-                                      `Create training session for "${req.training_program}"?`,
-                                    )
-                                  )
-                                    return;
-                                  try {
-                                    const res = await createSessionFromRequest(
-                                      req.request_id,
-                                    );
-                                    showToast(
-                                      `${res.message} (Session ID: ${res.session_id})`,
-                                    );
-                                    fetchRequests();
-                                    refreshStats();
-                                  } catch (err) {
-                                    showToast(
-                                      err.message || "Failed to create session",
-                                      "error",
-                                    );
-                                  }
-                                }}
-                                title="Quick Create Session"
-                                style={{
-                                  background: "rgba(16, 185, 129, 0.08)",
-                                  color: "#10b981",
-                                  borderColor: "rgba(16, 185, 129, 0.15)",
-                                }}
-                              >
-                                <i className="fas fa-plus-circle" />
-                              </button>
-                            )}
-                          {req.created_session_id && (
-                            <span
-                              title={`Session created (ID: ${req.created_session_id})`}
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                padding: "0.25rem 0.5rem",
-                                background: "rgba(16, 185, 129, 0.08)",
-                                color: "#10b981",
-                                borderRadius: "0.375rem",
-                                fontSize: "0.625rem",
-                                fontWeight: "600",
-                              }}
+                        </td>
+                        <td>
+                          <span className="atr-service-badge">
+                            {req.service_type}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="atr-contact">
+                            <div className="atr-contact__name">
+                              {req.contact_person}
+                            </div>
+                            <div
+                              className="atr-contact__email"
+                              title={req.email}
                             >
-                              <i
-                                className="fas fa-check-circle"
-                                style={{ fontSize: "0.625rem" }}
-                              />
+                              <i className="fas fa-envelope" />
+                              {req.email}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="atr-participant-count">
+                            <i className="fas fa-user" />
+                            {req.participant_count}
+                          </span>
+                        </td>
+                        <td>
+                          {req.preferred_start_date ? (
+                            <div className="atr-date">
+                              <i className="fas fa-calendar" />
+                              {new Date(
+                                req.preferred_start_date,
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </div>
+                          ) : (
+                            <span className="atr-flexible">
+                              <i className="fas fa-calendar-alt" /> Flexible
                             </span>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td>
+                          <span
+                            className={`atr-urgency atr-urgency--${req.urgency}`}
+                            style={{
+                              background: `${urgencyConfig.color}12`,
+                              color: urgencyConfig.color,
+                              border: `1px solid ${urgencyConfig.color}25`,
+                            }}
+                          >
+                            <i className={`fas ${urgencyConfig.icon}`} />
+                            {urgencyConfig.label}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`atr-status atr-status--${req.status}`}
+                            style={{
+                              background: `${statusConfig.color}12`,
+                              color: statusConfig.color,
+                              border: `1px solid ${statusConfig.color}25`,
+                            }}
+                          >
+                            <i className={`fas ${statusConfig.icon}`} />
+                            {req.status?.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="atr-date">
+                            <i className="fas fa-calendar-plus" />
+                            {new Date(req.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="atr-actions">
+                            <button
+                              className="atr-action-btn atr-action-btn--view"
+                              onClick={() => handleViewDetails(req)}
+                              title="View Details"
+                              style={{
+                                background: "#3b82f612",
+                                color: "#3b82f6",
+                                border: "1px solid #3b82f625",
+                              }}
+                            >
+                              <i className="fas fa-eye" />
+                            </button>
+                            {req.status === "approved" &&
+                              !req.created_session_id && (
+                                <button
+                                  className="atr-action-btn atr-action-btn--create"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (
+                                      !window.confirm(
+                                        `Create training session for "${req.training_program}"?`,
+                                      )
+                                    )
+                                      return;
+                                    try {
+                                      const res =
+                                        await createSessionFromRequest(
+                                          req.request_id,
+                                        );
+                                      showToast(
+                                        `${res.message} (Session ID: ${res.session_id})`,
+                                      );
+                                      fetchRequests();
+                                      refreshStats();
+                                    } catch (err) {
+                                      showToast(
+                                        err.message ||
+                                          "Failed to create session",
+                                        "error",
+                                      );
+                                    }
+                                  }}
+                                  title="Quick Create Session"
+                                  style={{
+                                    background: "#10b98112",
+                                    color: "#10b981",
+                                    border: "1px solid #10b98125",
+                                  }}
+                                >
+                                  <i className="fas fa-plus-circle" />
+                                </button>
+                              )}
+                            {req.created_session_id && (
+                              <span
+                                className="atr-session-badge"
+                                title={`Session created (ID: ${req.created_session_id})`}
+                              >
+                                <i className="fas fa-check-circle" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

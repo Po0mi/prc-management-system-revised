@@ -13,10 +13,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ud-toast ud-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="ud-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="ud-toast__content">
+        <div className="ud-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ud-toast__message">{message}</div>
+      </div>
       <button className="ud-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -29,6 +36,7 @@ export default function UserDonate() {
   const [activeTab, setActiveTab] = useState("blood");
   const [copiedField, setCopiedField] = useState(null);
   const [toast, setToast] = useState(null);
+  const [expandedFaq, setExpandedFaq] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -266,36 +274,78 @@ export default function UserDonate() {
     "For large donations, please contact us in advance",
   ];
 
+  const faqItems = [
+    {
+      question: "Are my donations tax-deductible?",
+      answer:
+        "Yes, all donations to the Philippine Red Cross are tax-deductible. You will receive an official receipt for your donation.",
+    },
+    {
+      question: "Can I specify where my donation goes?",
+      answer:
+        "Yes, you can specify your donation purpose (e.g., disaster response, blood services, specific programs) when you donate.",
+    },
+    {
+      question: "How do I get an official receipt?",
+      answer:
+        "Official receipts are issued at the time of donation for cash and goods. For bank transfers, please email the deposit slip to receive your receipt.",
+    },
+    {
+      question: "Can I donate in kind instead of cash?",
+      answer:
+        "Absolutely! We welcome goods donations. Please check our accepted items list and guidelines above.",
+    },
+  ];
+
   return (
     <div className="ud-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="ud-header">
-        <div className="ud-header__content">
-          <div>
-            <div className="ud-header__eyebrow">
-              <i className="fa-solid fa-hand-holding-heart" />
-              Support Our Cause
+        <div className="ud-header__container">
+          <div className="ud-header__content">
+            <div className="ud-header__left">
+              <div className="ud-header__badge">
+                <i className="fa-solid fa-hand-holding-heart" />
+                Support Our Cause
+              </div>
+              <h1 className="ud-header__title">Make a Donation</h1>
+              <p className="ud-header__subtitle">
+                Your generosity helps us serve communities in need. Choose how
+                you'd like to contribute.
+              </p>
             </div>
-            <h1 className="ud-header__title">Make a Donation</h1>
-            <p className="ud-header__subtitle">
-              Your generosity helps us serve communities in need. Choose how
-              you'd like to contribute.
-            </p>
+            <div className="ud-header__stats">
+              <div className="ud-header-stat">
+                <span className="ud-header-stat__value">1M+</span>
+                <span className="ud-header-stat__label">Lives Touched</span>
+              </div>
+              <div className="ud-header-stat">
+                <span className="ud-header-stat__value">500+</span>
+                <span className="ud-header-stat__label">
+                  Communities Served
+                </span>
+              </div>
+              <div className="ud-header-stat">
+                <span className="ud-header-stat__value">24/7</span>
+                <span className="ud-header-stat__label">
+                  Emergency Response
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="ud-header__stats">
-            <div className="ud-header__stat">
-              <div className="ud-header__stat-num">1M+</div>
-              <div className="ud-header__stat-label">Lives Touched</div>
-            </div>
-            <div className="ud-header__stat">
-              <div className="ud-header__stat-num">500+</div>
-              <div className="ud-header__stat-label">Communities Served</div>
-            </div>
-            <div className="ud-header__stat">
-              <div className="ud-header__stat-num">24/7</div>
-              <div className="ud-header__stat-label">Emergency Response</div>
-            </div>
-          </div>
+        </div>
+        <div className="ud-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -304,7 +354,7 @@ export default function UserDonate() {
         {/* Important Notice */}
         <div className="ud-notice">
           <div className="ud-notice__icon">
-            <i className="fa-solid fa-info-circle" />
+            <i className="fa-solid fa-circle-info" />
           </div>
           <div className="ud-notice__content">
             <h3>Important Information</h3>
@@ -324,21 +374,21 @@ export default function UserDonate() {
             onClick={() => setActiveTab("blood")}
           >
             <i className="fa-solid fa-droplet" />
-            Blood Donation
+            <span>Blood Donation</span>
           </button>
           <button
             className={`ud-tab ${activeTab === "goods" ? "ud-tab--active" : ""}`}
             onClick={() => setActiveTab("goods")}
           >
             <i className="fa-solid fa-box" />
-            Goods Donation
+            <span>Goods Donation</span>
           </button>
           <button
             className={`ud-tab ${activeTab === "cash" ? "ud-tab--active" : ""}`}
             onClick={() => setActiveTab("cash")}
           >
             <i className="fa-solid fa-money-bill" />
-            Cash Donation
+            <span>Cash Donation</span>
           </button>
         </div>
 
@@ -347,10 +397,12 @@ export default function UserDonate() {
           <>
             {/* Chapter Information */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-location-dot" />
-                Visit Your Nearest Philippine Red Cross Chapter
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-location-dot" />
+                  Visit Your Nearest Philippine Red Cross Chapter
+                </h2>
+              </div>
 
               <div className="ud-chapter-card">
                 <div className="ud-chapter-card__header">
@@ -358,9 +410,16 @@ export default function UserDonate() {
                     <i className="fa-solid fa-building" />
                     Iloilo Chapter
                   </h3>
+                  <span className="ud-chapter-card__badge">Main Office</span>
                 </div>
 
                 <div className="ud-chapter-card__content">
+                  {/* Operating Hours */}
+                  <div className="ud-hours-badge">
+                    <i className="fa-regular fa-clock" />
+                    <span>Open Today • 8:00 AM - 5:00 PM</span>
+                  </div>
+
                   {/* Contact Numbers */}
                   <div className="ud-contact-group">
                     <h4>
@@ -498,10 +557,13 @@ export default function UserDonate() {
 
             {/* Blood Type Compatibility */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-droplet" />
-                Blood Type Compatibility
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-droplet" />
+                  Blood Type Compatibility
+                </h2>
+                <span className="ud-section__badge">8 Types</span>
+              </div>
               <div className="ud-blood-types">
                 {bloodTypes.map((item) => (
                   <div key={item.type} className="ud-blood-type">
@@ -510,7 +572,7 @@ export default function UserDonate() {
                       style={{
                         background: item.bg,
                         color: item.color,
-                        border: `1px solid ${item.color}33`,
+                        border: `2px solid ${item.color}30`,
                       }}
                     >
                       {item.type}
@@ -525,10 +587,12 @@ export default function UserDonate() {
 
             {/* Eligibility Requirements */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-clipboard-check" />
-                Donor Eligibility Requirements
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-clipboard-check" />
+                  Donor Eligibility Requirements
+                </h2>
+              </div>
               <div className="ud-requirements">
                 {eligibilityRequirements.map((req, index) => (
                   <div key={index} className="ud-requirement">
@@ -548,14 +612,18 @@ export default function UserDonate() {
           <>
             {/* Donation Guidelines */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-circle-check" />
-                Donation Guidelines
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-circle-check" />
+                  Donation Guidelines
+                </h2>
+              </div>
               <div className="ud-guidelines">
                 {goodsGuidelines.map((guideline, index) => (
                   <div key={index} className="ud-guideline">
-                    <i className="fa-solid fa-check-circle" />
+                    <div className="ud-guideline__icon">
+                      <i className="fa-solid fa-check-circle" />
+                    </div>
                     <p>{guideline}</p>
                   </div>
                 ))}
@@ -564,15 +632,22 @@ export default function UserDonate() {
 
             {/* Accepted Items */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-box-open" />
-                Accepted Items
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-box-open" />
+                  Accepted Items
+                </h2>
+                <span className="ud-section__badge">
+                  {goodsCategories.length} Categories
+                </span>
+              </div>
               <div className="ud-categories">
                 {goodsCategories.map((category, index) => (
                   <div key={index} className="ud-category">
                     <div className="ud-category__header">
-                      <i className={category.icon} />
+                      <div className="ud-category__icon">
+                        <i className={category.icon} />
+                      </div>
                       <h3>{category.category}</h3>
                     </div>
                     <ul className="ud-category__list">
@@ -590,28 +665,34 @@ export default function UserDonate() {
 
             {/* Drop-off Information */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-location-dot" />
-                Drop-off Location
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-location-dot" />
+                  Drop-off Location
+                </h2>
+              </div>
               <div className="ud-dropoff">
                 <div className="ud-dropoff__card">
-                  <h4>
+                  <div className="ud-dropoff__header">
                     <i className="fa-solid fa-building" />
-                    Iloilo Chapter
-                  </h4>
-                  <p>
-                    <i className="fa-solid fa-location-dot" />
-                    Brgy. Danao, Bonifacio Drive, Iloilo City, 5000
-                  </p>
-                  <p>
-                    <i className="fa-regular fa-clock" />
-                    Monday - Friday, 8:00 AM - 5:00 PM
-                  </p>
-                  <p>
-                    <i className="fa-solid fa-phone" />
-                    (033) 503-3393
-                  </p>
+                    <h4>Iloilo Chapter</h4>
+                  </div>
+                  <div className="ud-dropoff__details">
+                    <div className="ud-dropoff__detail">
+                      <i className="fa-solid fa-location-dot" />
+                      <span>
+                        Brgy. Danao, Bonifacio Drive, Iloilo City, 5000
+                      </span>
+                    </div>
+                    <div className="ud-dropoff__detail">
+                      <i className="fa-regular fa-clock" />
+                      <span>Monday - Friday, 8:00 AM - 5:00 PM</span>
+                    </div>
+                    <div className="ud-dropoff__detail">
+                      <i className="fa-solid fa-phone" />
+                      <span>(033) 503-3393</span>
+                    </div>
+                  </div>
                   <div className="ud-action-buttons">
                     <button
                       className="ud-btn ud-btn--primary"
@@ -632,10 +713,15 @@ export default function UserDonate() {
           <>
             {/* Donation Options */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-credit-card" />
-                Donation Options
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-credit-card" />
+                  Donation Options
+                </h2>
+                <span className="ud-section__badge">
+                  {cashOptions.length} Methods
+                </span>
+              </div>
               <div className="ud-cash-options">
                 {cashOptions.map((option, index) => (
                   <div key={index} className="ud-cash-option">
@@ -647,7 +733,7 @@ export default function UserDonate() {
                       {option.details.map((detail, idx) => (
                         <div key={idx} className="ud-cash-option__detail">
                           <span className="ud-cash-option__label">
-                            {detail.label}:
+                            {detail.label}
                           </span>
                           <div className="ud-cash-option__value-group">
                             <span className="ud-cash-option__value">
@@ -680,14 +766,18 @@ export default function UserDonate() {
 
             {/* Guidelines */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-circle-info" />
-                Important Information
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-circle-info" />
+                  Important Information
+                </h2>
+              </div>
               <div className="ud-guidelines">
                 {cashGuidelines.map((guideline, index) => (
                   <div key={index} className="ud-guideline">
-                    <i className="fa-solid fa-info-circle" />
+                    <div className="ud-guideline__icon">
+                      <i className="fa-solid fa-info-circle" />
+                    </div>
                     <p>{guideline}</p>
                   </div>
                 ))}
@@ -696,21 +786,23 @@ export default function UserDonate() {
 
             {/* Contact for Large Donations */}
             <div className="ud-section">
-              <h2 className="ud-section__title">
-                <i className="fa-solid fa-handshake" />
-                For Large Donations
-              </h2>
+              <div className="ud-section__header">
+                <h2 className="ud-section__title">
+                  <i className="fa-solid fa-handshake" />
+                  For Large Donations
+                </h2>
+              </div>
               <div className="ud-contact-card">
                 <p>
                   For corporate partnerships, large donations, or sponsorship
                   inquiries, please contact our Donor Relations Team:
                 </p>
                 <div className="ud-contact-info">
-                  <div className="ud-contact-item">
+                  <div className="ud-contact-info-item">
                     <i className="fa-solid fa-phone" />
                     <span>(033) 503-3393 local 123</span>
                   </div>
-                  <div className="ud-contact-item">
+                  <div className="ud-contact-info-item">
                     <i className="fa-regular fa-envelope" />
                     <span>donors@redcross.org.ph</span>
                   </div>
@@ -722,10 +814,12 @@ export default function UserDonate() {
 
         {/* Common Section: What to Expect (applies to all) */}
         <div className="ud-section">
-          <h2 className="ud-section__title">
-            <i className="fa-solid fa-clock" />
-            What to Expect When You Donate
-          </h2>
+          <div className="ud-section__header">
+            <h2 className="ud-section__title">
+              <i className="fa-solid fa-clock" />
+              What to Expect When You Donate
+            </h2>
+          </div>
           <div className="ud-steps">
             <div className="ud-step">
               <div className="ud-step__number">1</div>
@@ -760,47 +854,40 @@ export default function UserDonate() {
 
         {/* Frequently Asked Questions */}
         <div className="ud-section">
-          <h2 className="ud-section__title">
-            <i className="fa-regular fa-circle-question" />
-            Frequently Asked Questions
-          </h2>
+          <div className="ud-section__header">
+            <h2 className="ud-section__title">
+              <i className="fa-regular fa-circle-question" />
+              Frequently Asked Questions
+            </h2>
+          </div>
           <div className="ud-faq">
-            <div className="ud-faq-item">
-              <h4>Are my donations tax-deductible?</h4>
-              <p>
-                Yes, all donations to the Philippine Red Cross are
-                tax-deductible. You will receive an official receipt for your
-                donation.
-              </p>
-            </div>
-            <div className="ud-faq-item">
-              <h4>Can I specify where my donation goes?</h4>
-              <p>
-                Yes, you can specify your donation purpose (e.g., disaster
-                response, blood services, specific programs) when you donate.
-              </p>
-            </div>
-            <div className="ud-faq-item">
-              <h4>How do I get an official receipt?</h4>
-              <p>
-                Official receipts are issued at the time of donation for cash
-                and goods. For bank transfers, please email the deposit slip to
-                receive your receipt.
-              </p>
-            </div>
-            <div className="ud-faq-item">
-              <h4>Can I donate in kind instead of cash?</h4>
-              <p>
-                Absolutely! We welcome goods donations. Please check our
-                accepted items list and guidelines above.
-              </p>
-            </div>
+            {faqItems.map((item, index) => (
+              <div
+                key={index}
+                className={`ud-faq-item ${expandedFaq === index ? "ud-faq-item--expanded" : ""}`}
+                onClick={() =>
+                  setExpandedFaq(expandedFaq === index ? null : index)
+                }
+              >
+                <div className="ud-faq-item__question">
+                  <span>{item.question}</span>
+                  <i
+                    className={`fa-solid fa-chevron-${expandedFaq === index ? "up" : "down"}`}
+                  />
+                </div>
+                <div className="ud-faq-item__answer">
+                  <p>{item.answer}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Reminder */}
         <div className="ud-reminder">
-          <i className="fa-solid fa-heart" />
+          <div className="ud-reminder__icon">
+            <i className="fa-solid fa-heart" />
+          </div>
           <p>
             Every donation, whether blood, goods, or cash, makes a difference.
             Thank you for your generosity and support.

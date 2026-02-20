@@ -45,10 +45,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ue-toast ue-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
-      />
-      {message}
+      <div className="ue-toast__icon">
+        <i
+          className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
+        />
+      </div>
+      <div className="ue-toast__content">
+        <div className="ue-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ue-toast__message">{message}</div>
+      </div>
       <button className="ue-toast__close" onClick={onClose}>
         <i className="fas fa-xmark" />
       </button>
@@ -59,6 +66,7 @@ function Toast({ message, type, onClose }) {
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
 function Calendar({ events, selectedDate, onDateSelect }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [hoveredDay, setHoveredDay] = useState(null);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -89,10 +97,31 @@ function Calendar({ events, selectedDate, onDateSelect }) {
     );
   };
 
+  const getEventCount = (day) => {
+    if (!day) return 0;
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return events.filter(
+      (e) =>
+        e.event_date === dateStr ||
+        (e.event_end_date &&
+          dateStr >= e.event_date &&
+          dateStr <= e.event_end_date),
+    ).length;
+  };
+
   const isSelected = (day) => {
     if (!day || !selectedDate) return false;
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return dateStr === selectedDate;
+  };
+
+  const isToday = (day) => {
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    );
   };
 
   const handlePrevMonth = () => {
@@ -109,40 +138,73 @@ function Calendar({ events, selectedDate, onDateSelect }) {
     onDateSelect(dateStr);
   };
 
+  const goToToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   return (
     <div className="ue-calendar">
       <div className="ue-calendar__header">
-        <button className="ue-calendar__nav" onClick={handlePrevMonth}>
-          <i className="fas fa-chevron-left" />
-        </button>
-        <div className="ue-calendar__title">
-          {MONTHS[month]} {year}
+        <div className="ue-calendar__nav-group">
+          <button className="ue-calendar__nav" onClick={handlePrevMonth}>
+            <i className="fas fa-chevron-left" />
+          </button>
+          <div className="ue-calendar__title">
+            {MONTHS[month]} {year}
+          </div>
+          <button className="ue-calendar__nav" onClick={handleNextMonth}>
+            <i className="fas fa-chevron-right" />
+          </button>
         </div>
-        <button className="ue-calendar__nav" onClick={handleNextMonth}>
-          <i className="fas fa-chevron-right" />
+        <button className="ue-calendar__today" onClick={goToToday}>
+          <i className="fas fa-calendar-day" />
+          Today
         </button>
       </div>
 
-      <div className="ue-calendar__days">
+      <div className="ue-calendar__weekdays">
         {DAYS.map((d) => (
-          <div key={d} className="ue-calendar__day-label">
+          <div key={d} className="ue-calendar__weekday">
             {d}
           </div>
         ))}
       </div>
 
       <div className="ue-calendar__grid">
-        {days.map((day, i) => (
-          <div
-            key={i}
-            className={`ue-calendar__cell ${!day ? "ue-calendar__cell--empty" : ""} ${
-              hasEvent(day) ? "ue-calendar__cell--event" : ""
-            } ${isSelected(day) ? "ue-calendar__cell--selected" : ""}`}
-            onClick={() => handleDayClick(day)}
-          >
-            {day}
-          </div>
-        ))}
+        {days.map((day, i) => {
+          const eventCount = getEventCount(day);
+          const isHovered = hoveredDay === day;
+
+          return (
+            <div
+              key={i}
+              className={`ue-calendar__cell 
+                ${!day ? "ue-calendar__cell--empty" : ""} 
+                ${hasEvent(day) ? "ue-calendar__cell--event" : ""} 
+                ${isSelected(day) ? "ue-calendar__cell--selected" : ""}
+                ${isToday(day) ? "ue-calendar__cell--today" : ""}
+                ${isHovered ? "ue-calendar__cell--hovered" : ""}`}
+              onClick={() => handleDayClick(day)}
+              onMouseEnter={() => day && setHoveredDay(day)}
+              onMouseLeave={() => setHoveredDay(null)}
+            >
+              <span className="ue-calendar__day-number">{day}</span>
+              {eventCount > 0 && (
+                <>
+                  <span className="ue-calendar__event-indicator"></span>
+                  {isHovered && (
+                    <div className="ue-calendar__tooltip">
+                      <strong>
+                        {eventCount} event{eventCount > 1 ? "s" : ""}
+                      </strong>
+                      <span>Click to view</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -151,6 +213,7 @@ function Calendar({ events, selectedDate, onDateSelect }) {
 // ─── REGISTRATION MODAL ──────────────────────────────────────────────────────
 function RegisterModal({ event, onClose, onSuccess }) {
   const [tab, setTab] = useState("individual");
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -181,6 +244,9 @@ function RegisterModal({ event, onClose, onSuccess }) {
     const e = {};
     if (!form.full_name.trim()) e.full_name = "Full name is required";
     if (!form.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      e.email = "Invalid email format";
+    }
     if (!form.location.trim()) e.location = "Location is required";
     if (!files.valid_id) e.valid_id = "Valid ID is required";
     if (
@@ -192,6 +258,28 @@ function RegisterModal({ event, onClose, onSuccess }) {
     }
     return e;
   }
+
+  const nextStep = () => {
+    const e = {};
+    if (step === 1) {
+      if (!form.full_name.trim()) e.full_name = "Full name is required";
+      if (!form.email.trim()) e.email = "Email is required";
+      if (!form.location.trim()) e.location = "Location is required";
+    }
+
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const prevStep = () => {
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -237,32 +325,55 @@ function RegisterModal({ event, onClose, onSuccess }) {
       >
         <div className="ue-modal__header">
           <div>
-            <div className="ue-modal__title">Register for {event.title}</div>
+            <div className="ue-modal__title">{event.title}</div>
             <div className="ue-modal__meta">
-              <i className="fas fa-calendar" />{" "}
-              {new Date(event.event_date).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
+              <span className="ue-modal__meta-item">
+                <i className="fas fa-calendar" />{" "}
+                {new Date(event.event_date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
               {event.fee > 0 && (
-                <>
-                  {" • "}
-                  <i className="fas fa-money-bill" /> ₱
+                <span className="ue-modal__meta-item">
+                  <i className="fas fa-tag" /> ₱
                   {parseFloat(event.fee).toFixed(2)}
-                </>
+                </span>
               )}
               {event.fee === 0 && (
-                <>
-                  {" • "}
-                  <span className="ue-modal__free">FREE EVENT</span>
-                </>
+                <span className="ue-modal__free-badge">
+                  <i className="fas fa-gift" /> FREE EVENT
+                </span>
               )}
             </div>
           </div>
           <button className="ue-modal__close" onClick={onClose}>
             <i className="fas fa-xmark" />
           </button>
+        </div>
+
+        <div className="ue-modal__progress">
+          <div
+            className={`ue-progress-step ${step >= 1 ? "active" : ""} ${step > 1 ? "completed" : ""}`}
+          >
+            <span className="ue-progress-step__number">1</span>
+            <span className="ue-progress-step__label">Personal Info</span>
+          </div>
+          <div className="ue-progress-line"></div>
+          <div className={`ue-progress-step ${step >= 2 ? "active" : ""}`}>
+            <span className="ue-progress-step__number">2</span>
+            <span className="ue-progress-step__label">Documents</span>
+          </div>
+          {event.fee > 0 && (
+            <>
+              <div className="ue-progress-line"></div>
+              <div className={`ue-progress-step ${step >= 3 ? "active" : ""}`}>
+                <span className="ue-progress-step__number">3</span>
+                <span className="ue-progress-step__label">Payment</span>
+              </div>
+            </>
+          )}
         </div>
 
         <form className="ue-modal__body" onSubmit={handleSubmit}>
@@ -272,158 +383,264 @@ function RegisterModal({ event, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Tabs */}
-          <div className="ue-tabs">
-            <button
-              type="button"
-              className={`ue-tab ${tab === "individual" ? "ue-tab--active" : ""}`}
-              onClick={() => setTab("individual")}
-            >
-              <i className="fas fa-user" /> Individual
-            </button>
-            <button
-              type="button"
-              className={`ue-tab ${tab === "organization" ? "ue-tab--active" : ""}`}
-              onClick={() => setTab("organization")}
-            >
-              <i className="fas fa-building" /> Organization/Company
-            </button>
-          </div>
+          {/* Step 1: Personal Information */}
+          {step === 1 && (
+            <div className="ue-step">
+              <h3 className="ue-step__title">
+                <i className="fas fa-user-circle" /> Personal Information
+              </h3>
 
-          {/* Full Name + Email */}
-          <div className="ue-form__row">
-            <div className="ue-form__field">
-              <label className="ue-form__label">
-                Full Name <span className="ue-form__required">*</span>
-              </label>
-              <input
-                className={`ue-form__input${errors.full_name ? " ue-form__input--error" : ""}`}
-                value={form.full_name}
-                onChange={(e) => set("full_name", e.target.value)}
-                placeholder="Enter your full name"
-              />
-              {errors.full_name && (
-                <span className="ue-form__error-text">{errors.full_name}</span>
+              {/* Tabs */}
+              <div className="ue-tabs">
+                <button
+                  type="button"
+                  className={`ue-tab ${tab === "individual" ? "ue-tab--active" : ""}`}
+                  onClick={() => setTab("individual")}
+                >
+                  <i className="fas fa-user" /> Individual
+                </button>
+                <button
+                  type="button"
+                  className={`ue-tab ${tab === "organization" ? "ue-tab--active" : ""}`}
+                  onClick={() => setTab("organization")}
+                >
+                  <i className="fas fa-building" /> Organization/Company
+                </button>
+              </div>
+
+              {/* Full Name + Email */}
+              <div className="ue-form__row">
+                <div className="ue-form__field">
+                  <label className="ue-form__label">
+                    Full Name <span className="ue-form__required">*</span>
+                  </label>
+                  <input
+                    className={`ue-form__input${errors.full_name ? " ue-form__input--error" : ""}`}
+                    value={form.full_name}
+                    onChange={(e) => set("full_name", e.target.value)}
+                    placeholder="Enter your full name"
+                  />
+                  {errors.full_name && (
+                    <span className="ue-form__error-text">
+                      <i className="fas fa-exclamation-circle" />{" "}
+                      {errors.full_name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="ue-form__field">
+                  <label className="ue-form__label">
+                    Email Address <span className="ue-form__required">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    className={`ue-form__input${errors.email ? " ue-form__input--error" : ""}`}
+                    value={form.email}
+                    onChange={(e) => set("email", e.target.value)}
+                    placeholder="Enter your email address"
+                  />
+                  {errors.email && (
+                    <span className="ue-form__error-text">
+                      <i className="fas fa-exclamation-circle" /> {errors.email}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Age + Location */}
+              <div className="ue-form__row">
+                <div className="ue-form__field">
+                  <label className="ue-form__label">Age</label>
+                  <input
+                    type="number"
+                    className="ue-form__input"
+                    value={form.age}
+                    onChange={(e) => set("age", e.target.value)}
+                    placeholder="Enter your age"
+                  />
+                </div>
+
+                <div className="ue-form__field">
+                  <label className="ue-form__label">
+                    Location <span className="ue-form__required">*</span>
+                  </label>
+                  <input
+                    className={`ue-form__input${errors.location ? " ue-form__input--error" : ""}`}
+                    value={form.location}
+                    onChange={(e) => set("location", e.target.value)}
+                    placeholder="Enter your location"
+                  />
+                  {errors.location && (
+                    <span className="ue-form__error-text">
+                      <i className="fas fa-exclamation-circle" />{" "}
+                      {errors.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Organization Name (if organization tab) */}
+              {tab === "organization" && (
+                <div className="ue-form__field">
+                  <label className="ue-form__label">Organization Name</label>
+                  <input
+                    className="ue-form__input"
+                    value={form.organization_name}
+                    onChange={(e) => set("organization_name", e.target.value)}
+                    placeholder="Enter organization name"
+                  />
+                </div>
               )}
-            </div>
 
-            <div className="ue-form__field">
-              <label className="ue-form__label">
-                Email Address <span className="ue-form__required">*</span>
-              </label>
-              <input
-                type="email"
-                className={`ue-form__input${errors.email ? " ue-form__input--error" : ""}`}
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                placeholder="Enter your email address"
-              />
-              {errors.email && (
-                <span className="ue-form__error-text">{errors.email}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Age + Location */}
-          <div className="ue-form__row">
-            <div className="ue-form__field">
-              <label className="ue-form__label">Age</label>
-              <input
-                type="number"
-                className="ue-form__input"
-                value={form.age}
-                onChange={(e) => set("age", e.target.value)}
-                placeholder="Enter your age"
-              />
-            </div>
-
-            <div className="ue-form__field">
-              <label className="ue-form__label">
-                Location <span className="ue-form__required">*</span>
-              </label>
-              <input
-                className={`ue-form__input${errors.location ? " ue-form__input--error" : ""}`}
-                value={form.location}
-                onChange={(e) => set("location", e.target.value)}
-                placeholder="Enter your location"
-              />
-              {errors.location && (
-                <span className="ue-form__error-text">{errors.location}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Organization Name (if organization tab) */}
-          {tab === "organization" && (
-            <div className="ue-form__field">
-              <label className="ue-form__label">Organization Name</label>
-              <input
-                className="ue-form__input"
-                value={form.organization_name}
-                onChange={(e) => set("organization_name", e.target.value)}
-                placeholder="Enter organization name"
-              />
+              <div className="ue-form__actions">
+                <button
+                  type="button"
+                  className="ue-form__next"
+                  onClick={nextStep}
+                >
+                  Next Step <i className="fas fa-arrow-right" />
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Valid ID */}
-          <div className="ue-form__field">
-            <label className="ue-form__label">
-              Valid ID <span className="ue-form__required">*</span>
-            </label>
-            <div className="ue-file-upload">
-              <input
-                type="file"
-                id="valid_id"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => setFile("valid_id", e.target.files[0])}
-                className="ue-file-upload__input"
-              />
-              <label htmlFor="valid_id" className="ue-file-upload__label">
-                <i className="fas fa-id-card" />
-                {files.valid_id
-                  ? files.valid_id.name
-                  : "Upload a clear photo of your valid ID"}
-              </label>
-            </div>
-            <small className="ue-form__hint">
-              Accepted: JPG, PNG, PDF (Max 5MB)
-            </small>
-            {errors.valid_id && (
-              <span className="ue-form__error-text">{errors.valid_id}</span>
-            )}
-          </div>
+          {/* Step 2: Documents */}
+          {step === 2 && (
+            <div className="ue-step">
+              <h3 className="ue-step__title">
+                <i className="fas fa-file-upload" /> Required Documents
+              </h3>
 
-          {/* Additional Documents (Optional) */}
-          <div className="ue-form__field">
-            <label className="ue-form__label">
-              Additional Documents (Optional)
-            </label>
-            <div className="ue-file-upload">
-              <input
-                type="file"
-                id="documents"
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                onChange={(e) => setFile("documents", e.target.files[0])}
-                className="ue-file-upload__input"
-              />
-              <label htmlFor="documents" className="ue-file-upload__label">
-                <i className="fas fa-file" />
-                {files.documents
-                  ? files.documents.name
-                  : "Upload supporting documents (optional)"}
-              </label>
-            </div>
-            <small className="ue-form__hint">
-              Accepted: JPG, PNG, PDF, DOC, DOCX (Max 5MB)
-            </small>
-          </div>
+              {/* Valid ID */}
+              <div className="ue-form__field">
+                <label className="ue-form__label">
+                  Valid ID <span className="ue-form__required">*</span>
+                </label>
+                <div className="ue-file-upload">
+                  <input
+                    type="file"
+                    id="valid_id"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => setFile("valid_id", e.target.files[0])}
+                    className="ue-file-upload__input"
+                  />
+                  <label htmlFor="valid_id" className="ue-file-upload__label">
+                    <i className="fas fa-id-card" />
+                    <span className="ue-file-upload__text">
+                      {files.valid_id
+                        ? files.valid_id.name
+                        : "Upload a clear photo of your valid ID"}
+                    </span>
+                    {files.valid_id && (
+                      <span className="ue-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <small className="ue-form__hint">
+                  <i className="fas fa-info-circle" /> Accepted: JPG, PNG, PDF
+                  (Max 5MB)
+                </small>
+                {errors.valid_id && (
+                  <span className="ue-form__error-text">
+                    <i className="fas fa-exclamation-circle" />{" "}
+                    {errors.valid_id}
+                  </span>
+                )}
+              </div>
 
-          {/* Payment Section (if event has fee) */}
-          {event.fee > 0 && (
-            <>
-              <div className="ue-divider">
+              {/* Additional Documents (Optional) */}
+              <div className="ue-form__field">
+                <label className="ue-form__label">
+                  Additional Documents (Optional)
+                </label>
+                <div className="ue-file-upload">
+                  <input
+                    type="file"
+                    id="documents"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => setFile("documents", e.target.files[0])}
+                    className="ue-file-upload__input"
+                  />
+                  <label htmlFor="documents" className="ue-file-upload__label">
+                    <i className="fas fa-folder-open" />
+                    <span className="ue-file-upload__text">
+                      {files.documents
+                        ? files.documents.name
+                        : "Upload supporting documents (optional)"}
+                    </span>
+                    {files.documents && (
+                      <span className="ue-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <small className="ue-form__hint">
+                  <i className="fas fa-info-circle" /> Accepted: JPG, PNG, PDF,
+                  DOC, DOCX (Max 5MB)
+                </small>
+              </div>
+
+              <div className="ue-form__actions">
+                <button
+                  type="button"
+                  className="ue-form__prev"
+                  onClick={prevStep}
+                >
+                  <i className="fas fa-arrow-left" /> Previous
+                </button>
+                {event.fee > 0 ? (
+                  <button
+                    type="button"
+                    className="ue-form__next"
+                    onClick={() => setStep(3)}
+                  >
+                    Next Step <i className="fas fa-arrow-right" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="ue-form__submit"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin" /> Submitting…
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check-circle" /> Complete
+                        Registration
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Payment (if event has fee) */}
+          {step === 3 && event.fee > 0 && (
+            <div className="ue-step">
+              <h3 className="ue-step__title">
                 <i className="fas fa-credit-card" /> Payment Information
+              </h3>
+
+              <div className="ue-payment-summary">
+                <div className="ue-payment-summary__item">
+                  <span>Event Fee:</span>
+                  <strong>₱{parseFloat(event.fee).toFixed(2)}</strong>
+                </div>
+                <div className="ue-payment-summary__item">
+                  <span>Processing Fee:</span>
+                  <strong>₱0.00</strong>
+                </div>
+                <div className="ue-payment-summary__total">
+                  <span>Total:</span>
+                  <strong>₱{parseFloat(event.fee).toFixed(2)}</strong>
+                </div>
               </div>
 
               <div className="ue-form__field">
@@ -431,26 +648,26 @@ function RegisterModal({ event, onClose, onSuccess }) {
                   Payment Mode <span className="ue-form__required">*</span>
                 </label>
                 <div className="ue-payment-options">
-                  {["gcash", "bank", "paymaya"].map((mode) => (
-                    <label key={mode} className="ue-payment-option">
+                  {[
+                    { id: "gcash", icon: "fa-mobile-alt", label: "GCash" },
+                    {
+                      id: "bank",
+                      icon: "fa-university",
+                      label: "Bank Transfer",
+                    },
+                    { id: "paymaya", icon: "fa-wallet", label: "PayMaya" },
+                  ].map((mode) => (
+                    <label key={mode.id} className="ue-payment-option">
                       <input
                         type="radio"
                         name="payment_mode"
-                        value={mode}
-                        checked={form.payment_mode === mode}
+                        value={mode.id}
+                        checked={form.payment_mode === mode.id}
                         onChange={(e) => set("payment_mode", e.target.value)}
                       />
                       <div className="ue-payment-option__box">
-                        <i
-                          className={`fas ${
-                            mode === "gcash"
-                              ? "fa-mobile-alt"
-                              : mode === "bank"
-                                ? "fa-university"
-                                : "fa-wallet"
-                          }`}
-                        />
-                        <span>{mode.toUpperCase()}</span>
+                        <i className={`fas ${mode.icon}`} />
+                        <span>{mode.label}</span>
                       </div>
                     </label>
                   ))}
@@ -476,48 +693,69 @@ function RegisterModal({ event, onClose, onSuccess }) {
                     className="ue-file-upload__label"
                   >
                     <i className="fas fa-receipt" />
-                    {files.payment_receipt
-                      ? files.payment_receipt.name
-                      : "Upload payment receipt"}
+                    <span className="ue-file-upload__text">
+                      {files.payment_receipt
+                        ? files.payment_receipt.name
+                        : "Upload payment receipt"}
+                    </span>
+                    {files.payment_receipt && (
+                      <span className="ue-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
                   </label>
                 </div>
                 <small className="ue-form__hint">
-                  Upload proof of payment (screenshot or receipt)
+                  <i className="fas fa-info-circle" /> Upload proof of payment
+                  (screenshot or receipt)
                 </small>
                 {errors.payment_receipt && (
                   <span className="ue-form__error-text">
+                    <i className="fas fa-exclamation-circle" />{" "}
                     {errors.payment_receipt}
                   </span>
                 )}
               </div>
-            </>
+
+              <div className="ue-form__actions">
+                <button
+                  type="button"
+                  className="ue-form__prev"
+                  onClick={() => setStep(2)}
+                >
+                  <i className="fas fa-arrow-left" /> Previous
+                </button>
+                <button
+                  type="submit"
+                  className="ue-form__submit"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin" /> Processing
+                      Payment…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-lock" /> Complete Payment & Register
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Info Notice */}
           <div className="ue-info-notice">
-            <i className="fas fa-info-circle" />
+            <i className="fas fa-shield-alt" />
             <div>
-              By registering, you agree to provide accurate information. Your
-              documents will be securely stored and used only for event
-              registration purposes.
+              <strong>Secure Registration</strong>
+              <p>
+                Your information and documents are encrypted and securely
+                stored. We only use this data for event registration purposes.
+              </p>
             </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="ue-form__submit"
-          >
-            {submitting ? (
-              <>
-                <i className="fas fa-spinner fa-spin" /> Submitting…
-              </>
-            ) : (
-              <>
-                <i className="fas fa-user-plus" /> Register for Event
-              </>
-            )}
-          </button>
         </form>
       </div>
     </div>
@@ -534,6 +772,7 @@ export default function UserEvents() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [registerEvent, setRegisterEvent] = useState(null);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState("available");
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
@@ -587,6 +826,7 @@ export default function UserEvents() {
   const pendingCount = myRegistrations.filter(
     (r) => r.status === "pending",
   ).length;
+  const totalCount = myRegistrations.length;
 
   function handleRegisterSuccess(msg) {
     showToast(msg);
@@ -594,20 +834,65 @@ export default function UserEvents() {
     fetchMyRegistrations();
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "approved":
+        return "#10b981";
+      case "pending":
+        return "#f59e0b";
+      case "rejected":
+        return "#ef4444";
+      default:
+        return "#6b7280";
+    }
+  };
+
   return (
     <div className="ue-root">
       {/* HEADER */}
       <div className="ue-header">
-        <div className="ue-header__inner">
-          <div>
-            <div className="ue-header__eyebrow">
-              <i className="fas fa-calendar-alt" /> Event Registration
+        <div className="ue-header__container">
+          <div className="ue-header__content">
+            <div className="ue-header__left">
+              <div className="ue-header__badge">
+                <i className="fas fa-calendar-alt" /> Event Registration
+              </div>
+              <h1 className="ue-header__title">Browse & Register for Events</h1>
+              <p className="ue-header__subtitle">
+                Discover and join upcoming PRC events, training sessions, and
+                community activities
+              </p>
             </div>
-            <h1 className="ue-header__title">Browse & Register for Events</h1>
-            <p className="ue-header__subtitle">
-              Register for upcoming PRC events and manage your registrations
-            </p>
+            <div className="ue-header__stats">
+              <div className="ue-header-stat">
+                <span className="ue-header-stat__value">{totalCount}</span>
+                <span className="ue-header-stat__label">
+                  Total Registrations
+                </span>
+              </div>
+              <div className="ue-header-stat">
+                <span className="ue-header-stat__value">{approvedCount}</span>
+                <span className="ue-header-stat__label">Approved</span>
+              </div>
+              <div className="ue-header-stat">
+                <span className="ue-header-stat__value">{pendingCount}</span>
+                <span className="ue-header-stat__label">Pending</span>
+              </div>
+            </div>
           </div>
+        </div>
+        <div className="ue-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -615,48 +900,82 @@ export default function UserEvents() {
         <div className="ue-layout">
           {/* LEFT: CALENDAR + MY REGISTRATIONS */}
           <div className="ue-sidebar">
-            <div className="ue-card">
+            <div className="ue-card ue-card--calendar">
               <div className="ue-card__header">
-                <i className="fas fa-calendar" /> Events Calendar
+                <div className="ue-card__header-icon">
+                  <i className="fas fa-calendar-alt" />
+                </div>
+                <div className="ue-card__header-title">
+                  <h3>Events Calendar</h3>
+                  <span>{events.length} events this month</span>
+                </div>
               </div>
-              <Calendar
-                events={events}
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-              />
-              {selectedDate && (
-                <button
-                  className="ue-btn-clear-date"
-                  onClick={() => setSelectedDate(null)}
-                >
-                  <i className="fas fa-xmark" /> Clear Date Filter
-                </button>
-              )}
+              <div className="ue-card__body">
+                <Calendar
+                  events={events}
+                  selectedDate={selectedDate}
+                  onDateSelect={setSelectedDate}
+                />
+                {selectedDate && (
+                  <button
+                    className="ue-btn-clear-date"
+                    onClick={() => setSelectedDate(null)}
+                  >
+                    <i className="fas fa-times" /> Clear Date Filter
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* MY REGISTRATIONS STATS */}
-            <div className="ue-card">
+            <div className="ue-card ue-card--stats">
               <div className="ue-card__header">
-                <i className="fas fa-user-check" /> My Registrations
+                <div className="ue-card__header-icon">
+                  <i className="fas fa-user-check" />
+                </div>
+                <div className="ue-card__header-title">
+                  <h3>My Registrations</h3>
+                  <span>Overview of your event participation</span>
+                </div>
               </div>
-              <div className="ue-my-stats">
-                <div className="ue-my-stat">
-                  <div className="ue-my-stat__num">
-                    {myRegistrations.length}
+              <div className="ue-card__body">
+                <div className="ue-my-stats">
+                  <div className="ue-my-stat ue-my-stat--total">
+                    <div className="ue-my-stat__icon">
+                      <i className="fas fa-clipboard-list" />
+                    </div>
+                    <div className="ue-my-stat__content">
+                      <div className="ue-my-stat__num">{totalCount}</div>
+                      <div className="ue-my-stat__label">Total</div>
+                    </div>
                   </div>
-                  <div className="ue-my-stat__label">Total</div>
-                </div>
-                <div className="ue-my-stat ue-my-stat--upcoming">
-                  <div className="ue-my-stat__num">{upcomingCount}</div>
-                  <div className="ue-my-stat__label">Upcoming</div>
-                </div>
-                <div className="ue-my-stat ue-my-stat--approved">
-                  <div className="ue-my-stat__num">{approvedCount}</div>
-                  <div className="ue-my-stat__label">Approved</div>
-                </div>
-                <div className="ue-my-stat ue-my-stat--pending">
-                  <div className="ue-my-stat__num">{pendingCount}</div>
-                  <div className="ue-my-stat__label">Pending</div>
+                  <div className="ue-my-stat ue-my-stat--upcoming">
+                    <div className="ue-my-stat__icon">
+                      <i className="fas fa-calendar-check" />
+                    </div>
+                    <div className="ue-my-stat__content">
+                      <div className="ue-my-stat__num">{upcomingCount}</div>
+                      <div className="ue-my-stat__label">Upcoming</div>
+                    </div>
+                  </div>
+                  <div className="ue-my-stat ue-my-stat--approved">
+                    <div className="ue-my-stat__icon">
+                      <i className="fas fa-check-circle" />
+                    </div>
+                    <div className="ue-my-stat__content">
+                      <div className="ue-my-stat__num">{approvedCount}</div>
+                      <div className="ue-my-stat__label">Approved</div>
+                    </div>
+                  </div>
+                  <div className="ue-my-stat ue-my-stat--pending">
+                    <div className="ue-my-stat__icon">
+                      <i className="fas fa-clock" />
+                    </div>
+                    <div className="ue-my-stat__content">
+                      <div className="ue-my-stat__num">{pendingCount}</div>
+                      <div className="ue-my-stat__label">Pending</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -664,263 +983,371 @@ export default function UserEvents() {
 
           {/* RIGHT: AVAILABLE EVENTS */}
           <div className="ue-main">
-            {/* SEARCH */}
-            <div className="ue-search">
-              <i className="fas fa-magnifying-glass ue-search__icon" />
-              <input
-                className="ue-search__input"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search events…"
-              />
-            </div>
-
-            {/* EVENTS GRID */}
-            <div className="ue-section">
-              <div className="ue-section__header">
-                <h2 className="ue-section__title">
-                  {selectedDate
-                    ? "Events on Selected Date"
-                    : "Available Events"}
-                </h2>
-                <span className="ue-section__count">
-                  {filteredEvents.length} event
-                  {filteredEvents.length !== 1 ? "s" : ""}
+            {/* TABS */}
+            <div className="ue-main-tabs">
+              <button
+                className={`ue-main-tab ${activeTab === "available" ? "active" : ""}`}
+                onClick={() => setActiveTab("available")}
+              >
+                <i className="fas fa-calendar-plus" />
+                Available Events
+                <span className="ue-main-tab__badge">
+                  {filteredEvents.length}
                 </span>
-              </div>
-
-              {loading ? (
-                <div className="ue-loading">
-                  <i className="fas fa-spinner fa-spin" />
-                  <p>Loading events…</p>
-                </div>
-              ) : filteredEvents.length === 0 ? (
-                <div className="ue-empty">
-                  <i className="fas fa-calendar-xmark" />
-                  <p>No events found</p>
-                </div>
-              ) : (
-                <div className="ue-events-grid">
-                  {filteredEvents.map((evt) => {
-                    const isRegistered = myRegistrations.some(
-                      (r) => r.event_id === evt.event_id,
-                    );
-                    const myReg = myRegistrations.find(
-                      (r) => r.event_id === evt.event_id,
-                    );
-                    const serviceColor =
-                      SERVICE_COLORS[evt.major_service] || "#6b7280";
-
-                    return (
-                      <div key={evt.event_id} className="ue-event-card">
-                        <div className="ue-event-card__header">
-                          <span
-                            className="ue-event-card__service"
-                            style={{
-                              background: `${serviceColor}15`,
-                              color: serviceColor,
-                              border: `1px solid ${serviceColor}33`,
-                            }}
-                          >
-                            <i className="fas fa-tag" /> {evt.major_service}
-                          </span>
-                          {evt.fee > 0 ? (
-                            <span className="ue-event-card__fee">
-                              ₱{parseFloat(evt.fee).toFixed(2)}
-                            </span>
-                          ) : (
-                            <span
-                              className="ue-event-card__free"
-                              style={{
-                                background: "rgba(16, 185, 129, 0.12)",
-                                color: "#10b981",
-                                border: "1px solid rgba(16, 185, 129, 0.15)",
-                              }}
-                            >
-                              <i className="fas fa-gift" /> FREE
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="ue-event-card__title">{evt.title}</h3>
-
-                        <div className="ue-event-card__meta">
-                          <div className="ue-event-card__date">
-                            <i
-                              className="fas fa-calendar"
-                              style={{ color: serviceColor }}
-                            />
-                            {new Date(evt.event_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                            {evt.event_end_date &&
-                              evt.event_end_date !== evt.event_date && (
-                                <>
-                                  {" - "}
-                                  {new Date(
-                                    evt.event_end_date,
-                                  ).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </>
-                              )}
-                          </div>
-                          <div className="ue-event-card__time">
-                            <i
-                              className="fas fa-clock"
-                              style={{ color: serviceColor }}
-                            />
-                            {evt.start_time?.slice(0, 5)} -{" "}
-                            {evt.end_time?.slice(0, 5)}
-                          </div>
-                          <div className="ue-event-card__location">
-                            <i
-                              className="fas fa-map-marker-alt"
-                              style={{ color: serviceColor }}
-                            />
-                            {evt.location?.split("\n")[0]}
-                          </div>
-                          {evt.duration_days > 1 && (
-                            <div className="ue-event-card__duration">
-                              <i
-                                className="fas fa-calendar-week"
-                                style={{ color: serviceColor }}
-                              />
-                              {evt.duration_days} days
-                            </div>
-                          )}
-                        </div>
-
-                        {evt.description && (
-                          <div className="ue-event-card__desc">
-                            <p>{evt.description}</p>
-                          </div>
-                        )}
-
-                        <div className="ue-event-card__footer">
-                          <div className="ue-event-card__capacity">
-                            <i
-                              className="fas fa-users"
-                              style={{ color: serviceColor }}
-                            />
-                            <span>
-                              {evt.approved_count} /{" "}
-                              {evt.capacity > 0 ? evt.capacity : "∞"}
-                            </span>
-                            {evt.pending_count > 0 && (
-                              <span className="ue-event-card__pending">
-                                ({evt.pending_count} pending)
-                              </span>
-                            )}
-                          </div>
-
-                          {isRegistered ? (
-                            <div className="ue-event-card__registered">
-                              <i
-                                className="fas fa-check-circle"
-                                style={{ color: "#10b981" }}
-                              />
-                              <span className={`ue-status-${myReg.status}`}>
-                                {myReg.status.toUpperCase()}
-                              </span>
-                            </div>
-                          ) : evt.is_full ? (
-                            <button
-                              className="ue-event-card__btn ue-event-card__btn--full"
-                              disabled
-                            >
-                              <i className="fas fa-ban" /> Event Full
-                            </button>
-                          ) : (
-                            <button
-                              className="ue-event-card__btn"
-                              onClick={() => setRegisterEvent(evt)}
-                              style={{
-                                background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
-                              }}
-                            >
-                              <i className="fas fa-user-plus" /> Register Now
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              </button>
+              <button
+                className={`ue-main-tab ${activeTab === "my" ? "active" : ""}`}
+                onClick={() => setActiveTab("my")}
+              >
+                <i className="fas fa-user-check" />
+                My Registrations
+                <span className="ue-main-tab__badge">
+                  {myRegistrations.length}
+                </span>
+              </button>
             </div>
 
-            {/* MY REGISTRATIONS TABLE */}
-            {myRegistrations.length > 0 && (
+            {/* SEARCH */}
+            {activeTab === "available" && (
+              <div className="ue-search">
+                <i className="fas fa-search ue-search__icon" />
+                <input
+                  className="ue-search__input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search events by title, location, or service..."
+                />
+                {search && (
+                  <button
+                    className="ue-search__clear"
+                    onClick={() => setSearch("")}
+                  >
+                    <i className="fas fa-times" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* AVAILABLE EVENTS */}
+            {activeTab === "available" && (
               <div className="ue-section">
                 <div className="ue-section__header">
-                  <h2 className="ue-section__title">My Registrations</h2>
+                  <div className="ue-section__title-wrapper">
+                    <h2 className="ue-section__title">
+                      {selectedDate
+                        ? `Events on ${new Date(selectedDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
+                        : "Available Events"}
+                    </h2>
+                    {selectedDate && (
+                      <button
+                        className="ue-section__clear"
+                        onClick={() => setSelectedDate(null)}
+                      >
+                        <i className="fas fa-times" /> Clear Filter
+                      </button>
+                    )}
+                  </div>
+                  <span className="ue-section__count">
+                    {filteredEvents.length} event
+                    {filteredEvents.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                {loading ? (
+                  <div className="ue-loading">
+                    <div className="ue-loading__spinner">
+                      <i className="fas fa-spinner fa-spin" />
+                    </div>
+                    <p>Loading events...</p>
+                    <span className="ue-loading__subtitle">
+                      Fetching latest events
+                    </span>
+                  </div>
+                ) : filteredEvents.length === 0 ? (
+                  <div className="ue-empty">
+                    <div className="ue-empty__icon">
+                      <i className="fas fa-calendar-xmark" />
+                    </div>
+                    <h3 className="ue-empty__title">No events found</h3>
+                    <p className="ue-empty__message">
+                      {search
+                        ? "Try adjusting your search or filters"
+                        : "Check back later for new events"}
+                    </p>
+                    {search && (
+                      <button
+                        className="ue-empty__action"
+                        onClick={() => setSearch("")}
+                      >
+                        <i className="fas fa-times" /> Clear Search
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="ue-events-grid">
+                    {filteredEvents.map((evt) => {
+                      const isRegistered = myRegistrations.some(
+                        (r) => r.event_id === evt.event_id,
+                      );
+                      const myReg = myRegistrations.find(
+                        (r) => r.event_id === evt.event_id,
+                      );
+                      const serviceColor =
+                        SERVICE_COLORS[evt.major_service] || "#6b7280";
+
+                      return (
+                        <div key={evt.event_id} className="ue-event-card">
+                          <div className="ue-event-card__header">
+                            <span
+                              className="ue-event-card__service"
+                              style={{
+                                background: `${serviceColor}15`,
+                                color: serviceColor,
+                                border: `1px solid ${serviceColor}30`,
+                              }}
+                            >
+                              <i className="fas fa-tag" /> {evt.major_service}
+                            </span>
+                            <div className="ue-event-card__badge">
+                              {evt.fee > 0 ? (
+                                <span className="ue-event-card__fee">
+                                  ₱{parseFloat(evt.fee).toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="ue-event-card__free">
+                                  <i className="fas fa-gift" /> FREE
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <h3 className="ue-event-card__title">{evt.title}</h3>
+
+                          <div className="ue-event-card__meta">
+                            <div className="ue-event-card__meta-item">
+                              <i
+                                className="fas fa-calendar"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                {new Date(evt.event_date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                                {evt.event_end_date &&
+                                  evt.event_end_date !== evt.event_date && (
+                                    <>
+                                      {" - "}
+                                      {new Date(
+                                        evt.event_end_date,
+                                      ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </>
+                                  )}
+                              </span>
+                            </div>
+                            <div className="ue-event-card__meta-item">
+                              <i
+                                className="fas fa-clock"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                {evt.start_time?.slice(0, 5)} -{" "}
+                                {evt.end_time?.slice(0, 5)}
+                              </span>
+                            </div>
+                            <div className="ue-event-card__meta-item">
+                              <i
+                                className="fas fa-map-marker-alt"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>{evt.location?.split("\n")[0]}</span>
+                            </div>
+                            {evt.duration_days > 1 && (
+                              <div className="ue-event-card__meta-item">
+                                <i
+                                  className="fas fa-calendar-week"
+                                  style={{ color: serviceColor }}
+                                />
+                                <span>{evt.duration_days} days</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {evt.description && (
+                            <div className="ue-event-card__desc">
+                              <p>{evt.description.substring(0, 120)}...</p>
+                            </div>
+                          )}
+
+                          <div className="ue-event-card__footer">
+                            <div className="ue-event-card__capacity">
+                              <i
+                                className="fas fa-users"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                {evt.approved_count || 0} /{" "}
+                                {evt.capacity > 0 ? evt.capacity : "∞"}
+                              </span>
+                              {evt.pending_count > 0 && (
+                                <span className="ue-event-card__pending">
+                                  ({evt.pending_count} pending)
+                                </span>
+                              )}
+                            </div>
+
+                            {isRegistered ? (
+                              <div className="ue-event-card__registered">
+                                <i
+                                  className="fas fa-check-circle"
+                                  style={{ color: "#10b981" }}
+                                />
+                                <span
+                                  style={{
+                                    color: getStatusColor(myReg?.status),
+                                  }}
+                                >
+                                  {myReg?.status.toUpperCase()}
+                                </span>
+                              </div>
+                            ) : evt.is_full ? (
+                              <button
+                                className="ue-event-card__btn ue-event-card__btn--full"
+                                disabled
+                              >
+                                <i className="fas fa-ban" /> Event Full
+                              </button>
+                            ) : (
+                              <button
+                                className="ue-event-card__btn"
+                                onClick={() => setRegisterEvent(evt)}
+                                style={{
+                                  background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
+                                }}
+                              >
+                                <i className="fas fa-user-plus" /> Register Now
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* MY REGISTRATIONS TABLE */}
+            {activeTab === "my" && (
+              <div className="ue-section">
+                <div className="ue-section__header">
+                  <div className="ue-section__title-wrapper">
+                    <h2 className="ue-section__title">
+                      <i className="fas fa-user-check" /> My Registrations
+                    </h2>
+                  </div>
                   <span className="ue-section__count">
                     {myRegistrations.length} registration
                     {myRegistrations.length !== 1 ? "s" : ""}
                   </span>
                 </div>
 
-                <div className="ue-my-regs">
-                  {myRegistrations.map((reg) => (
-                    <div key={reg.registration_id} className="ue-my-reg">
-                      <div className="ue-my-reg__header">
-                        <div>
-                          <h4 className="ue-my-reg__title">{reg.title}</h4>
-                          <span className="ue-my-reg__service">
-                            {reg.major_service}
-                          </span>
-                        </div>
-                        <span
-                          className={`ue-my-reg__status ue-my-reg__status--${reg.status}`}
-                        >
-                          {reg.status.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="ue-my-reg__meta">
-                        <div>
-                          <i className="fas fa-calendar" />
-                          {new Date(reg.event_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </div>
-                        <div>
-                          <i className="fas fa-map-marker-alt" />
-                          {reg.location?.split("\n")[0] || "TBA"}
-                        </div>
-                        {reg.fee > 0 && (
-                          <div>
-                            <i className="fas fa-money-bill" />₱
-                            {parseFloat(reg.fee).toFixed(2)} -{" "}
-                            {reg.payment_mode?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className="ue-my-reg__date">
-                        Registered on{" "}
-                        {new Date(reg.registration_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          },
-                        )}
-                      </div>
+                {myRegistrations.length === 0 ? (
+                  <div className="ue-empty">
+                    <div className="ue-empty__icon">
+                      <i className="fas fa-clipboard-list" />
                     </div>
-                  ))}
-                </div>
+                    <h3 className="ue-empty__title">No registrations yet</h3>
+                    <p className="ue-empty__message">
+                      Browse available events and register to get started
+                    </p>
+                    <button
+                      className="ue-empty__action"
+                      onClick={() => setActiveTab("available")}
+                    >
+                      <i className="fas fa-calendar-plus" /> Browse Events
+                    </button>
+                  </div>
+                ) : (
+                  <div className="ue-my-regs">
+                    {myRegistrations.map((reg) => {
+                      const serviceColor =
+                        SERVICE_COLORS[reg.major_service] || "#6b7280";
+
+                      return (
+                        <div key={reg.registration_id} className="ue-my-reg">
+                          <div className="ue-my-reg__header">
+                            <div className="ue-my-reg__title-wrapper">
+                              <h4 className="ue-my-reg__title">{reg.title}</h4>
+                              <span
+                                className="ue-my-reg__service"
+                                style={{
+                                  background: `${serviceColor}15`,
+                                  color: serviceColor,
+                                }}
+                              >
+                                {reg.major_service}
+                              </span>
+                            </div>
+                            <span
+                              className={`ue-my-reg__status ue-my-reg__status--${reg.status}`}
+                            >
+                              {reg.status.toUpperCase()}
+                            </span>
+                          </div>
+
+                          <div className="ue-my-reg__details">
+                            <div className="ue-my-reg__meta">
+                              <div className="ue-my-reg__meta-item">
+                                <i className="fas fa-calendar" />
+                                {new Date(reg.event_date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
+                              <div className="ue-my-reg__meta-item">
+                                <i className="fas fa-map-marker-alt" />
+                                {reg.location?.split("\n")[0] || "TBA"}
+                              </div>
+                              {reg.fee > 0 && (
+                                <div className="ue-my-reg__meta-item">
+                                  <i className="fas fa-money-bill" />₱
+                                  {parseFloat(reg.fee).toFixed(2)} •{" "}
+                                  {reg.payment_mode?.toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="ue-my-reg__footer">
+                              <div className="ue-my-reg__date">
+                                <i className="fas fa-clock" />
+                                Registered{" "}
+                                {new Date(
+                                  reg.registration_date,
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

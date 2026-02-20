@@ -58,10 +58,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ut-toast ut-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
-      />
-      {message}
+      <div className="ut-toast__icon">
+        <i
+          className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
+        />
+      </div>
+      <div className="ut-toast__content">
+        <div className="ut-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ut-toast__message">{message}</div>
+      </div>
       <button className="ut-toast__close" onClick={onClose}>
         <i className="fas fa-xmark" />
       </button>
@@ -72,6 +79,7 @@ function Toast({ message, type, onClose }) {
 // ─── CALENDAR ────────────────────────────────────────────────────────────────
 function Calendar({ sessions, selectedDate, onDateSelect }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [hoveredDay, setHoveredDay] = useState(null);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -102,10 +110,31 @@ function Calendar({ sessions, selectedDate, onDateSelect }) {
     );
   };
 
+  const getEventCount = (day) => {
+    if (!day) return 0;
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return sessions.filter(
+      (e) =>
+        e.session_date === dateStr ||
+        (e.session_end_date &&
+          dateStr >= e.session_date &&
+          dateStr <= e.session_end_date),
+    ).length;
+  };
+
   const isSelected = (day) => {
     if (!day || !selectedDate) return false;
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return dateStr === selectedDate;
+  };
+
+  const isToday = (day) => {
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear()
+    );
   };
 
   const handlePrevMonth = () => {
@@ -122,40 +151,73 @@ function Calendar({ sessions, selectedDate, onDateSelect }) {
     onDateSelect(dateStr);
   };
 
+  const goToToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   return (
     <div className="ut-calendar">
       <div className="ut-calendar__header">
-        <button className="ut-calendar__nav" onClick={handlePrevMonth}>
-          <i className="fas fa-chevron-left" />
-        </button>
-        <div className="ut-calendar__title">
-          {MONTHS[month]} {year}
+        <div className="ut-calendar__nav-group">
+          <button className="ut-calendar__nav" onClick={handlePrevMonth}>
+            <i className="fas fa-chevron-left" />
+          </button>
+          <div className="ut-calendar__title">
+            {MONTHS[month]} {year}
+          </div>
+          <button className="ut-calendar__nav" onClick={handleNextMonth}>
+            <i className="fas fa-chevron-right" />
+          </button>
         </div>
-        <button className="ut-calendar__nav" onClick={handleNextMonth}>
-          <i className="fas fa-chevron-right" />
+        <button className="ut-calendar__today" onClick={goToToday}>
+          <i className="fas fa-calendar-day" />
+          Today
         </button>
       </div>
 
-      <div className="ut-calendar__days">
+      <div className="ut-calendar__weekdays">
         {DAYS.map((d) => (
-          <div key={d} className="ut-calendar__day-label">
+          <div key={d} className="ut-calendar__weekday">
             {d}
           </div>
         ))}
       </div>
 
       <div className="ut-calendar__grid">
-        {days.map((day, i) => (
-          <div
-            key={i}
-            className={`ut-calendar__cell ${!day ? "ut-calendar__cell--empty" : ""} ${
-              hasTraining(day) ? "ut-calendar__cell--session" : ""
-            } ${isSelected(day) ? "ut-calendar__cell--selected" : ""}`}
-            onClick={() => handleDayClick(day)}
-          >
-            {day}
-          </div>
-        ))}
+        {days.map((day, i) => {
+          const eventCount = getEventCount(day);
+          const isHovered = hoveredDay === day;
+
+          return (
+            <div
+              key={i}
+              className={`ut-calendar__cell 
+                ${!day ? "ut-calendar__cell--empty" : ""} 
+                ${hasTraining(day) ? "ut-calendar__cell--session" : ""} 
+                ${isSelected(day) ? "ut-calendar__cell--selected" : ""}
+                ${isToday(day) ? "ut-calendar__cell--today" : ""}
+                ${isHovered ? "ut-calendar__cell--hovered" : ""}`}
+              onClick={() => handleDayClick(day)}
+              onMouseEnter={() => day && setHoveredDay(day)}
+              onMouseLeave={() => setHoveredDay(null)}
+            >
+              <span className="ut-calendar__day-number">{day}</span>
+              {eventCount > 0 && (
+                <>
+                  <span className="ut-calendar__event-indicator"></span>
+                  {isHovered && (
+                    <div className="ut-calendar__tooltip">
+                      <strong>
+                        {eventCount} session{eventCount > 1 ? "s" : ""}
+                      </strong>
+                      <span>Click to view</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -319,8 +381,6 @@ function TrainingRequestModal({ onClose, onSuccess }) {
 
   function updateTrainingPrograms() {
     if (form.service_type) {
-      console.log("Selected service type:", form.service_type);
-      console.log("Available programs:", programsByService[form.service_type]);
       setTrainingPrograms(programsByService[form.service_type] || []);
       setField("training_program", "");
       setSelectedProgram(null);
@@ -331,11 +391,8 @@ function TrainingRequestModal({ onClose, onSuccess }) {
 
   function handleProgramChange(e) {
     const programId = e.target.value;
-    console.log("Selected program ID:", programId);
     setField("training_program", programId);
-
     const program = trainingPrograms.find((p) => p.id === programId);
-    console.log("Found program:", program);
     setSelectedProgram(program);
   }
 
@@ -364,7 +421,6 @@ function TrainingRequestModal({ onClose, onSuccess }) {
 
   function validatePhoneNumber(phone) {
     // Philippine phone number validation
-    // Formats: +63 XXX XXX XXXX, 0XXX XXX XXXX, 03XX XXX XXXX (landline)
     const phoneRegex = /^(\+?63|0)[0-9\s\-\(\)]{10,14}$/;
     const cleanPhone = phone.replace(/[\s\-\(\)]/g, "");
     const isValid = phoneRegex.test(cleanPhone);
@@ -530,12 +586,6 @@ function TrainingRequestModal({ onClose, onSuccess }) {
 
       // Participant fields
       formData.append("participant_count", form.participant_count.toString());
-      if (form.participant_demographics) {
-        formData.append(
-          "participant_demographics",
-          JSON.stringify(form.participant_demographics),
-        );
-      }
       if (form.organization_name) {
         formData.append("organization_name", form.organization_name);
       }
@@ -573,20 +623,19 @@ function TrainingRequestModal({ onClose, onSuccess }) {
         );
       }
 
-      // File uploads - matching database column names
+      // File uploads
       if (files.valid_id) {
-        formData.append("valid_id_request", files.valid_id); // Column: valid_id_request_path
+        formData.append("valid_id_request", files.valid_id);
       }
       if (files.participant_list) {
-        formData.append("participant_list", files.participant_list); // Column: participant_list_path
+        formData.append("participant_list", files.participant_list);
       }
 
       // Additional documents - handle as array
       files.additional_docs.forEach((doc, index) => {
-        formData.append(`additional_docs[${index}]`, doc); // Column: additional_docs_paths
+        formData.append(`additional_docs[${index}]`, doc);
       });
 
-      // ✅ REAL API CALL
       const res = await submitTrainingRequest(formData);
       onSuccess(res.message);
       onClose();
@@ -1285,9 +1334,9 @@ function TrainingRequestModal({ onClose, onSuccess }) {
     </div>
   );
 }
-
 // ─── REGISTRATION MODAL ──────────────────────────────────────────────────────
 function RegisterModal({ session, onClose, onSuccess }) {
+  const [step, setStep] = useState(1);
   const [tab, setTab] = useState("individual");
   const [form, setForm] = useState({
     full_name: "",
@@ -1320,6 +1369,9 @@ function RegisterModal({ session, onClose, onSuccess }) {
     const e = {};
     if (!form.full_name.trim()) e.full_name = "Full name is required";
     if (!form.email.trim()) e.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      e.email = "Invalid email format";
+    }
     if (!form.location.trim()) e.location = "Location is required";
     if (!files.valid_id) e.valid_id = "Valid ID is required";
     if (
@@ -1331,6 +1383,26 @@ function RegisterModal({ session, onClose, onSuccess }) {
     }
     return e;
   }
+
+  const nextStep = () => {
+    const e = {};
+    if (step === 1) {
+      if (!form.full_name.trim()) e.full_name = "Full name is required";
+      if (!form.email.trim()) e.email = "Email is required";
+      if (!form.location.trim()) e.location = "Location is required";
+    }
+
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+
+    setStep(2);
+  };
+
+  const prevStep = () => {
+    setStep(1);
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -1370,6 +1442,8 @@ function RegisterModal({ session, onClose, onSuccess }) {
     }
   }
 
+  const serviceColor = SERVICE_COLORS[session.major_service] || "#6b7280";
+
   return (
     <div className="ut-overlay" onClick={onClose}>
       <div
@@ -1378,32 +1452,55 @@ function RegisterModal({ session, onClose, onSuccess }) {
       >
         <div className="ut-modal__header">
           <div>
-            <div className="ut-modal__title">Register for {session.title}</div>
+            <div className="ut-modal__title">{session.title}</div>
             <div className="ut-modal__meta">
-              <i className="fas fa-calendar" />{" "}
-              {new Date(session.session_date).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
+              <span className="ut-modal__meta-item">
+                <i className="fas fa-calendar" />{" "}
+                {new Date(session.session_date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
               {session.fee > 0 && (
-                <>
-                  {" • "}
-                  <i className="fas fa-money-bill" /> ₱
+                <span className="ut-modal__meta-item">
+                  <i className="fas fa-tag" /> ₱
                   {parseFloat(session.fee).toFixed(2)}
-                </>
+                </span>
               )}
               {session.fee === 0 && (
-                <>
-                  {" • "}
-                  <span className="ut-modal__free">FREE EVENT</span>
-                </>
+                <span className="ut-modal__free-badge">
+                  <i className="fas fa-gift" /> FREE
+                </span>
               )}
             </div>
           </div>
           <button className="ut-modal__close" onClick={onClose}>
             <i className="fas fa-xmark" />
           </button>
+        </div>
+
+        <div className="ut-modal__progress">
+          <div
+            className={`ut-progress-step ${step >= 1 ? "active" : ""} ${step > 1 ? "completed" : ""}`}
+          >
+            <span className="ut-progress-step__number">1</span>
+            <span className="ut-progress-step__label">Personal Info</span>
+          </div>
+          <div className="ut-progress-line"></div>
+          <div className={`ut-progress-step ${step >= 2 ? "active" : ""}`}>
+            <span className="ut-progress-step__number">2</span>
+            <span className="ut-progress-step__label">Documents</span>
+          </div>
+          {session.fee > 0 && (
+            <>
+              <div className="ut-progress-line"></div>
+              <div className={`ut-progress-step ${step >= 3 ? "active" : ""}`}>
+                <span className="ut-progress-step__number">3</span>
+                <span className="ut-progress-step__label">Payment</span>
+              </div>
+            </>
+          )}
         </div>
 
         <form className="ut-modal__body" onSubmit={handleSubmit}>
@@ -1413,178 +1510,238 @@ function RegisterModal({ session, onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Tabs */}
-          <div className="ut-tabs">
-            <button
-              type="button"
-              className={`ut-tab ${tab === "individual" ? "ut-tab--active" : ""}`}
-              onClick={() => setTab("individual")}
-            >
-              <i className="fas fa-user" /> Individual
-            </button>
-            <button
-              type="button"
-              className={`ut-tab ${tab === "organization" ? "ut-tab--active" : ""}`}
-              onClick={() => setTab("organization")}
-            >
-              <i className="fas fa-building" /> Organization/Company
-            </button>
-          </div>
+          {/* Step 1: Personal Information */}
+          {step === 1 && (
+            <div className="ut-step">
+              <h3 className="ut-step__title">
+                <i className="fas fa-user-circle" /> Personal Information
+              </h3>
 
-          {/* Full Name + Email */}
-          <div className="ut-form__row">
-            <div className="ut-form__field">
-              <label className="ut-form__label">
-                Full Name <span className="ut-form__required">*</span>
-              </label>
-              <input
-                className={`ut-form__input${errors.full_name ? " ut-form__input--error" : ""}`}
-                value={form.full_name}
-                onChange={(e) => setField("full_name", e.target.value)}
-                placeholder="Enter your full name"
-              />
-              {errors.full_name && (
-                <span className="ut-form__error-text">{errors.full_name}</span>
+              {/* Tabs */}
+              <div className="ut-tabs">
+                <button
+                  type="button"
+                  className={`ut-tab ${tab === "individual" ? "ut-tab--active" : ""}`}
+                  onClick={() => setTab("individual")}
+                >
+                  <i className="fas fa-user" /> Individual
+                </button>
+                <button
+                  type="button"
+                  className={`ut-tab ${tab === "organization" ? "ut-tab--active" : ""}`}
+                  onClick={() => setTab("organization")}
+                >
+                  <i className="fas fa-building" /> Organization
+                </button>
+              </div>
+
+              <div className="ut-form__row">
+                <div className="ut-form__field">
+                  <label className="ut-form__label">
+                    Full Name <span className="ut-form__required">*</span>
+                  </label>
+                  <input
+                    className={`ut-form__input${errors.full_name ? " ut-form__input--error" : ""}`}
+                    value={form.full_name}
+                    onChange={(e) => setField("full_name", e.target.value)}
+                    placeholder="Enter your full name"
+                  />
+                  {errors.full_name && (
+                    <span className="ut-form__error-text">
+                      <i className="fas fa-exclamation-circle" />{" "}
+                      {errors.full_name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="ut-form__field">
+                  <label className="ut-form__label">
+                    Email Address <span className="ut-form__required">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    className={`ut-form__input${errors.email ? " ut-form__input--error" : ""}`}
+                    value={form.email}
+                    onChange={(e) => setField("email", e.target.value)}
+                    placeholder="Enter your email address"
+                  />
+                  {errors.email && (
+                    <span className="ut-form__error-text">
+                      <i className="fas fa-exclamation-circle" /> {errors.email}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="ut-form__row">
+                <div className="ut-form__field">
+                  <label className="ut-form__label">Age</label>
+                  <input
+                    type="number"
+                    className="ut-form__input"
+                    value={form.age}
+                    onChange={(e) => setField("age", e.target.value)}
+                    placeholder="Enter your age"
+                  />
+                </div>
+
+                <div className="ut-form__field">
+                  <label className="ut-form__label">
+                    Location <span className="ut-form__required">*</span>
+                  </label>
+                  <input
+                    className={`ut-form__input${errors.location ? " ut-form__input--error" : ""}`}
+                    value={form.location}
+                    onChange={(e) => setField("location", e.target.value)}
+                    placeholder="Enter your location"
+                  />
+                  {errors.location && (
+                    <span className="ut-form__error-text">
+                      <i className="fas fa-exclamation-circle" />{" "}
+                      {errors.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {tab === "organization" && (
+                <div className="ut-form__field">
+                  <label className="ut-form__label">Organization Name</label>
+                  <input
+                    className="ut-form__input"
+                    value={form.organization_name}
+                    onChange={(e) =>
+                      setField("organization_name", e.target.value)
+                    }
+                    placeholder="Enter organization name"
+                  />
+                </div>
               )}
-            </div>
 
-            <div className="ut-form__field">
-              <label className="ut-form__label">
-                Email Address <span className="ut-form__required">*</span>
-              </label>
-              <input
-                type="email"
-                className={`ut-form__input${errors.email ? " ut-form__input--error" : ""}`}
-                value={form.email}
-                onChange={(e) => setField("email", e.target.value)}
-                placeholder="Enter your email address"
-              />
-              {errors.email && (
-                <span className="ut-form__error-text">{errors.email}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Age + Location */}
-          <div className="ut-form__row">
-            <div className="ut-form__field">
-              <label className="ut-form__label">Age</label>
-              <input
-                type="number"
-                className="ut-form__input"
-                value={form.age}
-                onChange={(e) => setField("age", e.target.value)}
-                placeholder="Enter your age"
-              />
-            </div>
-
-            <div className="ut-form__field">
-              <label className="ut-form__label">
-                Location <span className="ut-form__required">*</span>
-              </label>
-              <input
-                className={`ut-form__input${errors.location ? " ut-form__input--error" : ""}`}
-                value={form.location}
-                onChange={(e) => setField("location", e.target.value)}
-                placeholder="Enter your location"
-              />
-              {errors.location && (
-                <span className="ut-form__error-text">{errors.location}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Organization Name (if organization tab) */}
-          {tab === "organization" && (
-            <div className="ut-form__field">
-              <label className="ut-form__label">Organization Name</label>
-              <input
-                className="ut-form__input"
-                value={form.organization_name}
-                onChange={(e) => setField("organization_name", e.target.value)}
-                placeholder="Enter organization name"
-              />
+              <div className="ut-form__field">
+                <label className="ut-form__label">
+                  RCY Status <span className="ut-form__required">*</span>
+                </label>
+                <select
+                  className="ut-form__select"
+                  value={form.rcy_status}
+                  onChange={(e) => setField("rcy_status", e.target.value)}
+                >
+                  <option value="Non-RCY">Non-RCY</option>
+                  <option value="RCY Member">RCY Member</option>
+                  <option value="RCY Volunteer">RCY Volunteer</option>
+                  <option value="RCY Officer">RCY Officer</option>
+                </select>
+                <small className="ut-form__hint">
+                  <i className="fas fa-info-circle" /> Select your Red Cross
+                  Youth affiliation status
+                </small>
+              </div>
             </div>
           )}
 
-          {/* RCY Status */}
-          <div className="ut-form__field">
-            <label className="ut-form__label">
-              RCY Status <span className="ut-form__required">*</span>
-            </label>
-            <select
-              className="ut-form__input"
-              value={form.rcy_status}
-              onChange={(e) => setField("rcy_status", e.target.value)}
-            >
-              <option value="Non-RCY">Non-RCY</option>
-              <option value="RCY Member">RCY Member</option>
-              <option value="RCY Volunteer">RCY Volunteer</option>
-              <option value="RCY Officer">RCY Officer</option>
-            </select>
-            <small className="ut-form__hint">
-              Select your Red Cross Youth affiliation status
-            </small>
-          </div>
+          {/* Step 2: Documents */}
+          {step === 2 && (
+            <div className="ut-step">
+              <h3 className="ut-step__title">
+                <i className="fas fa-file-upload" /> Required Documents
+              </h3>
 
-          {/* Valid ID */}
-          <div className="ut-form__field">
-            <label className="ut-form__label">
-              Valid ID <span className="ut-form__required">*</span>
-            </label>
-            <div className="ut-file-upload">
-              <input
-                type="file"
-                id="valid_id"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => setFile("valid_id", e.target.files[0])}
-                className="ut-file-upload__input"
-              />
-              <label htmlFor="valid_id" className="ut-file-upload__label">
-                <i className="fas fa-id-card" />
-                {files.valid_id
-                  ? files.valid_id.name
-                  : "Upload a clear photo of your valid ID"}
-              </label>
+              <div className="ut-form__field">
+                <label className="ut-form__label">
+                  Valid ID <span className="ut-form__required">*</span>
+                </label>
+                <div className="ut-file-upload">
+                  <input
+                    type="file"
+                    id="valid_id"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => setFile("valid_id", e.target.files[0])}
+                    className="ut-file-upload__input"
+                  />
+                  <label htmlFor="valid_id" className="ut-file-upload__label">
+                    <i className="fas fa-id-card" />
+                    <span className="ut-file-upload__text">
+                      {files.valid_id
+                        ? files.valid_id.name
+                        : "Upload a clear photo of your valid ID"}
+                    </span>
+                    {files.valid_id && (
+                      <span className="ut-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <small className="ut-form__hint">
+                  <i className="fas fa-info-circle" /> Accepted: JPG, PNG, PDF
+                  (Max 5MB)
+                </small>
+                {errors.valid_id && (
+                  <span className="ut-form__error-text">
+                    <i className="fas fa-exclamation-circle" />{" "}
+                    {errors.valid_id}
+                  </span>
+                )}
+              </div>
+
+              <div className="ut-form__field">
+                <label className="ut-form__label">
+                  Training Requirements (Optional)
+                </label>
+                <div className="ut-file-upload">
+                  <input
+                    type="file"
+                    id="requirements"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={(e) => setFile("requirements", e.target.files[0])}
+                    className="ut-file-upload__input"
+                  />
+                  <label
+                    htmlFor="requirements"
+                    className="ut-file-upload__label"
+                  >
+                    <i className="fas fa-file" />
+                    <span className="ut-file-upload__text">
+                      {files.requirements
+                        ? files.requirements.name
+                        : "Upload training requirements (optional)"}
+                    </span>
+                    {files.requirements && (
+                      <span className="ut-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
+                  </label>
+                </div>
+                <small className="ut-form__hint">
+                  <i className="fas fa-info-circle" /> Upload any required
+                  certificates, documents, or prerequisites
+                </small>
+              </div>
             </div>
-            <small className="ut-form__hint">
-              Accepted: JPG, PNG, PDF (Max 5MB)
-            </small>
-            {errors.valid_id && (
-              <span className="ut-form__error-text">{errors.valid_id}</span>
-            )}
-          </div>
+          )}
 
-          {/* Training Requirements (Optional) */}
-          <div className="ut-form__field">
-            <label className="ut-form__label">
-              Training Requirements (Optional)
-            </label>
-            <div className="ut-file-upload">
-              <input
-                type="file"
-                id="requirements"
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                onChange={(e) => setFile("requirements", e.target.files[0])}
-                className="ut-file-upload__input"
-              />
-              <label htmlFor="requirements" className="ut-file-upload__label">
-                <i className="fas fa-file" />
-                {files.requirements
-                  ? files.requirements.name
-                  : "Upload training requirements (optional)"}
-              </label>
-            </div>
-            <small className="ut-form__hint">
-              Upload any required certificates, documents, or prerequisites
-            </small>
-          </div>
-
-          {/* Payment Section (if session has fee) */}
-          {session.fee > 0 && (
-            <>
-              <div className="ut-divider">
+          {/* Step 3: Payment (if session has fee) */}
+          {step === 3 && session.fee > 0 && (
+            <div className="ut-step">
+              <h3 className="ut-step__title">
                 <i className="fas fa-credit-card" /> Payment Information
+              </h3>
+
+              <div className="ut-payment-summary">
+                <div className="ut-payment-summary__item">
+                  <span>Session Fee:</span>
+                  <strong>₱{parseFloat(session.fee).toFixed(2)}</strong>
+                </div>
+                <div className="ut-payment-summary__item">
+                  <span>Processing Fee:</span>
+                  <strong>₱0.00</strong>
+                </div>
+                <div className="ut-payment-summary__total">
+                  <span>Total:</span>
+                  <strong>₱{parseFloat(session.fee).toFixed(2)}</strong>
+                </div>
               </div>
 
               <div className="ut-form__field">
@@ -1592,28 +1749,28 @@ function RegisterModal({ session, onClose, onSuccess }) {
                   Payment Mode <span className="ut-form__required">*</span>
                 </label>
                 <div className="ut-payment-options">
-                  {["gcash", "bank", "paymaya"].map((mode) => (
-                    <label key={mode} className="ut-payment-option">
+                  {[
+                    { id: "gcash", icon: "fa-mobile-alt", label: "GCash" },
+                    {
+                      id: "bank",
+                      icon: "fa-university",
+                      label: "Bank Transfer",
+                    },
+                    { id: "paymaya", icon: "fa-wallet", label: "PayMaya" },
+                  ].map((mode) => (
+                    <label key={mode.id} className="ut-payment-option">
                       <input
                         type="radio"
                         name="payment_mode"
-                        value={mode}
-                        checked={form.payment_mode === mode}
+                        value={mode.id}
+                        checked={form.payment_mode === mode.id}
                         onChange={(e) =>
                           setField("payment_mode", e.target.value)
                         }
                       />
                       <div className="ut-payment-option__box">
-                        <i
-                          className={`fas ${
-                            mode === "gcash"
-                              ? "fa-mobile-alt"
-                              : mode === "bank"
-                                ? "fa-university"
-                                : "fa-wallet"
-                          }`}
-                        />
-                        <span>{mode.toUpperCase()}</span>
+                        <i className={`fas ${mode.icon}`} />
+                        <span>{mode.label}</span>
                       </div>
                     </label>
                   ))}
@@ -1639,48 +1796,83 @@ function RegisterModal({ session, onClose, onSuccess }) {
                     className="ut-file-upload__label"
                   >
                     <i className="fas fa-receipt" />
-                    {files.payment_receipt
-                      ? files.payment_receipt.name
-                      : "Upload payment receipt"}
+                    <span className="ut-file-upload__text">
+                      {files.payment_receipt
+                        ? files.payment_receipt.name
+                        : "Upload payment receipt"}
+                    </span>
+                    {files.payment_receipt && (
+                      <span className="ut-file-upload__check">
+                        <i className="fas fa-check-circle" />
+                      </span>
+                    )}
                   </label>
                 </div>
                 <small className="ut-form__hint">
-                  Upload proof of payment (screenshot or receipt)
+                  <i className="fas fa-info-circle" /> Upload proof of payment
+                  (screenshot or receipt)
                 </small>
                 {errors.payment_receipt && (
                   <span className="ut-form__error-text">
+                    <i className="fas fa-exclamation-circle" />{" "}
                     {errors.payment_receipt}
                   </span>
                 )}
               </div>
-            </>
+            </div>
           )}
 
-          {/* Info Notice */}
           <div className="ut-info-notice">
-            <i className="fas fa-info-circle" />
+            <i className="fas fa-shield-alt" />
             <div>
-              By registering, you agree to provide accurate information. Your
-              documents will be securely stored and used only for session
-              registration purposes.
+              <strong>Secure Registration</strong>
+              <p>
+                Your information and documents are encrypted and securely
+                stored. We only use this data for training registration
+                purposes.
+              </p>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="ut-form__submit"
-          >
-            {submitting ? (
-              <>
-                <i className="fas fa-spinner fa-spin" /> Submitting…
-              </>
+          <div className="ut-form__actions">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={prevStep}
+                className="ut-form__prev"
+              >
+                <i className="fas fa-arrow-left" /> Previous
+              </button>
             ) : (
-              <>
-                <i className="fas fa-user-plus" /> Register for Training Session
-              </>
+              <div></div>
             )}
-          </button>
+
+            {step < (session.fee > 0 ? 3 : 2) ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                className="ut-form__next"
+              >
+                Next Step <i className="fas fa-arrow-right" />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={submitting}
+                className="ut-form__submit"
+              >
+                {submitting ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin" /> Registering...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-user-plus" /> Register for Training
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>
@@ -1692,16 +1884,16 @@ export default function UserTrainings() {
   const [sessions, setTrainings] = useState([]);
   const [myRegistrations, setMyRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [registerTraining, setRegisterTraining] = useState(null);
   const [showTrainingRequest, setShowTrainingRequest] = useState(false);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState("available");
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
-  // ── FETCH EVENTS ───────────────────────────────────────────────────────────
+  // ── FETCH TRAINING SESSIONS ────────────────────────────────────────────────
   const fetchTrainings = useCallback(async () => {
     setLoading(true);
     try {
@@ -1736,7 +1928,7 @@ export default function UserTrainings() {
     fetchMyRegistrations();
   }, [fetchMyRegistrations]);
 
-  // ── FILTER EVENTS BY DATE ──────────────────────────────────────────────────
+  // ── FILTER SESSIONS BY DATE ────────────────────────────────────────────────
   const filteredTrainings = selectedDate
     ? sessions.filter(
         (e) =>
@@ -1754,6 +1946,7 @@ export default function UserTrainings() {
   const pendingCount = myRegistrations.filter(
     (r) => r.status === "pending",
   ).length;
+  const totalCount = myRegistrations.length;
 
   function handleRegisterSuccess(msg) {
     showToast(msg);
@@ -1766,21 +1959,51 @@ export default function UserTrainings() {
     setShowTrainingRequest(false);
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "approved":
+        return "#10b981";
+      case "pending":
+        return "#f59e0b";
+      case "rejected":
+        return "#ef4444";
+      default:
+        return "#6b7280";
+    }
+  };
+
   return (
     <div className="ut-root">
       {/* HEADER */}
       <div className="ut-header">
-        <div className="ut-header__inner">
-          <div>
-            <div className="ut-header__eyebrow">
-              <i className="fas fa-calendar-alt" /> Training Schedule
+        <div className="ut-header__container">
+          <div className="ut-header__content">
+            <div className="ut-header__left">
+              <div className="ut-header__badge">
+                <i className="fas fa-graduation-cap" /> Training Programs
+              </div>
+              <h1 className="ut-header__title">Training & Development</h1>
+              <p className="ut-header__subtitle">
+                Enhance your skills with our comprehensive training programs and
+                certification courses
+              </p>
             </div>
-            <h1 className="ut-header__title">
-              View and register for upcoming training sessions
-            </h1>
-            <p className="ut-header__subtitle">
-              Register for upcoming PRC sessions and manage your registrations
-            </p>
+            <div className="ut-header__stats">
+              <div className="ut-header-stat">
+                <span className="ut-header-stat__value">{totalCount}</span>
+                <span className="ut-header-stat__label">
+                  Total Registrations
+                </span>
+              </div>
+              <div className="ut-header-stat">
+                <span className="ut-header-stat__value">{approvedCount}</span>
+                <span className="ut-header-stat__label">Approved</span>
+              </div>
+              <div className="ut-header-stat">
+                <span className="ut-header-stat__value">{pendingCount}</span>
+                <span className="ut-header-stat__label">Pending</span>
+              </div>
+            </div>
           </div>
           <button
             className="ut-header__request-btn"
@@ -1790,343 +2013,509 @@ export default function UserTrainings() {
             Request Training Program
           </button>
         </div>
+        <div className="ut-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className="ut-body">
         <div className="ut-layout">
           {/* LEFT: CALENDAR + MY REGISTRATIONS */}
           <div className="ut-sidebar">
-            <div className="ut-card">
+            <div className="ut-card ut-card--calendar">
               <div className="ut-card__header">
-                <i className="fas fa-calendar" /> Trainings Calendar
+                <div className="ut-card__header-icon">
+                  <i className="fas fa-calendar-alt" />
+                </div>
+                <div className="ut-card__header-title">
+                  <h3>Training Calendar</h3>
+                  <span>{sessions.length} sessions this month</span>
+                </div>
               </div>
-              <Calendar
-                sessions={sessions}
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-              />
-              {selectedDate && (
-                <button
-                  className="ut-btn-clear-date"
-                  onClick={() => setSelectedDate(null)}
-                >
-                  <i className="fas fa-xmark" /> Clear Date Filter
-                </button>
-              )}
+              <div className="ut-card__body">
+                <Calendar
+                  sessions={sessions}
+                  selectedDate={selectedDate}
+                  onDateSelect={setSelectedDate}
+                />
+                {selectedDate && (
+                  <button
+                    className="ut-btn-clear-date"
+                    onClick={() => setSelectedDate(null)}
+                  >
+                    <i className="fas fa-times" /> Clear Date Filter
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* MY REGISTRATIONS STATS */}
-            <div className="ut-card">
+            <div className="ut-card ut-card--stats">
               <div className="ut-card__header">
-                <i className="fas fa-user-check" /> My Registrations
+                <div className="ut-card__header-icon">
+                  <i className="fas fa-user-check" />
+                </div>
+                <div className="ut-card__header-title">
+                  <h3>My Registrations</h3>
+                  <span>Overview of your training participation</span>
+                </div>
               </div>
-              <div className="ut-my-stats">
-                <div className="ut-my-stat">
-                  <div className="ut-my-stat__num">
-                    {myRegistrations.length}
+              <div className="ut-card__body">
+                <div className="ut-my-stats">
+                  <div className="ut-my-stat ut-my-stat--total">
+                    <div className="ut-my-stat__icon">
+                      <i className="fas fa-clipboard-list" />
+                    </div>
+                    <div className="ut-my-stat__content">
+                      <div className="ut-my-stat__num">{totalCount}</div>
+                      <div className="ut-my-stat__label">Total</div>
+                    </div>
                   </div>
-                  <div className="ut-my-stat__label">Total</div>
-                </div>
-                <div className="ut-my-stat ut-my-stat--upcoming">
-                  <div className="ut-my-stat__num">{upcomingCount}</div>
-                  <div className="ut-my-stat__label">Upcoming</div>
-                </div>
-                <div className="ut-my-stat ut-my-stat--approved">
-                  <div className="ut-my-stat__num">{approvedCount}</div>
-                  <div className="ut-my-stat__label">Approved</div>
-                </div>
-                <div className="ut-my-stat ut-my-stat--pending">
-                  <div className="ut-my-stat__num">{pendingCount}</div>
-                  <div className="ut-my-stat__label">Pending</div>
+                  <div className="ut-my-stat ut-my-stat--upcoming">
+                    <div className="ut-my-stat__icon">
+                      <i className="fas fa-calendar-check" />
+                    </div>
+                    <div className="ut-my-stat__content">
+                      <div className="ut-my-stat__num">{upcomingCount}</div>
+                      <div className="ut-my-stat__label">Upcoming</div>
+                    </div>
+                  </div>
+                  <div className="ut-my-stat ut-my-stat--approved">
+                    <div className="ut-my-stat__icon">
+                      <i className="fas fa-check-circle" />
+                    </div>
+                    <div className="ut-my-stat__content">
+                      <div className="ut-my-stat__num">{approvedCount}</div>
+                      <div className="ut-my-stat__label">Approved</div>
+                    </div>
+                  </div>
+                  <div className="ut-my-stat ut-my-stat--pending">
+                    <div className="ut-my-stat__icon">
+                      <i className="fas fa-clock" />
+                    </div>
+                    <div className="ut-my-stat__content">
+                      <div className="ut-my-stat__num">{pendingCount}</div>
+                      <div className="ut-my-stat__label">Pending</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT: AVAILABLE EVENTS */}
+          {/* RIGHT: AVAILABLE TRAINING SESSIONS */}
           <div className="ut-main">
-            {/* SEARCH */}
-            <div className="ut-search">
-              <i className="fas fa-magnifying-glass ut-search__icon" />
-              <input
-                className="ut-search__input"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search sessions…"
-              />
+            {/* TABS */}
+            <div className="ut-main-tabs">
+              <button
+                className={`ut-main-tab ${activeTab === "available" ? "active" : ""}`}
+                onClick={() => setActiveTab("available")}
+              >
+                <i className="fas fa-calendar-plus" />
+                Available Sessions
+                <span className="ut-main-tab__badge">
+                  {filteredTrainings.length}
+                </span>
+              </button>
+              <button
+                className={`ut-main-tab ${activeTab === "my" ? "active" : ""}`}
+                onClick={() => setActiveTab("my")}
+              >
+                <i className="fas fa-user-check" />
+                My Registrations
+                <span className="ut-main-tab__badge">
+                  {myRegistrations.length}
+                </span>
+              </button>
             </div>
 
-            {/* EVENTS GRID */}
-            <div className="ut-section">
-              <div className="ut-section__header">
-                <h2 className="ut-section__title">
-                  {selectedDate
-                    ? "Trainings on Selected Date"
-                    : "Available Training Sessions"}
-                </h2>
-                <span className="ut-section__count">
-                  {filteredTrainings.length} session
-                  {filteredTrainings.length !== 1 ? "s" : ""}
-                </span>
+            {/* SEARCH */}
+            {activeTab === "available" && (
+              <div className="ut-search">
+                <i className="fas fa-search ut-search__icon" />
+                <input
+                  className="ut-search__input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search training sessions by title, service, or instructor..."
+                />
+                {search && (
+                  <button
+                    className="ut-search__clear"
+                    onClick={() => setSearch("")}
+                  >
+                    <i className="fas fa-times" />
+                  </button>
+                )}
               </div>
+            )}
 
-              {loading ? (
-                <div className="ut-loading">
-                  <i className="fas fa-spinner fa-spin" />
-                  <p>Loading sessions…</p>
+            {/* AVAILABLE SESSIONS */}
+            {activeTab === "available" && (
+              <div className="ut-section">
+                <div className="ut-section__header">
+                  <div className="ut-section__title-wrapper">
+                    <h2 className="ut-section__title">
+                      {selectedDate
+                        ? `Sessions on ${new Date(selectedDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
+                        : "Available Training Sessions"}
+                    </h2>
+                    {selectedDate && (
+                      <button
+                        className="ut-section__clear"
+                        onClick={() => setSelectedDate(null)}
+                      >
+                        <i className="fas fa-times" /> Clear Filter
+                      </button>
+                    )}
+                  </div>
+                  <span className="ut-section__count">
+                    {filteredTrainings.length} session
+                    {filteredTrainings.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
-              ) : filteredTrainings.length === 0 ? (
-                <div className="ut-empty">
-                  <i className="fas fa-calendar-xmark" />
-                  <p>No sessions found</p>
-                </div>
-              ) : (
-                <div className="ut-sessions-grid">
-                  {filteredTrainings.map((evt) => {
-                    const isRegistered = myRegistrations.some(
-                      (r) => r.session_id === evt.session_id,
-                    );
-                    const myReg = myRegistrations.find(
-                      (r) => r.session_id === evt.session_id,
-                    );
-                    const serviceColor =
-                      SERVICE_COLORS[evt.major_service] || "#6b7280";
 
-                    return (
-                      <div key={evt.session_id} className="ut-session-card">
-                        <div className="ut-session-card__header">
-                          <span
-                            className="ut-session-card__service"
-                            style={{
-                              background: `${serviceColor}15`,
-                              color: serviceColor,
-                              border: `1px solid ${serviceColor}33`,
-                            }}
-                          >
-                            <i className="fas fa-tag" /> {evt.major_service}
-                          </span>
-                          {evt.fee > 0 ? (
-                            <span className="ut-session-card__fee">
-                              ₱{parseFloat(evt.fee).toFixed(2)}
-                            </span>
-                          ) : (
+                {loading ? (
+                  <div className="ut-loading">
+                    <div className="ut-loading__spinner">
+                      <i className="fas fa-spinner fa-spin" />
+                    </div>
+                    <p>Loading training sessions...</p>
+                    <span className="ut-loading__subtitle">
+                      Fetching available programs
+                    </span>
+                  </div>
+                ) : filteredTrainings.length === 0 ? (
+                  <div className="ut-empty">
+                    <div className="ut-empty__icon">
+                      <i className="fas fa-calendar-xmark" />
+                    </div>
+                    <h3 className="ut-empty__title">No sessions found</h3>
+                    <p className="ut-empty__message">
+                      {search
+                        ? "Try adjusting your search or filters"
+                        : "Check back later for new training opportunities"}
+                    </p>
+                    {search && (
+                      <button
+                        className="ut-empty__action"
+                        onClick={() => setSearch("")}
+                      >
+                        <i className="fas fa-times" /> Clear Search
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="ut-sessions-grid">
+                    {filteredTrainings.map((evt) => {
+                      const isRegistered = myRegistrations.some(
+                        (r) => r.session_id === evt.session_id,
+                      );
+                      const myReg = myRegistrations.find(
+                        (r) => r.session_id === evt.session_id,
+                      );
+                      const serviceColor =
+                        SERVICE_COLORS[evt.major_service] || "#6b7280";
+
+                      return (
+                        <div key={evt.session_id} className="ut-session-card">
+                          <div className="ut-session-card__header">
                             <span
-                              className="ut-session-card__free"
+                              className="ut-session-card__service"
                               style={{
-                                background: "rgba(16, 185, 129, 0.12)",
-                                color: "#10b981",
-                                border: "1px solid rgba(16, 185, 129, 0.15)",
+                                background: `${serviceColor}15`,
+                                color: serviceColor,
+                                border: `1px solid ${serviceColor}30`,
                               }}
                             >
-                              <i className="fas fa-gift" /> FREE
+                              <i className="fas fa-tag" /> {evt.major_service}
                             </span>
-                          )}
-                        </div>
-
-                        <h3 className="ut-session-card__title">{evt.title}</h3>
-
-                        <div className="ut-session-card__meta">
-                          <div className="ut-session-card__date">
-                            <i
-                              className="fas fa-calendar"
-                              style={{ color: serviceColor }}
-                            />
-                            {new Date(evt.session_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                            {evt.session_end_date &&
-                              evt.session_end_date !== evt.session_date && (
-                                <>
-                                  {" - "}
-                                  {new Date(
-                                    evt.session_end_date,
-                                  ).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </>
+                            <div className="ut-session-card__badge">
+                              {evt.fee > 0 ? (
+                                <span className="ut-session-card__fee">
+                                  ₱{parseFloat(evt.fee).toFixed(2)}
+                                </span>
+                              ) : (
+                                <span className="ut-session-card__free">
+                                  <i className="fas fa-gift" /> FREE
+                                </span>
                               )}
+                            </div>
                           </div>
-                          <div className="ut-session-card__time">
-                            <i
-                              className="fas fa-clock"
-                              style={{ color: serviceColor }}
-                            />
-                            {evt.start_time?.slice(0, 5)} -{" "}
-                            {evt.end_time?.slice(0, 5)}
-                          </div>
-                          <div className="ut-session-card__location">
-                            <i
-                              className="fas fa-map-marker-alt"
-                              style={{ color: serviceColor }}
-                            />
-                            {evt.venue?.split("\n")[0] ||
-                              evt.location?.split("\n")[0]}
-                          </div>
-                          {evt.instructor && (
-                            <div className="ut-session-card__instructor">
+
+                          <h3 className="ut-session-card__title">
+                            {evt.title}
+                          </h3>
+
+                          <div className="ut-session-card__meta">
+                            <div className="ut-session-card__meta-item">
                               <i
-                                className="fas fa-chalkboard-teacher"
+                                className="fas fa-calendar"
                                 style={{ color: serviceColor }}
                               />
                               <span>
-                                <strong>Instructor:</strong> {evt.instructor}
-                                {evt.instructor_credentials && (
-                                  <small> • {evt.instructor_credentials}</small>
+                                {new Date(evt.session_date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
                                 )}
+                                {evt.session_end_date &&
+                                  evt.session_end_date !== evt.session_date && (
+                                    <>
+                                      {" - "}
+                                      {new Date(
+                                        evt.session_end_date,
+                                      ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </>
+                                  )}
                               </span>
                             </div>
-                          )}
-                          {evt.duration_days > 1 && (
-                            <div className="ut-session-card__duration">
+                            <div className="ut-session-card__meta-item">
                               <i
-                                className="fas fa-calendar-week"
+                                className="fas fa-clock"
                                 style={{ color: serviceColor }}
                               />
-                              {evt.duration_days} days
-                            </div>
-                          )}
-                        </div>
-
-                        {evt.description && (
-                          <div className="ut-session-card__desc">
-                            <p>{evt.description}</p>
-                          </div>
-                        )}
-
-                        {evt.requirements && (
-                          <div className="ut-session-card__requirements">
-                            <i
-                              className="fas fa-clipboard-list"
-                              style={{ color: serviceColor }}
-                            />
-                            <small>{evt.requirements}</small>
-                          </div>
-                        )}
-
-                        <div className="ut-session-card__footer">
-                          <div className="ut-session-card__capacity">
-                            <i
-                              className="fas fa-users"
-                              style={{ color: serviceColor }}
-                            />
-                            <span>
-                              {evt.approved_count} /{" "}
-                              {evt.capacity > 0 ? evt.capacity : "∞"}
-                            </span>
-                            {evt.pending_count > 0 && (
-                              <span className="ut-session-card__pending">
-                                ({evt.pending_count} pending)
+                              <span>
+                                {evt.start_time?.slice(0, 5)} -{" "}
+                                {evt.end_time?.slice(0, 5)}
                               </span>
+                            </div>
+                            <div className="ut-session-card__meta-item">
+                              <i
+                                className="fas fa-map-marker-alt"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                {evt.venue?.split("\n")[0] ||
+                                  evt.location?.split("\n")[0]}
+                              </span>
+                            </div>
+                            {evt.instructor && (
+                              <div className="ut-session-card__meta-item ut-session-card__instructor">
+                                <i
+                                  className="fas fa-chalkboard-teacher"
+                                  style={{ color: serviceColor }}
+                                />
+                                <span>
+                                  <strong>Instructor:</strong> {evt.instructor}
+                                  {evt.instructor_credentials && (
+                                    <small>
+                                      {" "}
+                                      • {evt.instructor_credentials}
+                                    </small>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                            {evt.duration_days > 1 && (
+                              <div className="ut-session-card__meta-item">
+                                <i
+                                  className="fas fa-calendar-week"
+                                  style={{ color: serviceColor }}
+                                />
+                                <span>{evt.duration_days} days</span>
+                              </div>
                             )}
                           </div>
 
-                          {isRegistered ? (
-                            <div className="ut-session-card__registered">
-                              <i
-                                className="fas fa-check-circle"
-                                style={{ color: "#10b981" }}
-                              />
-                              <span className={`ut-status-${myReg.status}`}>
-                                {myReg.status.toUpperCase()}
-                              </span>
+                          {evt.description && (
+                            <div className="ut-session-card__desc">
+                              <p>{evt.description.substring(0, 120)}...</p>
                             </div>
-                          ) : evt.is_full ? (
-                            <button
-                              className="ut-session-card__btn ut-session-card__btn--full"
-                              disabled
-                            >
-                              <i className="fas fa-ban" /> Training Full
-                            </button>
-                          ) : (
-                            <button
-                              className="ut-session-card__btn"
-                              onClick={() => setRegisterTraining(evt)}
-                              style={{
-                                background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
-                              }}
-                            >
-                              <i className="fas fa-user-plus" /> Register Now
-                            </button>
                           )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
 
-            {/* MY REGISTRATIONS TABLE */}
-            {myRegistrations.length > 0 && (
+                          {evt.requirements && (
+                            <div className="ut-session-card__requirements">
+                              <i
+                                className="fas fa-clipboard-list"
+                                style={{ color: serviceColor }}
+                              />
+                              <small>{evt.requirements}</small>
+                            </div>
+                          )}
+
+                          <div className="ut-session-card__footer">
+                            <div className="ut-session-card__capacity">
+                              <i
+                                className="fas fa-users"
+                                style={{ color: serviceColor }}
+                              />
+                              <span>
+                                {evt.approved_count || 0} /{" "}
+                                {evt.capacity > 0 ? evt.capacity : "∞"}
+                              </span>
+                              {evt.pending_count > 0 && (
+                                <span className="ut-session-card__pending">
+                                  ({evt.pending_count} pending)
+                                </span>
+                              )}
+                            </div>
+
+                            {isRegistered ? (
+                              <div className="ut-session-card__registered">
+                                <i
+                                  className="fas fa-check-circle"
+                                  style={{ color: "#10b981" }}
+                                />
+                                <span
+                                  style={{
+                                    color: getStatusColor(myReg?.status),
+                                  }}
+                                >
+                                  {myReg?.status.toUpperCase()}
+                                </span>
+                              </div>
+                            ) : evt.is_full ? (
+                              <button
+                                className="ut-session-card__btn ut-session-card__btn--full"
+                                disabled
+                              >
+                                <i className="fas fa-ban" /> Session Full
+                              </button>
+                            ) : (
+                              <button
+                                className="ut-session-card__btn"
+                                onClick={() => setRegisterTraining(evt)}
+                                style={{
+                                  background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
+                                }}
+                              >
+                                <i className="fas fa-user-plus" /> Register Now
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* MY REGISTRATIONS */}
+            {activeTab === "my" && (
               <div className="ut-section">
                 <div className="ut-section__header">
-                  <h2 className="ut-section__title">My Registrations</h2>
+                  <div className="ut-section__title-wrapper">
+                    <h2 className="ut-section__title">
+                      <i className="fas fa-user-check" /> My Training
+                      Registrations
+                    </h2>
+                  </div>
                   <span className="ut-section__count">
                     {myRegistrations.length} registration
                     {myRegistrations.length !== 1 ? "s" : ""}
                   </span>
                 </div>
 
-                <div className="ut-my-regs">
-                  {myRegistrations.map((reg) => (
-                    <div key={reg.registration_id} className="ut-my-reg">
-                      <div className="ut-my-reg__header">
-                        <div>
-                          <h4 className="ut-my-reg__title">{reg.title}</h4>
-                          <span className="ut-my-reg__service">
-                            {reg.major_service}
-                          </span>
-                        </div>
-                        <span
-                          className={`ut-my-reg__status ut-my-reg__status--${reg.status}`}
-                        >
-                          {reg.status.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="ut-my-reg__meta">
-                        <div>
-                          <i className="fas fa-calendar" />
-                          {new Date(reg.session_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "long",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </div>
-                        <div>
-                          <i className="fas fa-map-marker-alt" />
-                          {reg.location?.split("\n")[0] || "TBA"}
-                        </div>
-                        {reg.fee > 0 && (
-                          <div>
-                            <i className="fas fa-money-bill" />₱
-                            {parseFloat(reg.fee).toFixed(2)} -{" "}
-                            {reg.payment_mode?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className="ut-my-reg__date">
-                        Registered on{" "}
-                        {new Date(reg.registration_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          },
-                        )}
-                      </div>
+                {myRegistrations.length === 0 ? (
+                  <div className="ut-empty">
+                    <div className="ut-empty__icon">
+                      <i className="fas fa-clipboard-list" />
                     </div>
-                  ))}
-                </div>
+                    <h3 className="ut-empty__title">No registrations yet</h3>
+                    <p className="ut-empty__message">
+                      Browse available training sessions and register to get
+                      started
+                    </p>
+                    <button
+                      className="ut-empty__action"
+                      onClick={() => setActiveTab("available")}
+                    >
+                      <i className="fas fa-calendar-plus" /> Browse Sessions
+                    </button>
+                  </div>
+                ) : (
+                  <div className="ut-my-regs">
+                    {myRegistrations.map((reg) => {
+                      const serviceColor =
+                        SERVICE_COLORS[reg.major_service] || "#6b7280";
+
+                      return (
+                        <div key={reg.registration_id} className="ut-my-reg">
+                          <div className="ut-my-reg__header">
+                            <div className="ut-my-reg__title-wrapper">
+                              <h4 className="ut-my-reg__title">{reg.title}</h4>
+                              <span
+                                className="ut-my-reg__service"
+                                style={{
+                                  background: `${serviceColor}15`,
+                                  color: serviceColor,
+                                }}
+                              >
+                                {reg.major_service}
+                              </span>
+                            </div>
+                            <span
+                              className={`ut-my-reg__status ut-my-reg__status--${reg.status}`}
+                            >
+                              {reg.status.toUpperCase()}
+                            </span>
+                          </div>
+
+                          <div className="ut-my-reg__details">
+                            <div className="ut-my-reg__meta">
+                              <div className="ut-my-reg__meta-item">
+                                <i className="fas fa-calendar" />
+                                {new Date(reg.session_date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
+                              <div className="ut-my-reg__meta-item">
+                                <i className="fas fa-map-marker-alt" />
+                                {reg.location?.split("\n")[0] ||
+                                  reg.venue?.split("\n")[0] ||
+                                  "TBA"}
+                              </div>
+                              {reg.fee > 0 && (
+                                <div className="ut-my-reg__meta-item">
+                                  <i className="fas fa-money-bill" />₱
+                                  {parseFloat(reg.fee).toFixed(2)} •{" "}
+                                  {reg.payment_mode?.toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="ut-my-reg__footer">
+                              <div className="ut-my-reg__date">
+                                <i className="fas fa-clock" />
+                                Registered{" "}
+                                {new Date(
+                                  reg.registration_date,
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

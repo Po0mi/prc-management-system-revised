@@ -123,6 +123,7 @@ export default function AdminDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [selectedTimeRange, setSelectedTimeRange] = useState("week");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -166,75 +167,156 @@ export default function AdminDashboard() {
     1,
   );
 
+  // Get critical blood types
+  const criticalBloodTypes = btTypes.filter((type) => {
+    const v = btMap[type];
+    const units =
+      typeof v === "object" ? (v.total ?? v.units ?? 0) : Number(v ?? 0);
+    return units > 0 && units < 5;
+  });
+
   return (
     <div className="db-root">
-      {/* ── Header ── */}
+      {/* ── Header with Wave Effect ── */}
       <div className="db-header">
-        <div className="db-header__inner">
-          <div className="db-header__left">
-            <div className="db-header__eyebrow">
-              <i className="fa-solid fa-gauge-high" />
-              Admin Panel
+        <div className="db-header__container">
+          <div className="db-header__content">
+            <div className="db-header__left">
+              <div className="db-header__badge">
+                <i className="fa-solid fa-gauge-high" />
+                Admin Dashboard
+              </div>
+              <h1 className="db-header__title">Welcome back, Admin</h1>
+              <p className="db-header__subtitle">
+                Here's what's happening across your system today
+              </p>
             </div>
-            <h1 className="db-header__title">Dashboard</h1>
-            <p className="db-header__sub">
-              Welcome back — here's what's happening across the system.
-            </p>
+            <div className="db-header__right">
+              <div className="db-header__stats">
+                <div className="db-header-stat">
+                  <span className="db-header-stat__value">
+                    {fmt(stats?.users?.total ?? 0)}
+                  </span>
+                  <span className="db-header-stat__label">Total Users</span>
+                </div>
+                <div className="db-header-stat">
+                  <span className="db-header-stat__value">
+                    {fmt(stats?.events?.total ?? 0)}
+                  </span>
+                  <span className="db-header-stat__label">Total Events</span>
+                </div>
+                <div className="db-header-stat">
+                  <span className="db-header-stat__value">
+                    {fmt(stats?.inventory?.total_items ?? 0)}
+                  </span>
+                  <span className="db-header-stat__label">Inventory Items</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="db-header__right">
+
+          {/* Header Meta */}
+          <div className="db-header__meta">
             <div className="db-header__refresh-info">
               <i className="fa-regular fa-clock" />
-              Updated {timeAgo(lastRefresh)}
+              Last updated {timeAgo(lastRefresh)}
             </div>
-            <button
-              className="db-header__refresh-btn"
-              onClick={load}
-              disabled={loading}
-            >
-              <i
-                className={`fa-solid fa-rotate-right ${loading ? "fa-spin" : ""}`}
-              />
-              Refresh
-            </button>
+            <div className="db-header__actions">
+              <select
+                className="db-header__time-range"
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+              >
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+              </select>
+              <button
+                className="db-header__refresh-btn"
+                onClick={load}
+                disabled={loading}
+              >
+                <i
+                  className={`fa-solid fa-rotate-right ${loading ? "fa-spin" : ""}`}
+                />
+                Refresh
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Pending attention banner */}
-        {!loading && totalPending > 0 && (
-          <div className="db-header__alert">
-            <i className="fa-solid fa-triangle-exclamation" />
-            <strong>
-              {totalPending} item{totalPending !== 1 ? "s" : ""} need your
-              attention
-            </strong>
-            <span>—</span>
-            {pending.event_registrations > 0 && (
-              <Link to="/admin/registrations">
-                {pending.event_registrations} event registration
-                {pending.event_registrations !== 1 ? "s" : ""}
-              </Link>
-            )}
-            {pending.training_registrations > 0 && (
-              <Link to="/admin/session-registrations">
-                {pending.training_registrations} training registration
-                {pending.training_registrations !== 1 ? "s" : ""}
-              </Link>
-            )}
-            {pending.training_requests > 0 && (
-              <Link to="/admin/training-requests">
-                {pending.training_requests} training request
-                {pending.training_requests !== 1 ? "s" : ""}
-              </Link>
-            )}
-          </div>
-        )}
+          {/* Pending attention banner */}
+          {!loading && totalPending > 0 && (
+            <div className="db-header__alert">
+              <div className="db-header__alert-icon">
+                <i className="fa-solid fa-triangle-exclamation" />
+              </div>
+              <div className="db-header__alert-content">
+                <strong>
+                  {totalPending} item{totalPending !== 1 ? "s" : ""} need your
+                  attention
+                </strong>
+                <div className="db-header__alert-links">
+                  {pending.event_registrations > 0 && (
+                    <Link to="/admin/registrations">
+                      {pending.event_registrations} event registration
+                      {pending.event_registrations !== 1 ? "s" : ""}
+                    </Link>
+                  )}
+                  {pending.training_registrations > 0 && (
+                    <Link to="/admin/session-registrations">
+                      {pending.training_registrations} training registration
+                      {pending.training_registrations !== 1 ? "s" : ""}
+                    </Link>
+                  )}
+                  {pending.training_requests > 0 && (
+                    <Link to="/admin/training-requests">
+                      {pending.training_requests} training request
+                      {pending.training_requests !== 1 ? "s" : ""}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Critical Stock Alert */}
+          {!loading && criticalBloodTypes.length > 0 && (
+            <div className="db-header__alert db-header__alert--critical">
+              <div className="db-header__alert-icon">
+                <i className="fa-solid fa-droplet" />
+              </div>
+              <div className="db-header__alert-content">
+                <strong>Critical Blood Supply</strong>
+                <div className="db-header__alert-links">
+                  Low stock for {criticalBloodTypes.join(", ")}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="db-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className="db-body">
         {/* ── Row 1: People ── */}
         <section className="db-section">
           <div className="db-section__head">
-            <i className="fa-solid fa-users" />
+            <div className="db-section__head-icon">
+              <i className="fa-solid fa-users" />
+            </div>
             <span>People</span>
           </div>
           <div className="db-grid db-grid--4">
@@ -280,7 +362,9 @@ export default function AdminDashboard() {
         {/* ── Row 2: Events & Training ── */}
         <section className="db-section">
           <div className="db-section__head">
-            <i className="fa-solid fa-calendar-days" />
+            <div className="db-section__head-icon">
+              <i className="fa-solid fa-calendar-days" />
+            </div>
             <span>Events & Training</span>
           </div>
           <div className="db-grid db-grid--4">
@@ -339,7 +423,9 @@ export default function AdminDashboard() {
         {/* ── Row 3: Inventory & Commerce ── */}
         <section className="db-section">
           <div className="db-section__head">
-            <i className="fa-solid fa-boxes-stacked" />
+            <div className="db-section__head-icon">
+              <i className="fa-solid fa-boxes-stacked" />
+            </div>
             <span>Inventory & Commerce</span>
           </div>
           <div className="db-grid db-grid--4">
@@ -393,17 +479,17 @@ export default function AdminDashboard() {
           {/* Left col: Blood Bank + Pending */}
           <div className="db-lower__left">
             {/* Blood Bank */}
-            <div className="db-panel">
+            <div className="db-panel db-panel--blood">
               <div className="db-panel__head">
                 <div className="db-panel__title">
-                  <i
-                    className="fa-solid fa-droplet"
-                    style={{ color: "#cc0000" }}
-                  />
-                  Blood Bank
+                  <div className="db-panel__title-icon">
+                    <i className="fa-solid fa-droplet" />
+                  </div>
+                  Blood Bank Inventory
                 </div>
                 <Link to="/admin/blood-bank" className="db-panel__link">
-                  View all <i className="fa-solid fa-arrow-right" />
+                  <span>View all</span>
+                  <i className="fa-solid fa-arrow-right" />
                 </Link>
               </div>
               <div className="db-panel__body">
@@ -421,15 +507,27 @@ export default function AdminDashboard() {
                     <span className="db-blood-summary__label">Locations</span>
                   </div>
                   <div
-                    className="db-blood-summary__item"
+                    className="db-blood-summary__item db-blood-summary__item--critical"
                     style={{
-                      color:
+                      background:
                         stats?.blood_bank?.critical_stock > 0
-                          ? "#ef4444"
-                          : "#10b981",
+                          ? "rgba(239, 68, 68, 0.1)"
+                          : undefined,
+                      borderColor:
+                        stats?.blood_bank?.critical_stock > 0
+                          ? "rgba(239, 68, 68, 0.2)"
+                          : undefined,
                     }}
                   >
-                    <span className="db-blood-summary__num">
+                    <span
+                      className="db-blood-summary__num"
+                      style={{
+                        color:
+                          stats?.blood_bank?.critical_stock > 0
+                            ? "#ef4444"
+                            : "#10b981",
+                      }}
+                    >
                       {fmt(stats?.blood_bank?.critical_stock ?? 0)}
                     </span>
                     <span className="db-blood-summary__label">Critical</span>
@@ -472,13 +570,12 @@ export default function AdminDashboard() {
             </div>
 
             {/* Pending Attention */}
-            <div className="db-panel">
+            <div className="db-panel db-panel--pending">
               <div className="db-panel__head">
                 <div className="db-panel__title">
-                  <i
-                    className="fa-solid fa-clock"
-                    style={{ color: "#f59e0b" }}
-                  />
+                  <div className="db-panel__title-icon">
+                    <i className="fa-solid fa-clock" />
+                  </div>
                   Needs Attention
                   {totalPending > 0 && <AlertBadge count={totalPending} />}
                 </div>
@@ -512,17 +609,17 @@ export default function AdminDashboard() {
           {/* Right col: Recent Events + Announcements */}
           <div className="db-lower__right">
             {/* Recent Events */}
-            <div className="db-panel">
+            <div className="db-panel db-panel--events">
               <div className="db-panel__head">
                 <div className="db-panel__title">
-                  <i
-                    className="fa-solid fa-calendar-days"
-                    style={{ color: "#cc0000" }}
-                  />
+                  <div className="db-panel__title-icon">
+                    <i className="fa-solid fa-calendar-days" />
+                  </div>
                   Recent Events
                 </div>
                 <Link to="/admin/events" className="db-panel__link">
-                  View all <i className="fa-solid fa-arrow-right" />
+                  <span>View all</span>
+                  <i className="fa-solid fa-arrow-right" />
                 </Link>
               </div>
               <div className="db-panel__body">
@@ -610,17 +707,17 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent Announcements */}
-            <div className="db-panel">
+            <div className="db-panel db-panel--announcements">
               <div className="db-panel__head">
                 <div className="db-panel__title">
-                  <i
-                    className="fa-solid fa-bullhorn"
-                    style={{ color: "#f59e0b" }}
-                  />
+                  <div className="db-panel__title-icon">
+                    <i className="fa-solid fa-bullhorn" />
+                  </div>
                   Recent Announcements
                 </div>
                 <Link to="/admin/announcements" className="db-panel__link">
-                  View all <i className="fa-solid fa-arrow-right" />
+                  <span>View all</span>
+                  <i className="fa-solid fa-arrow-right" />
                 </Link>
               </div>
               <div className="db-panel__body">
@@ -677,32 +774,31 @@ export default function AdminDashboard() {
             </div>
 
             {/* Quick Links */}
-            <div className="db-panel">
+            <div className="db-panel db-panel--quick">
               <div className="db-panel__head">
                 <div className="db-panel__title">
-                  <i
-                    className="fa-solid fa-bolt"
-                    style={{ color: "#f59e0b" }}
-                  />
+                  <div className="db-panel__title-icon">
+                    <i className="fa-solid fa-bolt" />
+                  </div>
                   Quick Actions
                 </div>
               </div>
               <div className="db-panel__body db-quicklinks">
                 {[
                   {
-                    to: "/admin/events",
+                    to: "/admin/events/new",
                     icon: "fa-solid fa-calendar-plus",
                     label: "New Event",
                     color: "#cc0000",
                   },
                   {
-                    to: "/admin/training",
+                    to: "/admin/training/new",
                     icon: "fa-solid fa-chalkboard-user",
                     label: "New Training",
                     color: "#7c3aed",
                   },
                   {
-                    to: "/admin/announcements",
+                    to: "/admin/announcements/new",
                     icon: "fa-solid fa-bullhorn",
                     label: "New Announcement",
                     color: "#f59e0b",

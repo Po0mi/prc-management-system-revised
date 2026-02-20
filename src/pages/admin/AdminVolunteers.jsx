@@ -21,10 +21,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`av-toast av-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="av-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="av-toast__content">
+        <div className="av-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="av-toast__message">{message}</div>
+      </div>
       <button className="av-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -608,6 +615,7 @@ export default function AdminVolunteers() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -728,6 +736,19 @@ export default function AdminVolunteers() {
     return option ? option.icon : "fa-solid fa-hand";
   };
 
+  // Get service color
+  const getServiceColor = (service) => {
+    const colors = {
+      first_aid: "#3b82f6",
+      disaster_response: "#f59e0b",
+      blood_services: "#ef4444",
+      safety_services: "#10b981",
+      youth_services: "#14b8a6",
+      welfare_services: "#8b5cf6",
+    };
+    return colors[service] || "#6b7280";
+  };
+
   // Get active filter count
   const getActiveFilterCount = () => {
     let count = 0;
@@ -741,38 +762,53 @@ export default function AdminVolunteers() {
 
   return (
     <div className="av-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="av-header">
-        <div className="av-header__inner">
-          <div>
-            <div className="av-header__eyebrow">
-              <i className="fa-solid fa-hand-holding-heart" />
-              Volunteer Management
+        <div className="av-header__container">
+          <div className="av-header__content">
+            <div className="av-header__left">
+              <div className="av-header__badge">
+                <i className="fa-solid fa-hand-holding-heart" />
+                Volunteer Management
+              </div>
+              <h1 className="av-header__title">Volunteers</h1>
+              <p className="av-header__subtitle">
+                Manage and track volunteers across all service areas
+              </p>
             </div>
-            <h1 className="av-header__title">Volunteers</h1>
-            <p className="av-header__subtitle">
-              Manage and track volunteers across all service areas
-            </p>
-          </div>
 
-          <div className="av-header__stats">
-            <div className="av-header__stat">
-              <div className="av-header__stat-num">{stats.total}</div>
-              <div className="av-header__stat-label">Total Volunteers</div>
-            </div>
-            <div className="av-header__stat">
-              <div className="av-header__stat-num">
-                {stats.by_status?.current || 0}
+            <div className="av-header__stats">
+              <div className="av-header-stat">
+                <span className="av-header-stat__value">{stats.total}</span>
+                <span className="av-header-stat__label">Total Volunteers</span>
               </div>
-              <div className="av-header__stat-label">Active</div>
-            </div>
-            <div className="av-header__stat">
-              <div className="av-header__stat-num">
-                {stats.by_status?.graduated || 0}
+              <div className="av-header-stat">
+                <span className="av-header-stat__value">
+                  {stats.by_status?.current || 0}
+                </span>
+                <span className="av-header-stat__label">Active</span>
               </div>
-              <div className="av-header__stat-label">Graduated</div>
+              <div className="av-header-stat">
+                <span className="av-header-stat__value">
+                  {stats.by_status?.graduated || 0}
+                </span>
+                <span className="av-header-stat__label">Graduated</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="av-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -834,7 +870,7 @@ export default function AdminVolunteers() {
             <input
               type="text"
               className="av-toolbar__search-input"
-              placeholder="Search volunteers..."
+              placeholder="Search volunteers by name or location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -853,11 +889,11 @@ export default function AdminVolunteers() {
             {locationOptions.cities.length > 0 && (
               <div className="av-toolbar__filter-dropdown">
                 <button
-                  className="av-toolbar__filter-dropdown-btn"
+                  className={`av-toolbar__filter-dropdown-btn ${locationFilter.city ? "av-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowCityDropdown(!showCityDropdown)}
                 >
                   <i className="fa-solid fa-city" />
-                  {locationFilter.city || "All Cities"}
+                  <span>{locationFilter.city || "All Cities"}</span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showCityDropdown && (
@@ -869,6 +905,7 @@ export default function AdminVolunteers() {
                       }}
                       className={!locationFilter.city ? "active" : ""}
                     >
+                      <i className="fa-solid fa-city" />
                       All Cities
                     </button>
                     {locationOptions.cities.map((city) => (
@@ -898,13 +935,15 @@ export default function AdminVolunteers() {
             {locationOptions.municipalities.length > 0 && (
               <div className="av-toolbar__filter-dropdown">
                 <button
-                  className="av-toolbar__filter-dropdown-btn"
+                  className={`av-toolbar__filter-dropdown-btn ${locationFilter.municipality ? "av-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() =>
                     setShowMunicipalityDropdown(!showMunicipalityDropdown)
                   }
                 >
                   <i className="fa-solid fa-map-pin" />
-                  {locationFilter.municipality || "All Municipalities"}
+                  <span>
+                    {locationFilter.municipality || "All Municipalities"}
+                  </span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showMunicipalityDropdown && (
@@ -920,6 +959,7 @@ export default function AdminVolunteers() {
                       }}
                       className={!locationFilter.municipality ? "active" : ""}
                     >
+                      <i className="fa-solid fa-map-pin" />
                       All Municipalities
                     </button>
                     {locationOptions.municipalities.map((municipality) => (
@@ -952,11 +992,11 @@ export default function AdminVolunteers() {
             {locationOptions.barangays.length > 0 && (
               <div className="av-toolbar__filter-dropdown">
                 <button
-                  className="av-toolbar__filter-dropdown-btn"
+                  className={`av-toolbar__filter-dropdown-btn ${locationFilter.barangay ? "av-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowBarangayDropdown(!showBarangayDropdown)}
                 >
                   <i className="fa-solid fa-location-dot" />
-                  {locationFilter.barangay || "All Barangays"}
+                  <span>{locationFilter.barangay || "All Barangays"}</span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showBarangayDropdown && (
@@ -968,6 +1008,7 @@ export default function AdminVolunteers() {
                       }}
                       className={!locationFilter.barangay ? "active" : ""}
                     >
+                      <i className="fa-solid fa-location-dot" />
                       All Barangays
                     </button>
                     {locationOptions.barangays.map((barangay) => (
@@ -993,11 +1034,15 @@ export default function AdminVolunteers() {
             {/* Service Filter Dropdown */}
             <div className="av-toolbar__filter-dropdown">
               <button
-                className="av-toolbar__filter-dropdown-btn"
+                className={`av-toolbar__filter-dropdown-btn ${serviceFilter ? "av-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowServiceDropdown(!showServiceDropdown)}
               >
                 <i className="fa-solid fa-filter" />
-                {serviceFilter ? formatService(serviceFilter) : "All Services"}
+                <span>
+                  {serviceFilter
+                    ? formatService(serviceFilter)
+                    : "All Services"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showServiceDropdown && (
@@ -1009,6 +1054,7 @@ export default function AdminVolunteers() {
                     }}
                     className={!serviceFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-filter" />
                     All Services
                   </button>
                   {SERVICE_OPTIONS.map((option) => (
@@ -1031,11 +1077,13 @@ export default function AdminVolunteers() {
             {/* Status Filter Dropdown */}
             <div className="av-toolbar__filter-dropdown">
               <button
-                className="av-toolbar__filter-dropdown-btn"
+                className={`av-toolbar__filter-dropdown-btn ${statusFilter ? "av-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
               >
                 <i className="fa-solid fa-flag" />
-                {statusFilter ? formatStatus(statusFilter) : "All Status"}
+                <span>
+                  {statusFilter ? formatStatus(statusFilter) : "All Status"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showStatusDropdown && (
@@ -1047,6 +1095,7 @@ export default function AdminVolunteers() {
                     }}
                     className={!statusFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-flag" />
                     All Status
                   </button>
                   {STATUS_OPTIONS.map((option) => (
@@ -1067,8 +1116,11 @@ export default function AdminVolunteers() {
             </div>
 
             {getActiveFilterCount() > 0 && (
-              <button className="av-toolbar__filter-btn" onClick={clearFilters}>
-                <i className="fa-solid fa-xmark" />
+              <button
+                className="av-toolbar__filter-clear-btn"
+                onClick={clearFilters}
+              >
+                <i className="fa-solid fa-times" />
                 Clear Filters ({getActiveFilterCount()})
               </button>
             )}
@@ -1087,10 +1139,16 @@ export default function AdminVolunteers() {
               <i className="fa-solid fa-users" />
               Volunteer List
             </div>
-            <span className="av-table-panel__count">
-              {volunteers.length}{" "}
-              {volunteers.length === 1 ? "volunteer" : "volunteers"}
-            </span>
+            <div className="av-table-panel__info">
+              <span className="av-table-panel__count">
+                {volunteers.length}{" "}
+                {volunteers.length === 1 ? "volunteer" : "volunteers"}
+              </span>
+              <span className="av-table-panel__divider">•</span>
+              <span className="av-table-panel__sub">
+                Page 1 of {Math.ceil(volunteers.length / 10) || 1}
+              </span>
+            </div>
           </div>
 
           <div className="av-table-panel__scroll">
@@ -1109,117 +1167,182 @@ export default function AdminVolunteers() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="av-table__loading">
-                      <i className="fa-solid fa-spinner fa-spin" />
-                      <p>Loading volunteers...</p>
+                    <td colSpan="7">
+                      <div className="av-table__loading">
+                        <div className="av-table__loading-spinner">
+                          <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading volunteers...</p>
+                        <span className="av-table__loading-sub">
+                          Fetching volunteer data
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ) : volunteers.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="av-table__empty">
-                      <i className="fa-regular fa-face-frown" />
-                      <p>No volunteers found</p>
+                    <td colSpan="7">
+                      <div className="av-table__empty">
+                        <div className="av-table__empty-icon">
+                          <i className="fa-regular fa-face-frown" />
+                        </div>
+                        <h3 className="av-table__empty-title">
+                          No Volunteers Found
+                        </h3>
+                        <p className="av-table__empty-message">
+                          {search ||
+                          serviceFilter ||
+                          statusFilter ||
+                          locationFilter.city ||
+                          locationFilter.municipality ||
+                          locationFilter.barangay
+                            ? "Try adjusting your search or filter criteria"
+                            : "Get started by adding your first volunteer"}
+                        </p>
+                        {(search ||
+                          serviceFilter ||
+                          statusFilter ||
+                          locationFilter.city ||
+                          locationFilter.municipality ||
+                          locationFilter.barangay) && (
+                          <button
+                            className="av-table__empty-action"
+                            onClick={clearFilters}
+                          >
+                            <i className="fa-solid fa-times" /> Clear Filters
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  volunteers.map((volunteer) => (
-                    <tr key={volunteer.volunteer_id}>
-                      <td>
-                        <div className="av-volunteer-cell">
-                          <div className="av-volunteer-cell__avatar">
-                            {getInitials(volunteer.full_name)}
-                          </div>
-                          <div className="av-volunteer-cell__info">
-                            <div className="av-volunteer-cell__info-name">
-                              {volunteer.full_name}
+                  volunteers.map((volunteer) => {
+                    const serviceColor = getServiceColor(volunteer.service);
+                    return (
+                      <tr
+                        key={volunteer.volunteer_id}
+                        onMouseEnter={() =>
+                          setHoveredRow(volunteer.volunteer_id)
+                        }
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === volunteer.volunteer_id
+                            ? "av-table__row--hovered"
+                            : ""
+                        }
+                      >
+                        <td>
+                          <div className="av-volunteer-cell">
+                            <div
+                              className="av-volunteer-cell__avatar"
+                              style={{
+                                background: `linear-gradient(135deg, ${serviceColor}, ${serviceColor}dd)`,
+                              }}
+                            >
+                              {getInitials(volunteer.full_name)}
                             </div>
-                            <div className="av-volunteer-cell__info-age">
-                              {volunteer.age} years old
+                            <div className="av-volunteer-cell__info">
+                              <div className="av-volunteer-cell__info-name">
+                                {volunteer.full_name}
+                              </div>
+                              <div className="av-volunteer-cell__info-age">
+                                {volunteer.age} years old
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="av-location">
-                          <div className="av-location__main">
-                            {volunteer.location}
-                          </div>
-                          {(volunteer.barangay || volunteer.municipality) && (
-                            <div className="av-location__detail">
-                              <i className="fa-solid fa-circle" />
-                              {[
-                                volunteer.barangay,
-                                volunteer.municipality,
-                                volunteer.city,
-                              ]
-                                .filter(Boolean)
-                                .join(", ")}
+                        </td>
+                        <td>
+                          <div className="av-location">
+                            <div className="av-location__main">
+                              {volunteer.location}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="av-contact">
-                          <div className="av-contact__phone">
-                            <i className="fa-solid fa-phone" />
-                            {volunteer.contact_number}
+                            {(volunteer.barangay || volunteer.municipality) && (
+                              <div className="av-location__detail">
+                                <i className="fa-solid fa-circle" />
+                                {[
+                                  volunteer.barangay,
+                                  volunteer.municipality,
+                                  volunteer.city,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </div>
+                            )}
                           </div>
-                          {volunteer.email && (
-                            <div className="av-contact__email">
-                              <i className="fa-regular fa-envelope" />
-                              {volunteer.email}
+                        </td>
+                        <td>
+                          <div className="av-contact">
+                            <div className="av-contact__phone">
+                              <i className="fa-solid fa-phone" />
+                              {volunteer.contact_number}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <span
-                          className={`av-service-badge av-service-badge--${volunteer.service}`}
-                        >
-                          <i className={getServiceIcon(volunteer.service)} />
-                          {formatService(volunteer.service)}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={`av-status av-status--${volunteer.status}`}
-                        >
-                          <i className="fa-solid fa-circle" />
-                          {formatStatus(volunteer.status)}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="av-notes" title={volunteer.notes}>
-                          {volunteer.notes || "—"}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="av-actions">
-                          <button
-                            className="av-action-btn av-action-btn--view"
-                            onClick={() => handleView(volunteer)}
-                            title="View Details"
+                            {volunteer.email && (
+                              <div
+                                className="av-contact__email"
+                                title={volunteer.email}
+                              >
+                                <i className="fa-regular fa-envelope" />
+                                <span>{volunteer.email}</span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span
+                            className={`av-service-badge av-service-badge--${volunteer.service}`}
+                            style={{
+                              background: `${serviceColor}12`,
+                              color: serviceColor,
+                              border: `1px solid ${serviceColor}25`,
+                            }}
                           >
-                            <i className="fa-solid fa-eye" />
-                          </button>
-                          <button
-                            className="av-action-btn av-action-btn--edit"
-                            onClick={() => handleEdit(volunteer)}
-                            title="Edit Volunteer"
+                            <i className={getServiceIcon(volunteer.service)} />
+                            {formatService(volunteer.service)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`av-status av-status--${volunteer.status}`}
                           >
-                            <i className="fa-solid fa-pen" />
-                          </button>
-                          <button
-                            className="av-action-btn av-action-btn--delete"
-                            onClick={() => handleDelete(volunteer.volunteer_id)}
-                            title="Delete Volunteer"
-                          >
-                            <i className="fa-solid fa-trash" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            <i className="fa-solid fa-circle" />
+                            {formatStatus(volunteer.status)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="av-notes" title={volunteer.notes}>
+                            {volunteer.notes || "—"}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="av-actions">
+                            <button
+                              className="av-action-btn av-action-btn--view"
+                              onClick={() => handleView(volunteer)}
+                              title="View Details"
+                            >
+                              <i className="fa-solid fa-eye" />
+                            </button>
+                            <button
+                              className="av-action-btn av-action-btn--edit"
+                              onClick={() => handleEdit(volunteer)}
+                              title="Edit Volunteer"
+                            >
+                              <i className="fa-solid fa-pen" />
+                            </button>
+                            <button
+                              className="av-action-btn av-action-btn--delete"
+                              onClick={() =>
+                                handleDelete(volunteer.volunteer_id)
+                              }
+                              title="Delete Volunteer"
+                            >
+                              <i className="fa-solid fa-trash" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

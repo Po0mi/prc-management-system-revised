@@ -39,10 +39,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ai-toast ai-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="ai-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="ai-toast__content">
+        <div className="ai-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ai-toast__message">{message}</div>
+      </div>
       <button className="ai-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -185,12 +192,12 @@ function InventoryItemModal({ item, onClose, onSuccess }) {
     <div className="ai-overlay" onClick={onClose}>
       <div className="ai-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ai-modal__header">
-          <span className="ai-modal__title">
+          <div className="ai-modal__title">
             <i
-              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus"}`}
+              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus-circle"}`}
             />
             {item ? "Edit Inventory Item" : "Add Inventory Item"}
-          </span>
+          </div>
           <button className="ai-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -630,12 +637,12 @@ function VehicleModal({ vehicle, onClose, onSuccess }) {
     <div className="ai-overlay" onClick={onClose}>
       <div className="ai-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ai-modal__header">
-          <span className="ai-modal__title">
+          <div className="ai-modal__title">
             <i
-              className={`fa-solid ${vehicle ? "fa-pen-to-square" : "fa-plus"}`}
+              className={`fa-solid ${vehicle ? "fa-pen-to-square" : "fa-plus-circle"}`}
             />
             {vehicle ? "Edit Vehicle" : "Add Vehicle"}
-          </span>
+          </div>
           <button className="ai-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -1030,10 +1037,10 @@ function MaintenanceModal({ vehicle, onClose, onSuccess }) {
     <div className="ai-overlay" onClick={onClose}>
       <div className="ai-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ai-modal__header">
-          <span className="ai-modal__title">
+          <div className="ai-modal__title">
             <i className="fa-solid fa-wrench" />
             Add Maintenance - {vehicle?.vehicle_name}
-          </span>
+          </div>
           <button className="ai-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -1242,16 +1249,19 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
       <>
         <div className="ai-view__section">
           <h3 className="ai-view__section-title">
-            <i className="fa-solid fa-box" />
+            <i
+              className="fa-solid fa-box"
+              style={{ color: serviceAreaColor }}
+            />
             {data.item_name}
           </h3>
           <div className="ai-view__badges">
             <span
               className="ai-view__badge"
               style={{
-                background: `${serviceAreaColor}15`,
+                background: `${serviceAreaColor}12`,
                 color: serviceAreaColor,
-                border: `1px solid ${serviceAreaColor}33`,
+                border: `1px solid ${serviceAreaColor}25`,
               }}
             >
               <i className="fa-solid fa-bullseye" />
@@ -1260,9 +1270,9 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
             <span
               className="ai-view__badge"
               style={{
-                background: `${stockStatus.color}15`,
+                background: `${stockStatus.color}12`,
                 color: stockStatus.color,
-                border: `1px solid ${stockStatus.color}33`,
+                border: `1px solid ${stockStatus.color}25`,
               }}
             >
               <i className="fa-solid fa-chart-line" />
@@ -1274,7 +1284,10 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
         <div className="ai-view__grid">
           <div className="ai-view__item">
             <div className="ai-view__item-label">Item Code</div>
-            <div className="ai-view__item-value">{data.item_code}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-barcode" />
+              {data.item_code}
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Category</div>
@@ -1283,35 +1296,43 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           <div className="ai-view__item">
             <div className="ai-view__item-label">Current Stock</div>
             <div className="ai-view__item-value ai-view__item-value--stock">
+              <i className="fa-solid fa-boxes" />
               {data.current_stock} {data.unit}
             </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Minimum Stock</div>
             <div className="ai-view__item-value">
+              <i className="fa-solid fa-triangle-exclamation" />
               {data.minimum_stock} {data.unit}
             </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Unit Cost</div>
             <div className="ai-view__item-value ai-view__item-value--price">
+              <i className="fa-solid fa-money-bill" />
               {formatCurrency(data.unit_cost)}
             </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Total Value</div>
             <div className="ai-view__item-value ai-view__item-value--price">
+              <i className="fa-solid fa-calculator" />
               {formatCurrency(data.total_value)}
             </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Location</div>
-            <div className="ai-view__item-value">{data.location}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-location-dot" />
+              {data.location}
+            </div>
           </div>
           {data.expiry_date && (
             <div className="ai-view__item">
               <div className="ai-view__item-label">Expiry Date</div>
               <div className="ai-view__item-value">
+                <i className="fa-regular fa-calendar" />
                 {new Date(data.expiry_date).toLocaleDateString()}
               </div>
             </div>
@@ -1319,7 +1340,10 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           {data.batch_number && (
             <div className="ai-view__item">
               <div className="ai-view__item-label">Batch Number</div>
-              <div className="ai-view__item-value">{data.batch_number}</div>
+              <div className="ai-view__item-value">
+                <i className="fa-solid fa-hashtag" />
+                {data.batch_number}
+              </div>
             </div>
           )}
         </div>
@@ -1340,21 +1364,28 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
   const renderVehicleDetails = () => {
     const statusColor = getVehicleStatusColor(data.status);
     const serviceAreaColor = getServiceAreaColor(data.service_area);
+    const maintenanceDue =
+      data.next_maintenance_date &&
+      new Date(data.next_maintenance_date) <=
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     return (
       <>
         <div className="ai-view__section">
           <h3 className="ai-view__section-title">
-            <i className="fa-solid fa-truck" />
+            <i
+              className="fa-solid fa-truck"
+              style={{ color: serviceAreaColor }}
+            />
             {data.vehicle_name}
           </h3>
           <div className="ai-view__badges">
             <span
               className="ai-view__badge"
               style={{
-                background: `${serviceAreaColor}15`,
+                background: `${serviceAreaColor}12`,
                 color: serviceAreaColor,
-                border: `1px solid ${serviceAreaColor}33`,
+                border: `1px solid ${serviceAreaColor}25`,
               }}
             >
               <i className="fa-solid fa-bullseye" />
@@ -1363,21 +1394,37 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
             <span
               className="ai-view__badge"
               style={{
-                background: `${statusColor}15`,
+                background: `${statusColor}12`,
                 color: statusColor,
-                border: `1px solid ${statusColor}33`,
+                border: `1px solid ${statusColor}25`,
               }}
             >
               <i className="fa-solid fa-flag" />
               {VEHICLE_STATUS.find((s) => s.value === data.status)?.label}
             </span>
+            {maintenanceDue && (
+              <span
+                className="ai-view__badge"
+                style={{
+                  background: "#f59e0b12",
+                  color: "#f59e0b",
+                  border: "1px solid #f59e0b25",
+                }}
+              >
+                <i className="fa-solid fa-calendar-check" />
+                Maintenance Due
+              </span>
+            )}
           </div>
         </div>
 
         <div className="ai-view__grid">
           <div className="ai-view__item">
             <div className="ai-view__item-label">Vehicle Code</div>
-            <div className="ai-view__item-value">{data.vehicle_code}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-barcode" />
+              {data.vehicle_code}
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Category</div>
@@ -1385,19 +1432,29 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Plate Number</div>
-            <div className="ai-view__item-value">{data.plate_number}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-id-card" />
+              {data.plate_number}
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Model</div>
-            <div className="ai-view__item-value">{data.model}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-car" />
+              {data.model}
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Year</div>
-            <div className="ai-view__item-value">{data.year}</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-calendar" />
+              {data.year}
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Fuel Type</div>
             <div className="ai-view__item-value">
+              <i className="fa-solid fa-gas-pump" />
               {
                 VEHICLE_FUEL_TYPES.find((f) => f.value === data.fuel_type)
                   ?.label
@@ -1406,17 +1463,22 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Current Mileage</div>
-            <div className="ai-view__item-value">{data.current_mileage} km</div>
+            <div className="ai-view__item-value">
+              <i className="fa-solid fa-gauge" />
+              {data.current_mileage} km
+            </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Maintenance Interval</div>
             <div className="ai-view__item-value">
+              <i className="fa-solid fa-calendar-check" />
               {data.maintenance_interval} km
             </div>
           </div>
           <div className="ai-view__item">
             <div className="ai-view__item-label">Last Maintenance</div>
             <div className="ai-view__item-value">
+              <i className="fa-solid fa-wrench" />
               {data.last_maintenance_date
                 ? new Date(data.last_maintenance_date).toLocaleDateString()
                 : "None"}
@@ -1425,6 +1487,7 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           <div className="ai-view__item">
             <div className="ai-view__item-label">Next Maintenance</div>
             <div className="ai-view__item-value">
+              <i className="fa-regular fa-calendar" />
               {data.next_maintenance_date
                 ? new Date(data.next_maintenance_date).toLocaleDateString()
                 : "Not scheduled"}
@@ -1433,13 +1496,19 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
           {data.branch_name && (
             <div className="ai-view__item">
               <div className="ai-view__item-label">Branch</div>
-              <div className="ai-view__item-value">{data.branch_name}</div>
+              <div className="ai-view__item-value">
+                <i className="fa-solid fa-building" />
+                {data.branch_name}
+              </div>
             </div>
           )}
           {data.location && (
             <div className="ai-view__item">
               <div className="ai-view__item-label">Location</div>
-              <div className="ai-view__item-value">{data.location}</div>
+              <div className="ai-view__item-value">
+                <i className="fa-solid fa-location-dot" />
+                {data.location}
+              </div>
             </div>
           )}
         </div>
@@ -1452,39 +1521,48 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
               Maintenance History
             </h3>
             <div className="ai-maintenance-list">
-              {data.maintenance_history.map((record) => (
-                <div
-                  key={record.maintenance_id}
-                  className="ai-maintenance-item"
-                >
-                  <div className="ai-maintenance-item__header">
-                    <span
-                      className="ai-maintenance-item__type"
-                      style={{
-                        backgroundColor: `${getMaintenanceTypeColor(record.maintenance_type)}15`,
-                        color: getMaintenanceTypeColor(record.maintenance_type),
-                      }}
-                    >
-                      {
-                        MAINTENANCE_TYPES.find(
-                          (t) => t.value === record.maintenance_type,
-                        )?.label
-                      }
-                    </span>
-                    <span className="ai-maintenance-item__date">
-                      {new Date(record.maintenance_date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="ai-maintenance-item__description">
-                    {record.description}
-                  </p>
-                  {record.cost > 0 && (
-                    <div className="ai-maintenance-item__cost">
-                      Cost: {formatCurrency(record.cost)}
+              {data.maintenance_history.map((record) => {
+                const typeColor = getMaintenanceTypeColor(
+                  record.maintenance_type,
+                );
+                return (
+                  <div
+                    key={record.maintenance_id}
+                    className="ai-maintenance-item"
+                  >
+                    <div className="ai-maintenance-item__header">
+                      <span
+                        className="ai-maintenance-item__type"
+                        style={{
+                          backgroundColor: `${typeColor}12`,
+                          color: typeColor,
+                          border: `1px solid ${typeColor}25`,
+                        }}
+                      >
+                        <i className="fa-solid fa-tools" />
+                        {
+                          MAINTENANCE_TYPES.find(
+                            (t) => t.value === record.maintenance_type,
+                          )?.label
+                        }
+                      </span>
+                      <span className="ai-maintenance-item__date">
+                        <i className="fa-regular fa-calendar" />
+                        {new Date(record.maintenance_date).toLocaleDateString()}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <p className="ai-maintenance-item__description">
+                      {record.description}
+                    </p>
+                    {record.cost > 0 && (
+                      <div className="ai-maintenance-item__cost">
+                        <i className="fa-solid fa-money-bill" />
+                        Cost: {formatCurrency(record.cost)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1519,12 +1597,12 @@ function ViewModal({ type, data, onClose, onAddMaintenance, onEdit }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ai-modal__header">
-          <span className="ai-modal__title">
+          <div className="ai-modal__title">
             <i className="fa-solid fa-eye" />
             {type === "inventory"
               ? "Inventory Item Details"
               : "Vehicle Details"}
-          </span>
+          </div>
           <button className="ai-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -1580,6 +1658,7 @@ export default function AdminInventory() {
   const [toast, setToast] = useState(null);
   const [lowStockFilter, setLowStockFilter] = useState(false);
   const [maintenanceDueFilter, setMaintenanceDueFilter] = useState(false);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -1587,7 +1666,7 @@ export default function AdminInventory() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeTab === "inventory") {
@@ -1744,9 +1823,9 @@ export default function AdminInventory() {
       <span
         className="ai-badge"
         style={{
-          backgroundColor: `${status.color}15`,
+          backgroundColor: `${status.color}12`,
           color: status.color,
-          border: `1px solid ${status.color}33`,
+          border: `1px solid ${status.color}25`,
         }}
       >
         <i className="fa-solid fa-chart-line" />
@@ -1761,9 +1840,9 @@ export default function AdminInventory() {
       <span
         className="ai-badge"
         style={{
-          backgroundColor: `${option?.color}15`,
+          backgroundColor: `${option?.color}12`,
           color: option?.color,
-          border: `1px solid ${option?.color}33`,
+          border: `1px solid ${option?.color}25`,
         }}
       >
         <i className="fa-solid fa-flag" />
@@ -1774,77 +1853,98 @@ export default function AdminInventory() {
 
   return (
     <div className="ai-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="ai-header">
-        <div className="ai-header__inner">
-          <div>
-            <div className="ai-header__eyebrow">
-              <i className="fa-solid fa-warehouse" />
-              Inventory Management
+        <div className="ai-header__container">
+          <div className="ai-header__content">
+            <div className="ai-header__left">
+              <div className="ai-header__badge">
+                <i className="fa-solid fa-warehouse" />
+                Inventory Management
+              </div>
+              <h1 className="ai-header__title">Inventory & Vehicles</h1>
+              <p className="ai-header__subtitle">
+                Manage your inventory items and vehicle fleet
+              </p>
             </div>
-            <h1 className="ai-header__title">Inventory & Vehicles</h1>
-            <p className="ai-header__subtitle">
-              Manage your inventory items and vehicle fleet
-            </p>
-          </div>
 
-          <div className="ai-header__stats">
-            {activeTab === "inventory" ? (
-              <>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.total_items || 0}
+            <div className="ai-header__stats">
+              {activeTab === "inventory" ? (
+                <>
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.total_items || 0}
+                    </span>
+                    <span className="ai-header-stat__label">Total Items</span>
                   </div>
-                  <div className="ai-header__stat-label">Total Items</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.low_stock || 0}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.low_stock || 0}
+                    </span>
+                    <span className="ai-header-stat__label">Low Stock</span>
                   </div>
-                  <div className="ai-header__stat-label">Low Stock</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.out_of_stock || 0}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.out_of_stock || 0}
+                    </span>
+                    <span className="ai-header-stat__label">Out of Stock</span>
                   </div>
-                  <div className="ai-header__stat-label">Out of Stock</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {formatCurrency(stats.total_value || 0)}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {formatCurrency(stats.total_value || 0)}
+                    </span>
+                    <span className="ai-header-stat__label">Total Value</span>
                   </div>
-                  <div className="ai-header__stat-label">Total Value</div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.total_vehicles || 0}
+                </>
+              ) : (
+                <>
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.total_vehicles || 0}
+                    </span>
+                    <span className="ai-header-stat__label">
+                      Total Vehicles
+                    </span>
                   </div>
-                  <div className="ai-header__stat-label">Total Vehicles</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.operational || 0}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.operational || 0}
+                    </span>
+                    <span className="ai-header-stat__label">Operational</span>
                   </div>
-                  <div className="ai-header__stat-label">Operational</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.maintenance || 0}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.maintenance || 0}
+                    </span>
+                    <span className="ai-header-stat__label">
+                      In Maintenance
+                    </span>
                   </div>
-                  <div className="ai-header__stat-label">In Maintenance</div>
-                </div>
-                <div className="ai-header__stat">
-                  <div className="ai-header__stat-num">
-                    {stats.maintenance_due || 0}
+                  <div className="ai-header-stat">
+                    <span className="ai-header-stat__value">
+                      {stats.maintenance_due || 0}
+                    </span>
+                    <span className="ai-header-stat__label">
+                      Maintenance Due
+                    </span>
                   </div>
-                  <div className="ai-header__stat-label">Maintenance Due</div>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
+        </div>
+        <div className="ai-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -1898,15 +1998,17 @@ export default function AdminInventory() {
             {categories.length > 0 && (
               <div className="ai-toolbar__filter-dropdown">
                 <button
-                  className="ai-toolbar__filter-dropdown-btn"
+                  className={`ai-toolbar__filter-dropdown-btn ${categoryFilter ? "ai-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 >
                   <i className="fa-solid fa-layer-group" />
-                  {categoryFilter
-                    ? categories.find(
-                        (c) => c.category_id.toString() === categoryFilter,
-                      )?.category_name
-                    : "All Categories"}
+                  <span>
+                    {categoryFilter
+                      ? categories.find(
+                          (c) => c.category_id.toString() === categoryFilter,
+                        )?.category_name
+                      : "All Categories"}
+                  </span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showCategoryDropdown && (
@@ -1944,16 +2046,18 @@ export default function AdminInventory() {
             {/* Service Area Filter Dropdown */}
             <div className="ai-toolbar__filter-dropdown">
               <button
-                className="ai-toolbar__filter-dropdown-btn"
+                className={`ai-toolbar__filter-dropdown-btn ${serviceAreaFilter ? "ai-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() =>
                   setShowServiceAreaDropdown(!showServiceAreaDropdown)
                 }
               >
                 <i className="fa-solid fa-bullseye" />
-                {serviceAreaFilter
-                  ? SERVICE_AREAS.find((a) => a.value === serviceAreaFilter)
-                      ?.label
-                  : "All Service Areas"}
+                <span>
+                  {serviceAreaFilter
+                    ? SERVICE_AREAS.find((a) => a.value === serviceAreaFilter)
+                        ?.label
+                    : "All Service Areas"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showServiceAreaDropdown && (
@@ -1993,11 +2097,11 @@ export default function AdminInventory() {
             {activeTab === "inventory" ? (
               <div className="ai-toolbar__filter-dropdown">
                 <button
-                  className="ai-toolbar__filter-dropdown-btn"
+                  className={`ai-toolbar__filter-dropdown-btn ${statusFilter ? "ai-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowStatusDropdown(!showStatusDropdown)}
                 >
                   <i className="fa-solid fa-flag" />
-                  {statusFilter || "All Status"}
+                  <span>{statusFilter || "All Status"}</span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showStatusDropdown && (
@@ -2046,14 +2150,16 @@ export default function AdminInventory() {
             ) : (
               <div className="ai-toolbar__filter-dropdown">
                 <button
-                  className="ai-toolbar__filter-dropdown-btn"
+                  className={`ai-toolbar__filter-dropdown-btn ${statusFilter ? "ai-toolbar__filter-dropdown-btn--active" : ""}`}
                   onClick={() => setShowStatusDropdown(!showStatusDropdown)}
                 >
                   <i className="fa-solid fa-flag" />
-                  {statusFilter
-                    ? VEHICLE_STATUS.find((s) => s.value === statusFilter)
-                        ?.label
-                    : "All Status"}
+                  <span>
+                    {statusFilter
+                      ? VEHICLE_STATUS.find((s) => s.value === statusFilter)
+                          ?.label
+                      : "All Status"}
+                  </span>
                   <i className="fa-solid fa-chevron-down" />
                 </button>
                 {showStatusDropdown && (
@@ -2112,8 +2218,11 @@ export default function AdminInventory() {
             )}
 
             {getActiveFilterCount() > 0 && (
-              <button className="ai-toolbar__filter-btn" onClick={clearFilters}>
-                <i className="fa-solid fa-xmark" />
+              <button
+                className="ai-toolbar__filter-clear"
+                onClick={clearFilters}
+              >
+                <i className="fa-solid fa-times" />
                 Clear Filters ({getActiveFilterCount()})
               </button>
             )}
@@ -2136,12 +2245,27 @@ export default function AdminInventory() {
                 ? "Inventory Items List"
                 : "Vehicles List"}
             </div>
-            <span className="ai-table-panel__count">
-              {activeTab === "inventory"
-                ? inventoryItems.length
-                : vehicles.length}{" "}
-              items
-            </span>
+            <div className="ai-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="ai-table-panel__count">
+                    {activeTab === "inventory"
+                      ? inventoryItems.length
+                      : vehicles.length}{" "}
+                    items
+                  </span>
+                  <span className="ai-table-panel__divider">•</span>
+                  <span className="ai-table-panel__sub">
+                    Page 1 of{" "}
+                    {Math.ceil(
+                      (activeTab === "inventory"
+                        ? inventoryItems.length
+                        : vehicles.length) / 10,
+                    ) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="ai-table-panel__scroll">
@@ -2176,17 +2300,53 @@ export default function AdminInventory() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="ai-table__loading">
-                      <i className="fa-solid fa-spinner fa-spin" />
-                      <p>Loading...</p>
+                    <td colSpan="8">
+                      <div className="ai-table__loading">
+                        <div className="ai-table__loading-spinner">
+                          <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading...</p>
+                        <span className="ai-table__loading-sub">
+                          Fetching data
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ) : (activeTab === "inventory" ? inventoryItems : vehicles)
                     .length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="ai-table__empty">
-                      <i className="fa-regular fa-face-frown" />
-                      <p>No items found</p>
+                    <td colSpan="8">
+                      <div className="ai-table__empty">
+                        <div className="ai-table__empty-icon">
+                          <i className="fa-regular fa-face-frown" />
+                        </div>
+                        <h3 className="ai-table__empty-title">
+                          No Items Found
+                        </h3>
+                        <p className="ai-table__empty-message">
+                          {search ||
+                          categoryFilter ||
+                          serviceAreaFilter ||
+                          statusFilter ||
+                          lowStockFilter ||
+                          maintenanceDueFilter
+                            ? "Try adjusting your search or filter criteria"
+                            : `Get started by adding your first ${activeTab === "inventory" ? "inventory item" : "vehicle"}`}
+                        </p>
+                        {(search ||
+                          categoryFilter ||
+                          serviceAreaFilter ||
+                          statusFilter ||
+                          lowStockFilter ||
+                          maintenanceDueFilter) && (
+                          <button
+                            className="ai-table__empty-action"
+                            onClick={clearFilters}
+                          >
+                            <i className="fa-solid fa-times" /> Clear Filters
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -2202,9 +2362,19 @@ export default function AdminInventory() {
                         );
 
                         return (
-                          <tr key={item.item_id}>
+                          <tr
+                            key={item.item_id}
+                            onMouseEnter={() => setHoveredRow(item.item_id)}
+                            onMouseLeave={() => setHoveredRow(null)}
+                            className={
+                              hoveredRow === item.item_id
+                                ? "ai-table__row--hovered"
+                                : ""
+                            }
+                          >
                             <td>
                               <span className="ai-item-code">
+                                <i className="fa-solid fa-barcode" />
                                 {item.item_code}
                               </span>
                             </td>
@@ -2214,7 +2384,10 @@ export default function AdminInventory() {
                                   {item.item_name}
                                 </div>
                                 {item.description && (
-                                  <div className="ai-item-name__desc">
+                                  <div
+                                    className="ai-item-name__desc"
+                                    title={item.description}
+                                  >
                                     {item.description.substring(0, 30)}...
                                   </div>
                                 )}
@@ -2235,9 +2408,9 @@ export default function AdminInventory() {
                               <span
                                 className="ai-badge"
                                 style={{
-                                  backgroundColor: `${stockStatus.color}15`,
+                                  backgroundColor: `${stockStatus.color}12`,
                                   color: stockStatus.color,
-                                  border: `1px solid ${stockStatus.color}33`,
+                                  border: `1px solid ${stockStatus.color}25`,
                                 }}
                               >
                                 <i className="fa-solid fa-chart-line" />
@@ -2248,9 +2421,9 @@ export default function AdminInventory() {
                               <span
                                 className="ai-badge"
                                 style={{
-                                  backgroundColor: `${serviceAreaColor}15`,
+                                  backgroundColor: `${serviceAreaColor}12`,
                                   color: serviceAreaColor,
-                                  border: `1px solid ${serviceAreaColor}33`,
+                                  border: `1px solid ${serviceAreaColor}25`,
                                 }}
                               >
                                 <i className="fa-solid fa-bullseye" />
@@ -2261,13 +2434,23 @@ export default function AdminInventory() {
                                 }
                               </span>
                             </td>
-                            <td>{item.location}</td>
+                            <td>
+                              <div className="ai-location">
+                                <i className="fa-solid fa-location-dot" />
+                                {item.location}
+                              </div>
+                            </td>
                             <td>
                               <div className="ai-actions">
                                 <button
                                   className="ai-action-btn ai-action-btn--view"
                                   onClick={() => handleView(item)}
                                   title="View Details"
+                                  style={{
+                                    background: "#10b98112",
+                                    color: "#10b981",
+                                    border: "1px solid #10b98125",
+                                  }}
                                 >
                                   <i className="fa-solid fa-eye" />
                                 </button>
@@ -2275,6 +2458,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--edit"
                                   onClick={() => handleEdit(item)}
                                   title="Edit Item"
+                                  style={{
+                                    background: "#3b82f612",
+                                    color: "#3b82f6",
+                                    border: "1px solid #3b82f625",
+                                  }}
                                 >
                                   <i className="fa-solid fa-pen" />
                                 </button>
@@ -2282,6 +2470,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--delete"
                                   onClick={() => handleDelete(item.item_id)}
                                   title="Delete Item"
+                                  style={{
+                                    background: "#ef444412",
+                                    color: "#ef4444",
+                                    border: "1px solid #ef444425",
+                                  }}
                                 >
                                   <i className="fa-solid fa-trash" />
                                 </button>
@@ -2300,9 +2493,19 @@ export default function AdminInventory() {
                             new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
                         return (
-                          <tr key={item.vehicle_id}>
+                          <tr
+                            key={item.vehicle_id}
+                            onMouseEnter={() => setHoveredRow(item.vehicle_id)}
+                            onMouseLeave={() => setHoveredRow(null)}
+                            className={
+                              hoveredRow === item.vehicle_id
+                                ? "ai-table__row--hovered"
+                                : ""
+                            }
+                          >
                             <td>
                               <span className="ai-item-code">
+                                <i className="fa-solid fa-barcode" />
                                 {item.vehicle_code}
                               </span>
                             </td>
@@ -2317,14 +2520,19 @@ export default function AdminInventory() {
                               </div>
                             </td>
                             <td>{item.category_name}</td>
-                            <td>{item.plate_number}</td>
+                            <td>
+                              <span className="ai-plate">
+                                <i className="fa-solid fa-id-card" />
+                                {item.plate_number}
+                              </span>
+                            </td>
                             <td>
                               <span
                                 className="ai-badge"
                                 style={{
-                                  backgroundColor: `${statusColor}15`,
+                                  backgroundColor: `${statusColor}12`,
                                   color: statusColor,
-                                  border: `1px solid ${statusColor}33`,
+                                  border: `1px solid ${statusColor}25`,
                                 }}
                               >
                                 <i className="fa-solid fa-flag" />
@@ -2339,9 +2547,9 @@ export default function AdminInventory() {
                               <span
                                 className="ai-badge"
                                 style={{
-                                  backgroundColor: `${serviceAreaColor}15`,
+                                  backgroundColor: `${serviceAreaColor}12`,
                                   color: serviceAreaColor,
-                                  border: `1px solid ${serviceAreaColor}33`,
+                                  border: `1px solid ${serviceAreaColor}25`,
                                 }}
                               >
                                 <i className="fa-solid fa-bullseye" />
@@ -2354,14 +2562,11 @@ export default function AdminInventory() {
                             </td>
                             <td>
                               {item.next_maintenance_date ? (
-                                <div className="ai-maintenance-date">
-                                  <span
-                                    className={
-                                      maintenanceDue
-                                        ? "ai-maintenance-date--due"
-                                        : ""
-                                    }
-                                  >
+                                <div
+                                  className={`ai-maintenance-date ${maintenanceDue ? "ai-maintenance-date--due" : ""}`}
+                                >
+                                  <i className="fa-regular fa-calendar" />
+                                  <span>
                                     {new Date(
                                       item.next_maintenance_date,
                                     ).toLocaleDateString()}
@@ -2374,7 +2579,10 @@ export default function AdminInventory() {
                                   )}
                                 </div>
                               ) : (
-                                <span className="ai-muted">Not set</span>
+                                <span className="ai-muted">
+                                  <i className="fa-regular fa-calendar" /> Not
+                                  set
+                                </span>
                               )}
                             </td>
                             <td>
@@ -2383,6 +2591,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--view"
                                   onClick={() => handleView(item)}
                                   title="View Details"
+                                  style={{
+                                    background: "#10b98112",
+                                    color: "#10b981",
+                                    border: "1px solid #10b98125",
+                                  }}
                                 >
                                   <i className="fa-solid fa-eye" />
                                 </button>
@@ -2390,6 +2603,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--wrench"
                                   onClick={() => handleAddMaintenance(item)}
                                   title="Add Maintenance"
+                                  style={{
+                                    background: "#f59e0b12",
+                                    color: "#f59e0b",
+                                    border: "1px solid #f59e0b25",
+                                  }}
                                 >
                                   <i className="fa-solid fa-wrench" />
                                 </button>
@@ -2397,6 +2615,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--edit"
                                   onClick={() => handleEdit(item)}
                                   title="Edit Vehicle"
+                                  style={{
+                                    background: "#3b82f612",
+                                    color: "#3b82f6",
+                                    border: "1px solid #3b82f625",
+                                  }}
                                 >
                                   <i className="fa-solid fa-pen" />
                                 </button>
@@ -2404,6 +2627,11 @@ export default function AdminInventory() {
                                   className="ai-action-btn ai-action-btn--delete"
                                   onClick={() => handleDelete(item.vehicle_id)}
                                   title="Delete Vehicle"
+                                  style={{
+                                    background: "#ef444412",
+                                    color: "#ef4444",
+                                    border: "1px solid #ef444425",
+                                  }}
                                 >
                                   <i className="fa-solid fa-trash" />
                                 </button>

@@ -14,10 +14,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ua-toast ua-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="ua-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="ua-toast__content">
+        <div className="ua-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ua-toast__message">{message}</div>
+      </div>
       <button className="ua-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -26,7 +33,7 @@ function Toast({ message, type, onClose }) {
 }
 
 // ─── ANNOUNCEMENT CARD ────────────────────────────────────────────────────────
-function AnnouncementCard({ announcement, onClick }) {
+function AnnouncementCard({ announcement, onClick, isNew }) {
   const getCategoryIcon = (category) => {
     const icons = {
       general: "fa-solid fa-megaphone",
@@ -47,6 +54,16 @@ function AnnouncementCard({ announcement, onClick }) {
     return colors[category] || "#6b7280";
   };
 
+  const getCategoryLabel = (category) => {
+    const labels = {
+      general: "General",
+      urgent: "Urgent",
+      events: "Event",
+      training: "Training",
+    };
+    return labels[category] || category;
+  };
+
   const getImageUrl = (announcement) => {
     const imagePath = announcement.image_path || announcement.image_url;
     if (!imagePath) return null;
@@ -56,9 +73,16 @@ function AnnouncementCard({ announcement, onClick }) {
   const imageUrl = getImageUrl(announcement);
   const categoryColor = getCategoryColor(announcement.category);
   const categoryIcon = getCategoryIcon(announcement.category);
+  const postedDate = new Date(announcement.posted_at);
+  const isUrgent = announcement.category === "urgent";
 
   return (
-    <div className="ua-card" onClick={() => onClick(announcement)}>
+    <div
+      className={`ua-card ${isUrgent ? "ua-card--urgent" : ""}`}
+      onClick={() => onClick(announcement)}
+    >
+      {isNew && <span className="ua-card__new-badge">NEW</span>}
+
       <div className="ua-card__image">
         {imageUrl ? (
           <img
@@ -71,9 +95,13 @@ function AnnouncementCard({ announcement, onClick }) {
             }}
           />
         ) : (
-          <div className="ua-card__image-placeholder">
+          <div
+            className="ua-card__image-placeholder"
+            style={{
+              background: `linear-gradient(135deg, ${categoryColor}, ${categoryColor}dd)`,
+            }}
+          >
             <i className={categoryIcon} />
-            <span>No Image</span>
           </div>
         )}
       </div>
@@ -85,16 +113,15 @@ function AnnouncementCard({ announcement, onClick }) {
             style={{
               background: `${categoryColor}15`,
               color: categoryColor,
-              border: `1px solid ${categoryColor}33`,
+              border: `1px solid ${categoryColor}30`,
             }}
           >
             <i className={categoryIcon} />
-            {announcement.category.charAt(0).toUpperCase() +
-              announcement.category.slice(1)}
+            {getCategoryLabel(announcement.category)}
           </span>
-          <span className="ua-card__date">
+          <span className="ua-card__date" title={postedDate.toLocaleString()}>
             <i className="fa-regular fa-calendar" />
-            {new Date(announcement.posted_at).toLocaleDateString("en-US", {
+            {postedDate.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
@@ -121,7 +148,8 @@ function AnnouncementCard({ announcement, onClick }) {
                   .join(" ")}
           </span>
           <button className="ua-card__read-more">
-            Read More <i className="fa-solid fa-arrow-right" />
+            <span>Read More</span>
+            <i className="fa-solid fa-arrow-right" />
           </button>
         </div>
       </div>
@@ -153,6 +181,16 @@ function AnnouncementDetails({ announcement, onClose }) {
     return colors[category] || "#6b7280";
   };
 
+  const getCategoryLabel = (category) => {
+    const labels = {
+      general: "General",
+      urgent: "Urgent",
+      events: "Event",
+      training: "Training",
+    };
+    return labels[category] || category;
+  };
+
   const getTargetRoleDisplay = (targetRole) => {
     if (targetRole === "all") return "All Users";
     return targetRole
@@ -170,12 +208,20 @@ function AnnouncementDetails({ announcement, onClose }) {
   const categoryColor = getCategoryColor(announcement.category);
   const categoryIcon = getCategoryIcon(announcement.category);
   const imageUrl = getImageUrl(announcement);
+  const postedDate = new Date(announcement.posted_at);
+  const updatedDate = announcement.updated_at
+    ? new Date(announcement.updated_at)
+    : null;
+  const isUrgent = announcement.category === "urgent";
 
   return (
     <div className="ua-overlay" onClick={onClose}>
       <div className="ua-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ua-modal__header">
-          <h2 className="ua-modal__title">Announcement Details</h2>
+          <h2 className="ua-modal__title">
+            <i className="fa-regular fa-newspaper" />
+            Announcement Details
+          </h2>
           <button className="ua-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -201,12 +247,11 @@ function AnnouncementDetails({ announcement, onClose }) {
               style={{
                 background: `${categoryColor}15`,
                 color: categoryColor,
-                border: `1px solid ${categoryColor}33`,
+                border: `1px solid ${categoryColor}30`,
               }}
             >
               <i className={categoryIcon} />
-              {announcement.category.charAt(0).toUpperCase() +
-                announcement.category.slice(1)}
+              {getCategoryLabel(announcement.category)}
             </span>
 
             <span className="ua-modal__badge ua-modal__badge--target">
@@ -216,12 +261,19 @@ function AnnouncementDetails({ announcement, onClose }) {
 
             <span className="ua-modal__badge ua-modal__badge--date">
               <i className="fa-regular fa-calendar" />
-              {new Date(announcement.posted_at).toLocaleDateString("en-US", {
+              {postedDate.toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
               })}
             </span>
+
+            {isUrgent && (
+              <span className="ua-modal__badge ua-modal__badge--urgent">
+                <i className="fa-solid fa-exclamation-triangle" />
+                URGENT
+              </span>
+            )}
           </div>
 
           <h1 className="ua-modal__title-text">{announcement.title}</h1>
@@ -234,13 +286,17 @@ function AnnouncementDetails({ announcement, onClose }) {
 
           {announcement.created_by_name && (
             <div className="ua-modal__footer">
-              <i className="fa-regular fa-user" />
-              Posted by {announcement.created_by_name}
-              {announcement.updated_at && (
-                <span className="ua-modal__updated">
-                  • Updated{" "}
-                  {new Date(announcement.updated_at).toLocaleDateString()}
+              <div className="ua-modal__footer-left">
+                <i className="fa-regular fa-circle-user" />
+                <span>
+                  Posted by <strong>{announcement.created_by_name}</strong>
                 </span>
+              </div>
+              {updatedDate && updatedDate > postedDate && (
+                <div className="ua-modal__footer-right">
+                  <i className="fa-regular fa-pen-to-square" />
+                  <span>Updated {updatedDate.toLocaleDateString()}</span>
+                </div>
               )}
             </div>
           )}
@@ -260,6 +316,7 @@ export default function UserAnnouncement() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -349,37 +406,96 @@ export default function UserAnnouncement() {
   };
 
   const categoryOptions = [
-    { value: "all", label: "All Categories", icon: "fa-solid fa-newspaper" },
-    { value: "general", label: "General", icon: "fa-solid fa-megaphone" },
+    {
+      value: "all",
+      label: "All Categories",
+      icon: "fa-solid fa-newspaper",
+      color: "#6b7280",
+    },
+    {
+      value: "general",
+      label: "General",
+      icon: "fa-solid fa-megaphone",
+      color: "#6b7280",
+    },
     {
       value: "urgent",
       label: "Urgent",
       icon: "fa-solid fa-exclamation-triangle",
+      color: "#ef4444",
     },
-    { value: "events", label: "Events", icon: "fa-solid fa-calendar-alt" },
+    {
+      value: "events",
+      label: "Events",
+      icon: "fa-solid fa-calendar-alt",
+      color: "#3b82f6",
+    },
     {
       value: "training",
       label: "Training",
       icon: "fa-solid fa-graduation-cap",
+      color: "#10b981",
     },
   ];
 
+  const getCategoryCount = (category) => {
+    if (category === "all") return announcements.length;
+    return announcements.filter((a) => a.category === category).length;
+  };
+
+  const isNewAnnouncement = (date) => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return new Date(date) > sevenDaysAgo;
+  };
+
   return (
     <div className="ua-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="ua-header">
-        <div className="ua-header__content">
-          <div>
-            <div className="ua-header__eyebrow">
-              <i className="fa-regular fa-newspaper" />
-              Announcements
+        <div className="ua-header__container">
+          <div className="ua-header__content">
+            <div className="ua-header__left">
+              <div className="ua-header__badge">
+                <i className="fa-regular fa-newspaper" />
+                Announcements
+              </div>
+              <h1 className="ua-header__title">Latest News & Updates</h1>
+              <p className="ua-header__subtitle">
+                Stay informed with the latest announcements from Philippine Red
+                Cross
+              </p>
             </div>
-            <h1 className="ua-header__title">Latest News & Updates</h1>
-            <p className="ua-header__subtitle">
-              Stay informed with the latest announcements from Philippine Red
-              Cross
-            </p>
+            <div className="ua-header__stats">
+              <div className="ua-header-stat">
+                <span className="ua-header-stat__value">
+                  {announcements.length}
+                </span>
+                <span className="ua-header-stat__label">
+                  Total Announcements
+                </span>
+              </div>
+              <div className="ua-header-stat">
+                <span className="ua-header-stat__value">
+                  {announcements.filter((a) => a.category === "urgent").length}
+                </span>
+                <span className="ua-header-stat__label">Urgent</span>
+              </div>
+            </div>
           </div>
+        </div>
+        <div className="ua-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -392,7 +508,7 @@ export default function UserAnnouncement() {
             <input
               type="text"
               className="ua-filters__search-input"
-              placeholder="Search announcements..."
+              placeholder="Search announcements by title or content..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -416,9 +532,40 @@ export default function UserAnnouncement() {
                     : ""
                 }`}
                 onClick={() => setCategoryFilter(option.value)}
+                onMouseEnter={() => setHoveredCategory(option.value)}
+                onMouseLeave={() => setHoveredCategory(null)}
+                style={{
+                  borderColor:
+                    categoryFilter === option.value ||
+                    hoveredCategory === option.value
+                      ? option.color
+                      : undefined,
+                  background:
+                    categoryFilter === option.value
+                      ? `${option.color}15`
+                      : hoveredCategory === option.value
+                        ? `${option.color}08`
+                        : undefined,
+                  color:
+                    categoryFilter === option.value ||
+                    hoveredCategory === option.value
+                      ? option.color
+                      : undefined,
+                }}
               >
                 <i className={option.icon} />
                 {option.label}
+                <span
+                  className="ua-filters__category-count"
+                  style={{
+                    backgroundColor:
+                      categoryFilter === option.value
+                        ? `${option.color}30`
+                        : undefined,
+                  }}
+                >
+                  {getCategoryCount(option.value)}
+                </span>
               </button>
             ))}
           </div>
@@ -427,26 +574,34 @@ export default function UserAnnouncement() {
         {/* Announcements Grid */}
         {loading ? (
           <div className="ua-loading">
-            <i className="fa-solid fa-spinner fa-spin" />
+            <div className="ua-loading__spinner">
+              <i className="fa-solid fa-spinner fa-spin" />
+            </div>
             <p>Loading announcements...</p>
+            <span className="ua-loading__subtitle">
+              Fetching latest updates
+            </span>
           </div>
         ) : filteredAnnouncements.length === 0 ? (
           <div className="ua-empty">
-            <i className="fa-regular fa-newspaper" />
-            <h3>No Announcements Found</h3>
-            <p>
+            <div className="ua-empty__icon">
+              <i className="fa-regular fa-newspaper" />
+            </div>
+            <h3 className="ua-empty__title">No Announcements Found</h3>
+            <p className="ua-empty__message">
               {search || categoryFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
                 : "There are no announcements available at the moment."}
             </p>
             {(search || categoryFilter !== "all") && (
               <button
-                className="ua-empty__clear"
+                className="ua-empty__action"
                 onClick={() => {
                   setSearch("");
                   setCategoryFilter("all");
                 }}
               >
+                <i className="fa-solid fa-times" />
                 Clear All Filters
               </button>
             )}
@@ -458,6 +613,7 @@ export default function UserAnnouncement() {
                 key={announcement.announcement_id}
                 announcement={announcement}
                 onClick={handleCardClick}
+                isNew={isNewAnnouncement(announcement.posted_at)}
               />
             ))}
           </div>
@@ -466,8 +622,9 @@ export default function UserAnnouncement() {
         {/* Announcement Count */}
         {!loading && filteredAnnouncements.length > 0 && (
           <div className="ua-count">
-            Showing {filteredAnnouncements.length} of {announcements.length}{" "}
-            announcements
+            <i className="fa-regular fa-eye" />
+            Showing <strong>{filteredAnnouncements.length}</strong> of{" "}
+            <strong>{announcements.length}</strong> announcements
           </div>
         )}
       </div>

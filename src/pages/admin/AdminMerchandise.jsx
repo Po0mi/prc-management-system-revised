@@ -28,10 +28,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`am-toast am-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
-      />
-      <span>{message}</span>
+      <div className="am-toast__icon">
+        <i
+          className={`fa-solid ${type === "success" ? "fa-circle-check" : "fa-circle-exclamation"}`}
+        />
+      </div>
+      <div className="am-toast__content">
+        <div className="am-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="am-toast__message">{message}</div>
+      </div>
       <button className="am-toast__close" onClick={onClose}>
         <i className="fa-solid fa-xmark" />
       </button>
@@ -125,9 +132,7 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
     setSubmitting(true);
     try {
       if (item) {
-        // Check if there's a new image to upload
         if (imageFile) {
-          // Use multipart form data for update with image
           const formDataObj = new FormData();
           formDataObj.append("name", formData.name);
           formDataObj.append("description", formData.description || "");
@@ -139,7 +144,6 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
 
           await updateMerchandise(item.merch_id, formDataObj);
         } else {
-          // Update without image
           await updateMerchandiseWithoutImage(item.merch_id, {
             name: formData.name,
             description: formData.description,
@@ -151,7 +155,6 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
         }
         onSuccess("Merchandise item updated successfully");
       } else {
-        // Create - use FormData for file upload
         const formDataObj = new FormData();
         formDataObj.append("name", formData.name);
         formDataObj.append("description", formData.description || "");
@@ -178,12 +181,12 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
     <div className="am-overlay" onClick={onClose}>
       <div className="am-modal" onClick={(e) => e.stopPropagation()}>
         <div className="am-modal__header">
-          <span className="am-modal__title">
+          <div className="am-modal__title">
             <i
-              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus"}`}
+              className={`fa-solid ${item ? "fa-pen-to-square" : "fa-plus-circle"}`}
             />
             {item ? "Edit Merchandise Item" : "Add New Merchandise Item"}
-          </span>
+          </div>
           <button className="am-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -338,11 +341,18 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
                 className="am-file-upload__label"
               >
                 <i className="fa-solid fa-cloud-upload-alt" />
-                {imageFile
-                  ? imageFile.name
-                  : item?.image_url
-                    ? "Change image"
-                    : "Choose an image"}
+                <span className="am-file-upload__text">
+                  {imageFile
+                    ? imageFile.name
+                    : item?.image_url
+                      ? "Change image"
+                      : "Choose an image"}
+                </span>
+                {imageFile && (
+                  <span className="am-file-upload__check">
+                    <i className="fa-solid fa-check-circle" />
+                  </span>
+                )}
               </label>
             </div>
 
@@ -363,16 +373,15 @@ function MerchandiseModal({ item, onClose, onSuccess }) {
 
             {/* Show current image for edit mode when no new image selected */}
             {item?.image_url && !imageFile && !imagePreview && (
-              <div className="am-image-preview">
+              <div className="am-image-preview am-image-preview--current">
                 <img src={getImageUrl(item)} alt={item.name} />
-                <div className="am-image-preview__current-label">
-                  Current Image
-                </div>
+                <div className="am-image-preview__label">Current Image</div>
               </div>
             )}
 
             <small className="am-form__hint">
-              Accepted formats: JPG, PNG, GIF (Max 5MB)
+              <i className="fa-solid fa-info-circle" /> Accepted formats: JPG,
+              PNG, GIF (Max 5MB)
             </small>
           </div>
 
@@ -416,10 +425,10 @@ function ViewModal({ item, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="am-modal__header">
-          <span className="am-modal__title">
+          <div className="am-modal__title">
             <i className="fa-solid fa-eye" />
             Item Details
-          </span>
+          </div>
           <button className="am-modal__close" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -434,7 +443,7 @@ function ViewModal({ item, onClose }) {
 
           <div className="am-view__section">
             <h3 className="am-view__section-title">
-              <i className="fa-solid fa-tag" />
+              <i className="fa-solid fa-tag" style={{ color: categoryColor }} />
               {item.name}
             </h3>
 
@@ -442,9 +451,9 @@ function ViewModal({ item, onClose }) {
               <span
                 className="am-view__badge"
                 style={{
-                  background: `${categoryColor}15`,
+                  background: `${categoryColor}12`,
                   color: categoryColor,
-                  border: `1px solid ${categoryColor}33`,
+                  border: `1px solid ${categoryColor}25`,
                 }}
               >
                 <i className={categoryIcon} />
@@ -454,11 +463,11 @@ function ViewModal({ item, onClose }) {
               <span
                 className="am-view__badge"
                 style={{
-                  background: item.is_available ? "#10b98115" : "#6b728015",
+                  background: item.is_available ? "#10b98112" : "#6b728012",
                   color: item.is_available ? "#10b981" : "#6b7280",
                   border: item.is_available
-                    ? "1px solid #10b98133"
-                    : "1px solid #6b728033",
+                    ? "1px solid #10b98125"
+                    : "1px solid #6b728025",
                 }}
               >
                 <i
@@ -492,6 +501,7 @@ function ViewModal({ item, onClose }) {
               <div className="am-view__item">
                 <div className="am-view__item-label">Price</div>
                 <div className="am-view__item-value am-view__item-value--price">
+                  <i className="fa-solid fa-money-bill" />
                   {formatPrice(item.price)}
                 </div>
               </div>
@@ -501,6 +511,9 @@ function ViewModal({ item, onClose }) {
                   <span
                     className={`am-stock-badge ${item.stock_quantity > 0 ? "am-stock-badge--in" : "am-stock-badge--out"}`}
                   >
+                    <i
+                      className={`fa-solid ${item.stock_quantity > 0 ? "fa-boxes" : "fa-box-open"}`}
+                    />
                     {item.stock_quantity > 0
                       ? `${item.stock_quantity} units`
                       : "Out of Stock"}
@@ -519,6 +532,7 @@ function ViewModal({ item, onClose }) {
               <div className="am-view__item">
                 <div className="am-view__item-label">Created At</div>
                 <div className="am-view__item-value">
+                  <i className="fa-regular fa-calendar" />
                   {new Date(item.created_at).toLocaleString()}
                 </div>
               </div>
@@ -526,6 +540,7 @@ function ViewModal({ item, onClose }) {
                 <div className="am-view__item">
                   <div className="am-view__item-label">Updated At</div>
                   <div className="am-view__item-value">
+                    <i className="fa-regular fa-pen-to-square" />
                     {new Date(item.updated_at).toLocaleString()}
                   </div>
                 </div>
@@ -534,6 +549,7 @@ function ViewModal({ item, onClose }) {
                 <div className="am-view__item">
                   <div className="am-view__item-label">Created By</div>
                   <div className="am-view__item-value">
+                    <i className="fa-regular fa-user" />
                     {item.created_by_name}
                   </div>
                 </div>
@@ -566,6 +582,7 @@ export default function AdminMerchandise() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -613,12 +630,7 @@ export default function AdminMerchandise() {
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to permanently delete this item? This cannot be undone.",
-      )
-    )
-      return;
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
       await deleteMerchandise(id);
       showToast("Item deleted successfully");
@@ -679,53 +691,63 @@ export default function AdminMerchandise() {
     return count;
   };
 
-  const totalValue = items.reduce((sum, item) => {
-    if (item.is_available) {
-      return sum + item.price * item.stock_quantity;
-    }
-    return sum;
-  }, 0);
-
   return (
     <div className="am-root">
-      {/* Header */}
+      {/* Header with Wave Effect */}
       <div className="am-header">
-        <div className="am-header__inner">
-          <div>
-            <div className="am-header__eyebrow">
-              <i className="fa-solid fa-store" />
-              Merchandise Management
-            </div>
-            <h1 className="am-header__title">Merchandise</h1>
-            <p className="am-header__subtitle">
-              Manage your merchandise inventory and products
-            </p>
-          </div>
-
-          <div className="am-header__stats">
-            <div className="am-header__stat">
-              <div className="am-header__stat-num">{stats.total}</div>
-              <div className="am-header__stat-label">Total Items</div>
-            </div>
-            <div className="am-header__stat">
-              <div className="am-header__stat-num">{stats.available}</div>
-              <div className="am-header__stat-label">Available</div>
-            </div>
-            <div className="am-header__stat">
-              <div className="am-header__stat-num">{stats.total_stock}</div>
-              <div className="am-header__stat-label">Total Stock</div>
-            </div>
-            <div className="am-header__stat">
-              <div className="am-header__stat-num">
-                ₱
-                {stats.total_value.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
+        <div className="am-header__container">
+          <div className="am-header__content">
+            <div className="am-header__left">
+              <div className="am-header__badge">
+                <i className="fa-solid fa-store" />
+                Merchandise Management
               </div>
-              <div className="am-header__stat-label">Inventory Value</div>
+              <h1 className="am-header__title">Merchandise</h1>
+              <p className="am-header__subtitle">
+                Manage your merchandise inventory and products
+              </p>
+            </div>
+
+            <div className="am-header__stats">
+              <div className="am-header-stat">
+                <span className="am-header-stat__value">{stats.total}</span>
+                <span className="am-header-stat__label">Total Items</span>
+              </div>
+              <div className="am-header-stat">
+                <span className="am-header-stat__value">{stats.available}</span>
+                <span className="am-header-stat__label">Available</span>
+              </div>
+              <div className="am-header-stat">
+                <span className="am-header-stat__value">
+                  {stats.total_stock}
+                </span>
+                <span className="am-header-stat__label">Total Stock</span>
+              </div>
+              <div className="am-header-stat">
+                <span className="am-header-stat__value">
+                  ₱
+                  {stats.total_value.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+                <span className="am-header-stat__label">Inventory Value</span>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="am-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -734,10 +756,14 @@ export default function AdminMerchandise() {
         {/* Stats Cards */}
         <div className="am-cards">
           {CATEGORY_OPTIONS.map((category) => (
-            <div key={category.value} className="am-card">
+            <div
+              key={category.value}
+              className="am-card"
+              style={{ borderColor: category.color }}
+            >
               <div
                 className="am-card__icon"
-                style={{ background: `${category.color}15` }}
+                style={{ background: `${category.color}12` }}
               >
                 <i
                   className={category.icon}
@@ -745,15 +771,21 @@ export default function AdminMerchandise() {
                 />
               </div>
               <div>
-                <div className="am-card__num">
+                <div className="am-card__num" style={{ color: category.color }}>
                   {stats.by_category[category.value]?.count || 0}
                 </div>
                 <div className="am-card__label">{category.label}</div>
                 <div className="am-card__sub">
-                  {stats.by_category[category.value]?.stock || 0} units • ₱
+                  <i className="fa-solid fa-boxes" />{" "}
+                  {stats.by_category[category.value]?.stock || 0} units
+                </div>
+                <div className="am-card__sub">
+                  <i className="fa-solid fa-money-bill" /> ₱
                   {(
                     stats.by_category[category.value]?.value || 0
-                  ).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  ).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
                 </div>
               </div>
             </div>
@@ -767,7 +799,7 @@ export default function AdminMerchandise() {
             <input
               type="text"
               className="am-toolbar__search-input"
-              placeholder="Search merchandise..."
+              placeholder="Search merchandise by name or description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -785,13 +817,15 @@ export default function AdminMerchandise() {
             {/* Category Filter Dropdown */}
             <div className="am-toolbar__filter-dropdown">
               <button
-                className="am-toolbar__filter-dropdown-btn"
+                className={`am-toolbar__filter-dropdown-btn ${categoryFilter ? "am-toolbar__filter-dropdown-btn--active" : ""}`}
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
               >
                 <i className="fa-solid fa-list" />
-                {categoryFilter
-                  ? formatCategory(categoryFilter)
-                  : "All Categories"}
+                <span>
+                  {categoryFilter
+                    ? formatCategory(categoryFilter)
+                    : "All Categories"}
+                </span>
                 <i className="fa-solid fa-chevron-down" />
               </button>
               {showCategoryDropdown && (
@@ -803,6 +837,7 @@ export default function AdminMerchandise() {
                     }}
                     className={!categoryFilter ? "active" : ""}
                   >
+                    <i className="fa-solid fa-list" />
                     All Categories
                   </button>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -832,7 +867,9 @@ export default function AdminMerchandise() {
               className={`am-toolbar__filter-btn ${showUnavailable ? "am-toolbar__filter-btn--active" : ""}`}
               onClick={() => setShowUnavailable(!showUnavailable)}
               style={
-                showUnavailable ? { background: "#6b7280", color: "white" } : {}
+                showUnavailable
+                  ? { background: "#6b728012", color: "#6b7280" }
+                  : {}
               }
             >
               <i className="fa-solid fa-eye" />
@@ -840,8 +877,11 @@ export default function AdminMerchandise() {
             </button>
 
             {getActiveFilterCount() > 0 && (
-              <button className="am-toolbar__filter-btn" onClick={clearFilters}>
-                <i className="fa-solid fa-xmark" />
+              <button
+                className="am-toolbar__filter-clear"
+                onClick={clearFilters}
+              >
+                <i className="fa-solid fa-times" />
                 Clear Filters ({getActiveFilterCount()})
               </button>
             )}
@@ -860,9 +900,19 @@ export default function AdminMerchandise() {
               <i className="fa-solid fa-store" />
               Merchandise Items
             </div>
-            <span className="am-table-panel__count">
-              {items.length} {items.length === 1 ? "item" : "items"}
-            </span>
+            <div className="am-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="am-table-panel__count">
+                    {items.length} {items.length === 1 ? "item" : "items"}
+                  </span>
+                  <span className="am-table-panel__divider">•</span>
+                  <span className="am-table-panel__sub">
+                    Page 1 of {Math.ceil(items.length / 10) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="am-table-panel__scroll">
@@ -881,16 +931,42 @@ export default function AdminMerchandise() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="am-table__loading">
-                      <i className="fa-solid fa-spinner fa-spin" />
-                      <p>Loading merchandise...</p>
+                    <td colSpan="7">
+                      <div className="am-table__loading">
+                        <div className="am-table__loading-spinner">
+                          <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading merchandise...</p>
+                        <span className="am-table__loading-sub">
+                          Fetching product data
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ) : items.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="am-table__empty">
-                      <i className="fa-regular fa-face-frown" />
-                      <p>No merchandise items found</p>
+                    <td colSpan="7">
+                      <div className="am-table__empty">
+                        <div className="am-table__empty-icon">
+                          <i className="fa-regular fa-face-frown" />
+                        </div>
+                        <h3 className="am-table__empty-title">
+                          No Items Found
+                        </h3>
+                        <p className="am-table__empty-message">
+                          {search || categoryFilter || showUnavailable
+                            ? "Try adjusting your search or filter criteria"
+                            : "Get started by adding your first merchandise item"}
+                        </p>
+                        {(search || categoryFilter || showUnavailable) && (
+                          <button
+                            className="am-table__empty-action"
+                            onClick={clearFilters}
+                          >
+                            <i className="fa-solid fa-times" /> Clear Filters
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -901,7 +977,16 @@ export default function AdminMerchandise() {
                     const totalValue = item.price * item.stock_quantity;
 
                     return (
-                      <tr key={item.merch_id}>
+                      <tr
+                        key={item.merch_id}
+                        onMouseEnter={() => setHoveredRow(item.merch_id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === item.merch_id
+                            ? "am-table__row--hovered"
+                            : ""
+                        }
+                      >
                         <td>
                           <div className="am-item-cell">
                             <div className="am-item-cell__image">
@@ -915,7 +1000,12 @@ export default function AdminMerchandise() {
                                   }}
                                 />
                               ) : (
-                                <div className="am-item-cell__image-placeholder">
+                                <div
+                                  className="am-item-cell__image-placeholder"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${categoryColor}, ${categoryColor}dd)`,
+                                  }}
+                                >
                                   <i className={categoryIcon} />
                                 </div>
                               )}
@@ -925,7 +1015,10 @@ export default function AdminMerchandise() {
                                 {item.name}
                               </div>
                               {item.description && (
-                                <div className="am-item-cell__desc">
+                                <div
+                                  className="am-item-cell__desc"
+                                  title={item.description}
+                                >
                                   {item.description.substring(0, 50)}
                                   {item.description.length > 50 ? "..." : ""}
                                 </div>
@@ -937,9 +1030,9 @@ export default function AdminMerchandise() {
                           <span
                             className="am-badge"
                             style={{
-                              background: `${categoryColor}15`,
+                              background: `${categoryColor}12`,
                               color: categoryColor,
-                              border: `1px solid ${categoryColor}33`,
+                              border: `1px solid ${categoryColor}25`,
                             }}
                           >
                             <i className={categoryIcon} />
@@ -948,6 +1041,7 @@ export default function AdminMerchandise() {
                         </td>
                         <td>
                           <span className="am-price">
+                            <i className="fa-solid fa-money-bill" />
                             {formatPrice(item.price)}
                           </span>
                         </td>
@@ -955,6 +1049,9 @@ export default function AdminMerchandise() {
                           <span
                             className={`am-stock ${item.stock_quantity > 0 ? "am-stock--in" : "am-stock--out"}`}
                           >
+                            <i
+                              className={`fa-solid ${item.stock_quantity > 0 ? "fa-boxes" : "fa-box-open"}`}
+                            />
                             {item.stock_quantity} units
                           </span>
                         </td>
@@ -963,12 +1060,12 @@ export default function AdminMerchandise() {
                             className="am-badge"
                             style={{
                               background: item.is_available
-                                ? "#10b98115"
-                                : "#6b728015",
+                                ? "#10b98112"
+                                : "#6b728012",
                               color: item.is_available ? "#10b981" : "#6b7280",
                               border: item.is_available
-                                ? "1px solid #10b98133"
-                                : "1px solid #6b728033",
+                                ? "1px solid #10b98125"
+                                : "1px solid #6b728025",
                             }}
                           >
                             <i
@@ -983,6 +1080,7 @@ export default function AdminMerchandise() {
                         </td>
                         <td>
                           <span className="am-total-value">
+                            <i className="fa-solid fa-calculator" />
                             {formatPrice(totalValue)}
                           </span>
                         </td>
@@ -992,6 +1090,11 @@ export default function AdminMerchandise() {
                               className="am-action-btn am-action-btn--view"
                               onClick={() => handleView(item)}
                               title="View Details"
+                              style={{
+                                background: "#10b98112",
+                                color: "#10b981",
+                                border: "1px solid #10b98125",
+                              }}
                             >
                               <i className="fa-solid fa-eye" />
                             </button>
@@ -999,14 +1102,23 @@ export default function AdminMerchandise() {
                               className="am-action-btn am-action-btn--edit"
                               onClick={() => handleEdit(item)}
                               title="Edit Item"
+                              style={{
+                                background: "#3b82f612",
+                                color: "#3b82f6",
+                                border: "1px solid #3b82f625",
+                              }}
                             >
                               <i className="fa-solid fa-pen" />
                             </button>
-
                             <button
                               className="am-action-btn am-action-btn--delete"
                               onClick={() => handleDelete(item.merch_id)}
                               title="Delete Item"
+                              style={{
+                                background: "#ef444412",
+                                color: "#ef4444",
+                                border: "1px solid #ef444425",
+                              }}
                             >
                               <i className="fa-solid fa-trash" />
                             </button>

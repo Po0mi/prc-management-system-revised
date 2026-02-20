@@ -20,16 +20,42 @@ import {
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const SERVICE_OPTIONS = [
-  { key: "All Services", label: "All Services", color: "#8b1e1e" },
-  { key: "Health Service", label: "Health Service", color: "#c41e3a" },
-  { key: "Safety Service", label: "Safety Service", color: "#15803d" },
-  { key: "Welfare Service", label: "Welfare Service", color: "#7c3aed" },
+  {
+    key: "All Services",
+    label: "All Services",
+    color: "#8b1e1e",
+    icon: "fa-calendar",
+  },
+  {
+    key: "Health Service",
+    label: "Health Service",
+    color: "#c41e3a",
+    icon: "fa-heart-pulse",
+  },
+  {
+    key: "Safety Service",
+    label: "Safety Service",
+    color: "#15803d",
+    icon: "fa-shield",
+  },
+  {
+    key: "Welfare Service",
+    label: "Welfare Service",
+    color: "#7c3aed",
+    icon: "fa-hand-holding-heart",
+  },
   {
     key: "Disaster Management Service",
     label: "Disaster Management",
     color: "#c2410c",
+    icon: "fa-triangle-exclamation",
   },
-  { key: "Red Cross Youth", label: "Red Cross Youth", color: "#003d6b" },
+  {
+    key: "Red Cross Youth",
+    label: "Red Cross Youth",
+    color: "#003d6b",
+    icon: "fa-people-group",
+  },
 ];
 
 const EMPTY_FORM = {
@@ -47,23 +73,22 @@ const EMPTY_FORM = {
 
 // ─── SERVICE BADGE COMPONENT ─────────────────────────────────────────────────
 function ServiceBadge({ service }) {
-  // Find the service config or use default
   const serviceConfig = SERVICE_OPTIONS.find((s) => s.key === service) || {
     label: service,
     color: "#6b7280",
+    icon: "fa-tag",
   };
-
-  const bgColor = serviceConfig.color + "15"; // 15% opacity
 
   return (
     <span
       className="ae-badge ae-badge--service"
       style={{
-        background: bgColor,
+        background: `${serviceConfig.color}12`,
         color: serviceConfig.color,
-        border: `1px solid ${serviceConfig.color}33`,
+        border: `1px solid ${serviceConfig.color}25`,
       }}
     >
+      <i className={`fas ${serviceConfig.icon}`} />
       {serviceConfig.label}
     </span>
   );
@@ -71,18 +96,18 @@ function ServiceBadge({ service }) {
 
 // ─── STATUS BADGE COMPONENT ──────────────────────────────────────────────────
 function StatusBadge({ isPast, isUpcoming }) {
-  let status = "ONGOING";
+  let status = "Ongoing";
   let color = "#f59e0b";
   let bgColor = "#fef3c7";
   let icon = "fa-clock";
 
   if (isPast) {
-    status = "COMPLETED";
+    status = "Completed";
     color = "#10b981";
     bgColor = "#d1fae5";
     icon = "fa-check-circle";
   } else if (isUpcoming) {
-    status = "UPCOMING";
+    status = "Upcoming";
     color = "#3b82f6";
     bgColor = "#dbeafe";
     icon = "fa-calendar";
@@ -112,9 +137,9 @@ function FeeBadge({ fee }) {
     <span
       className="ae-badge ae-badge--free"
       style={{
-        background: "#e8f5e9",
-        color: "#2e7d32",
-        border: "1px solid #2e7d3233",
+        background: "#10b98112",
+        color: "#10b981",
+        border: "1px solid #10b98125",
       }}
     >
       <i className="fas fa-gift" /> FREE
@@ -131,10 +156,17 @@ function Toast({ message, type, onClose }) {
 
   return (
     <div className={`ae-toast ae-toast--${type}`} onClick={onClose}>
-      <i
-        className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
-      />
-      {message}
+      <div className="ae-toast__icon">
+        <i
+          className={`fas ${type === "success" ? "fa-circle-check" : "fa-circle-xmark"}`}
+        />
+      </div>
+      <div className="ae-toast__content">
+        <div className="ae-toast__title">
+          {type === "success" ? "Success" : "Error"}
+        </div>
+        <div className="ae-toast__message">{message}</div>
+      </div>
       <button className="ae-toast__close" onClick={onClose}>
         <i className="fas fa-xmark" />
       </button>
@@ -175,7 +207,6 @@ function EventModal({ event, onClose, onSaved }) {
     setSaving(true);
     try {
       const payload = { ...form };
-      // Ensure end_date is set
       if (!payload.event_end_date) {
         payload.event_end_date = payload.event_date;
       }
@@ -183,9 +214,9 @@ function EventModal({ event, onClose, onSaved }) {
       const res = isEdit
         ? await updateEvent(event.event_id, payload)
         : await createEvent(payload);
-      onSaved(res.message || "Saved successfully");
+      onSaved(res.message || "Event saved successfully");
     } catch (err) {
-      setErrors({ _global: err.message || "Save failed" });
+      setErrors({ _global: err.message || "Failed to save event" });
     } finally {
       setSaving(false);
     }
@@ -198,10 +229,12 @@ function EventModal({ event, onClose, onSaved }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ae-modal__header">
-          <span>
-            <i className={`fas ${isEdit ? "fa-pen" : "fa-plus"}`} />
+          <div className="ae-modal__title">
+            <i
+              className={`fas ${isEdit ? "fa-pen-to-square" : "fa-plus-circle"}`}
+            />
             {isEdit ? " Edit Event" : " Create New Event"}
-          </span>
+          </div>
           <button className="ae-modal__close" onClick={onClose}>
             <i className="fas fa-xmark" />
           </button>
@@ -240,7 +273,7 @@ function EventModal({ event, onClose, onSaved }) {
               rows={4}
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
-              placeholder="Enter event description and details"
+              placeholder="Enter event description, agenda, and important details"
             />
           </div>
 
@@ -273,7 +306,7 @@ function EventModal({ event, onClose, onSaved }) {
 
           {/* Start Date + End Date */}
           <div className="ae-form__row">
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">
                 Start Date <span className="ae-form__required">*</span>
               </label>
@@ -290,7 +323,7 @@ function EventModal({ event, onClose, onSaved }) {
                 </span>
               )}
             </div>
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">End Date</label>
               <input
                 type="date"
@@ -299,14 +332,14 @@ function EventModal({ event, onClose, onSaved }) {
                 onChange={(e) => set("event_end_date", e.target.value)}
               />
               <small className="ae-form__hint">
-                Leave blank if single day event
+                <i className="fas fa-info-circle" /> Leave blank for single day
               </small>
             </div>
           </div>
 
           {/* Start Time + End Time */}
           <div className="ae-form__row">
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">Start Time</label>
               <input
                 type="time"
@@ -315,7 +348,7 @@ function EventModal({ event, onClose, onSaved }) {
                 onChange={(e) => set("start_time", e.target.value)}
               />
             </div>
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">End Time</label>
               <input
                 type="time"
@@ -337,7 +370,7 @@ function EventModal({ event, onClose, onSaved }) {
               rows={3}
               value={form.location}
               onChange={(e) => set("location", e.target.value)}
-              placeholder="Full address and travel instructions"
+              placeholder="Full address, venue name, and travel instructions"
             />
             {errors.location && (
               <span className="ae-form__error-text">
@@ -348,7 +381,7 @@ function EventModal({ event, onClose, onSaved }) {
 
           {/* Capacity + Fee */}
           <div className="ae-form__row">
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">Capacity</label>
               <input
                 type="number"
@@ -358,8 +391,12 @@ function EventModal({ event, onClose, onSaved }) {
                 min="0"
                 placeholder="0 for unlimited"
               />
+              <small className="ae-form__hint">
+                <i className="fas fa-info-circle" /> Maximum participants (0 =
+                unlimited)
+              </small>
             </div>
-            <div className="ae-form__field ae-form__field--no-mb">
+            <div className="ae-form__field">
               <label className="ae-form__label">Fee (₱)</label>
               <input
                 type="number"
@@ -368,7 +405,7 @@ function EventModal({ event, onClose, onSaved }) {
                 value={form.fee}
                 onChange={(e) => set("fee", e.target.value)}
                 min="0"
-                placeholder="0.00 for free event"
+                placeholder="0.00 for free"
               />
             </div>
           </div>
@@ -376,11 +413,12 @@ function EventModal({ event, onClose, onSaved }) {
           <button type="submit" disabled={saving} className="ae-form__submit">
             {saving ? (
               <>
-                <i className="fas fa-spinner fa-spin" /> Saving…
+                <i className="fas fa-spinner fa-spin" /> Saving Event...
               </>
             ) : (
               <>
-                <i className="fas fa-floppy-disk" /> Save Event
+                <i className="fas fa-save" />{" "}
+                {isEdit ? "Update Event" : "Create Event"}
               </>
             )}
           </button>
@@ -406,7 +444,6 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
       const { registrations: regs } = await getRegistrations(event.event_id);
       setRegistrations(regs);
 
-      // Calculate stats
       const total = regs.length;
       const approved = regs.filter((r) => r.status === "approved").length;
       const pending = regs.filter((r) => r.status === "pending").length;
@@ -444,7 +481,8 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
   }
 
   async function handleDelete(regId) {
-    if (!window.confirm("Delete this registration?")) return;
+    if (!window.confirm("Are you sure you want to delete this registration?"))
+      return;
     try {
       await deleteRegistration(regId);
       loadRegistrations();
@@ -454,13 +492,13 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
     }
   }
 
-  function getStatusColor(status) {
-    const colors = {
-      approved: { bg: "#d1fae5", color: "#10b981" },
-      pending: { bg: "#fef3c7", color: "#f59e0b" },
-      rejected: { bg: "#fee2e2", color: "#ef4444" },
-    };
-    return colors[status] || { bg: "#f3f4f6", color: "#6b7280" };
+  function getInitials(name) {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   }
 
   return (
@@ -470,10 +508,10 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ae-modal__header">
-          <span>
+          <div className="ae-modal__title">
             <i className="fas fa-users" /> Registrations —{" "}
             <strong>{event.title}</strong>
-          </span>
+          </div>
           <button className="ae-modal__close" onClick={onClose}>
             <i className="fas fa-xmark" />
           </button>
@@ -482,28 +520,19 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
         <div className="ae-modal__body ae-modal__body--regs">
           {/* Stats Cards */}
           <div className="ae-reg-stats">
-            <div className="ae-reg-stat" style={{ borderColor: "#c41e3a" }}>
+            <div className="ae-reg-stat">
               <div className="ae-reg-stat__num">{stats.total}</div>
               <div className="ae-reg-stat__label">Total Registrations</div>
             </div>
-            <div
-              className="ae-reg-stat ae-reg-stat--approved"
-              style={{ borderColor: "#10b981" }}
-            >
+            <div className="ae-reg-stat ae-reg-stat--approved">
               <div className="ae-reg-stat__num">{stats.approved}</div>
               <div className="ae-reg-stat__label">Approved</div>
             </div>
-            <div
-              className="ae-reg-stat ae-reg-stat--pending"
-              style={{ borderColor: "#f59e0b" }}
-            >
+            <div className="ae-reg-stat ae-reg-stat--pending">
               <div className="ae-reg-stat__num">{stats.pending}</div>
               <div className="ae-reg-stat__label">Pending</div>
             </div>
-            <div
-              className="ae-reg-stat ae-reg-stat--rejected"
-              style={{ borderColor: "#ef4444" }}
-            >
+            <div className="ae-reg-stat ae-reg-stat--rejected">
               <div className="ae-reg-stat__num">{stats.rejected}</div>
               <div className="ae-reg-stat__label">Rejected</div>
             </div>
@@ -512,171 +541,176 @@ function RegistrationsModal({ event, onClose, onUpdate }) {
           {/* Registrations Table */}
           {loading ? (
             <div className="ae-reg-loading">
-              <i className="fas fa-spinner fa-spin" />
-              <p>Loading registrations…</p>
+              <div className="ae-reg-loading__spinner">
+                <i className="fas fa-spinner fa-spin" />
+              </div>
+              <p>Loading registrations...</p>
+              <span className="ae-reg-loading__sub">
+                Fetching participant data
+              </span>
             </div>
           ) : registrations.length === 0 ? (
             <div className="ae-reg-empty">
-              <i className="fas fa-inbox" />
-              <p>No registrations yet</p>
+              <div className="ae-reg-empty__icon">
+                <i className="fas fa-inbox" />
+              </div>
+              <h3 className="ae-reg-empty__title">No Registrations Yet</h3>
+              <p className="ae-reg-empty__message">
+                No participants have registered for this event
+              </p>
             </div>
           ) : (
-            <table className="ae-reg-table">
-              <thead>
-                <tr>
-                  <th>PARTICIPANT</th>
-                  <th>REGISTRATION DATE</th>
-                  <th>STATUS</th>
-                  <th>DOCUMENTS</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registrations.map((reg) => {
-                  const statusColors = getStatusColor(reg.status);
-                  return (
-                    <tr key={reg.registration_id}>
-                      <td>
-                        <div className="ae-reg-user">
-                          <div
-                            className="ae-reg-user__avatar"
-                            style={{
-                              background: "#c41e3a15",
-                              color: "#c41e3a",
-                              border: "2px solid #c41e3a33",
-                            }}
-                          >
-                            {reg.full_name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="ae-reg-user__name">
-                              {reg.full_name}
+            <div className="ae-reg-table-container">
+              <table className="ae-reg-table">
+                <thead>
+                  <tr>
+                    <th>PARTICIPANT</th>
+                    <th>REGISTRATION DATE</th>
+                    <th>STATUS</th>
+                    <th>DOCUMENTS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registrations.map((reg) => {
+                    const serviceColor = "#c41e3a";
+                    return (
+                      <tr key={reg.registration_id} className="ae-reg-row">
+                        <td>
+                          <div className="ae-reg-user">
+                            <div
+                              className="ae-reg-user__avatar"
+                              style={{
+                                background: `${serviceColor}12`,
+                                color: serviceColor,
+                                border: `2px solid ${serviceColor}25`,
+                              }}
+                            >
+                              {getInitials(reg.full_name)}
                             </div>
-                            <div className="ae-reg-user__email">
-                              {reg.email}
-                            </div>
-                            {reg.age && (
-                              <div className="ae-reg-user__meta">
-                                Age: {reg.age}
+                            <div className="ae-reg-user__info">
+                              <div className="ae-reg-user__name">
+                                {reg.full_name}
                               </div>
+                              <div className="ae-reg-user__email">
+                                {reg.email}
+                              </div>
+                              {reg.age && (
+                                <div className="ae-reg-user__meta">
+                                  <i className="fas fa-cake-candles" /> Age:{" "}
+                                  {reg.age}
+                                </div>
+                              )}
+                              {reg.location && (
+                                <div className="ae-reg-user__meta">
+                                  <i className="fas fa-location-dot" />{" "}
+                                  {reg.location}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="ae-reg-date">
+                            <div className="ae-reg-date__main">
+                              {new Date(
+                                reg.registration_date,
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </div>
+                            <div className="ae-reg-date__time">
+                              {new Date(
+                                reg.registration_date,
+                              ).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span
+                            className={`ae-status ae-status--${reg.status}`}
+                          >
+                            {reg.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="ae-reg-docs">
+                            {reg.valid_id_path && (
+                              <a
+                                href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ae-doc-link"
+                              >
+                                <i className="fas fa-id-card" /> Valid ID
+                              </a>
+                            )}
+                            {reg.documents_path && (
+                              <a
+                                href={`http://localhost/prc-management-system/${reg.documents_path}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ae-doc-link"
+                              >
+                                <i className="fas fa-file-alt" /> Documents
+                              </a>
+                            )}
+                            {reg.payment_receipt_path && (
+                              <a
+                                href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ae-doc-link"
+                              >
+                                <i className="fas fa-receipt" /> Receipt
+                              </a>
                             )}
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        {new Date(reg.registration_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className="ae-status"
-                          style={{
-                            background: statusColors.bg,
-                            color: statusColors.color,
-                            border: `1px solid ${statusColors.color}33`,
-                          }}
-                        >
-                          {reg.status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="ae-reg-docs">
-                          {reg.valid_id_path && (
-                            <a
-                              href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="ae-doc-link"
-                              style={{ color: "#c41e3a" }}
+                        </td>
+                        <td>
+                          <div className="ae-reg-actions">
+                            {reg.status === "pending" && (
+                              <>
+                                <button
+                                  className="ae-reg-btn ae-reg-btn--approve"
+                                  onClick={() =>
+                                    handleApprove(reg.registration_id)
+                                  }
+                                  title="Approve Registration"
+                                >
+                                  <i className="fas fa-check" />
+                                </button>
+                                <button
+                                  className="ae-reg-btn ae-reg-btn--reject"
+                                  onClick={() =>
+                                    handleReject(reg.registration_id)
+                                  }
+                                  title="Reject Registration"
+                                >
+                                  <i className="fas fa-times" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              className="ae-reg-btn ae-reg-btn--delete"
+                              onClick={() => handleDelete(reg.registration_id)}
+                              title="Delete Registration"
                             >
-                              <i className="fas fa-id-card" /> Valid ID
-                            </a>
-                          )}
-                          {reg.documents_path && (
-                            <a
-                              href={`http://localhost/prc-management-system/${reg.documents_path}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="ae-doc-link"
-                              style={{ color: "#c41e3a" }}
-                            >
-                              <i className="fas fa-file" /> Documents
-                            </a>
-                          )}
-                          {reg.payment_receipt_path && (
-                            <a
-                              href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="ae-doc-link"
-                              style={{ color: "#c41e3a" }}
-                            >
-                              <i className="fas fa-receipt" /> Receipt
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="ae-reg-actions">
-                          {reg.status === "pending" && (
-                            <>
-                              <button
-                                className="ae-reg-btn ae-reg-btn--approve"
-                                onClick={() =>
-                                  handleApprove(reg.registration_id)
-                                }
-                                title="Approve"
-                                style={{
-                                  background: "#10b98115",
-                                  color: "#10b981",
-                                  border: "1px solid #10b98133",
-                                }}
-                              >
-                                <i className="fas fa-check" />
-                              </button>
-                              <button
-                                className="ae-reg-btn ae-reg-btn--reject"
-                                onClick={() =>
-                                  handleReject(reg.registration_id)
-                                }
-                                title="Reject"
-                                style={{
-                                  background: "#ef444415",
-                                  color: "#ef4444",
-                                  border: "1px solid #ef444433",
-                                }}
-                              >
-                                <i className="fas fa-xmark" />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            className="ae-reg-btn ae-reg-btn--delete"
-                            onClick={() => handleDelete(reg.registration_id)}
-                            title="Delete"
-                            style={{
-                              background: "#6b728015",
-                              color: "#6b7280",
-                              border: "1px solid #6b728033",
-                            }}
-                          >
-                            <i className="fas fa-trash" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                              <i className="fas fa-trash" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -697,6 +731,7 @@ export default function AdminEvents() {
   const [regsEvent, setRegsEvent] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
@@ -735,14 +770,15 @@ export default function AdminEvents() {
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
   async function handleDelete(event) {
-    if (!window.confirm(`Archive event "${event.title}"?`)) return;
+    if (!window.confirm(`Are you sure you want to archive "${event.title}"?`))
+      return;
     try {
       const res = await deleteEvent(event.event_id);
-      showToast(res.message || "Event archived");
+      showToast(res.message || "Event archived successfully");
       fetchEvents();
       refreshStats();
     } catch (err) {
-      showToast(err.message || "Failed to delete event", "error");
+      showToast(err.message || "Failed to archive event", "error");
     }
   }
 
@@ -761,35 +797,63 @@ export default function AdminEvents() {
 
   const serviceBreakdown = stats?.services || [];
 
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filter !== "all") count++;
+    if (search) count++;
+    if (service !== "All Services") count++;
+    return count;
+  };
+
+  const clearAllFilters = () => {
+    setFilter("all");
+    setSearch("");
+    setService("All Services");
+  };
+
   return (
     <div className="ae-root">
-      {/* PAGE HEADER */}
+      {/* PAGE HEADER with Wave Effect */}
       <div className="ae-header">
-        <div className="ae-header__inner">
-          <div>
-            <div className="ae-header__eyebrow">
-              <i className="fas fa-calendar-alt" style={{ color: "#c41e3a" }} />{" "}
-              Event Management
-            </div>
-            <h1 className="ae-header__title">Events Administration</h1>
-            <p className="ae-header__subtitle">
-              Create, update, and manage events and participant registrations
-            </p>
-          </div>
-          <div className="ae-header__stats">
-            {[
-              { n: totalEvents, label: "Total Events", color: "#c41e3a" },
-              { n: upcomingEvents, label: "Upcoming", color: "#3b82f6" },
-              { n: completedEvents, label: "Completed", color: "#10b981" },
-            ].map(({ n, label, color }) => (
-              <div key={label}>
-                <div className="ae-header__stat-num" style={{ color }}>
-                  {n ?? "—"}
-                </div>
-                <div className="ae-header__stat-label">{label}</div>
+        <div className="ae-header__container">
+          <div className="ae-header__content">
+            <div className="ae-header__left">
+              <div className="ae-header__badge">
+                <i className="fas fa-calendar-alt" /> Event Management
               </div>
-            ))}
+              <h1 className="ae-header__title">Events Administration</h1>
+              <p className="ae-header__subtitle">
+                Create, manage, and track events and participant registrations
+              </p>
+            </div>
+            <div className="ae-header__stats">
+              <div className="ae-header-stat">
+                <span className="ae-header-stat__value">{totalEvents}</span>
+                <span className="ae-header-stat__label">Total Events</span>
+              </div>
+              <div className="ae-header-stat">
+                <span className="ae-header-stat__value">{upcomingEvents}</span>
+                <span className="ae-header-stat__label">Upcoming</span>
+              </div>
+              <div className="ae-header-stat">
+                <span className="ae-header-stat__value">{completedEvents}</span>
+                <span className="ae-header-stat__label">Completed</span>
+              </div>
+            </div>
           </div>
+        </div>
+        <div className="ae-header__wave">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="white"
+              fillOpacity="0.1"
+            />
+          </svg>
         </div>
       </div>
 
@@ -802,17 +866,26 @@ export default function AdminEvents() {
                 ? totalEvents
                 : serviceBreakdown.find((s) => s.major_service === svc.key)
                     ?.count || 0;
+            const isActive = service === svc.key;
 
             return (
               <button
                 key={svc.key}
-                className={`ae-service-card${service === svc.key ? " ae-service-card--active" : ""}`}
+                className={`ae-service-card ${isActive ? "ae-service-card--active" : ""}`}
                 style={{
                   borderColor: svc.color,
-                  background: service === svc.key ? `${svc.color}10` : "white",
+                  background: isActive ? `${svc.color}08` : "white",
                 }}
                 onClick={() => setService(svc.key)}
               >
+                <i
+                  className={`fas ${svc.icon}`}
+                  style={{
+                    color: svc.color,
+                    fontSize: "1.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                />
                 <div
                   className="ae-service-card__count"
                   style={{ color: svc.color }}
@@ -828,68 +901,81 @@ export default function AdminEvents() {
         {/* TOOLBAR */}
         <div className="ae-toolbar">
           <div className="ae-toolbar__search">
-            <i className="fas fa-magnifying-glass ae-toolbar__search-icon" />
+            <i className="fas fa-search ae-toolbar__search-icon" />
             <input
               className="ae-toolbar__search-input"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search events…"
+              placeholder="Search events by title or location..."
             />
             {search && (
               <button
                 className="ae-toolbar__search-clear"
                 onClick={() => setSearch("")}
               >
-                <i className="fas fa-xmark" />
+                <i className="fas fa-times" />
               </button>
             )}
           </div>
 
           <div className="ae-toolbar__filters">
             {[
-              { key: "all", label: "All", color: "#6b7280" },
+              { key: "all", label: "All Events", color: "#6b7280" },
               { key: "upcoming", label: "Upcoming", color: "#3b82f6" },
-              { key: "past", label: "Past", color: "#9ca3af" },
+              { key: "past", label: "Past Events", color: "#9ca3af" },
             ].map(({ key, label, color }) => (
               <button
                 key={key}
-                className={`ae-toolbar__filter-btn${filter === key ? " ae-toolbar__filter-btn--active" : ""}`}
+                className={`ae-toolbar__filter-btn ${filter === key ? "ae-toolbar__filter-btn--active" : ""}`}
                 onClick={() => setFilter(key)}
                 style={
                   filter === key
-                    ? { background: `${color}15`, color, borderColor: color }
+                    ? { background: `${color}12`, color, borderColor: color }
                     : {}
                 }
               >
                 {label}
               </button>
             ))}
+
+            {getActiveFilterCount() > 0 && (
+              <button
+                className="ae-toolbar__filter-clear"
+                onClick={clearAllFilters}
+              >
+                <i className="fas fa-times" />
+                Clear Filters ({getActiveFilterCount()})
+              </button>
+            )}
           </div>
 
           <button
             className="ae-toolbar__create-btn"
             onClick={() => setCreateOpen(true)}
-            style={{
-              background: "#c41e3a",
-              color: "white",
-            }}
           >
-            <i className="fas fa-plus" /> Create New Event
+            <i className="fas fa-plus" /> Create Event
           </button>
         </div>
 
         {/* TABLE */}
         <div className="ae-table-panel">
           <div className="ae-table-panel__head">
-            <span className="ae-table-panel__title">
-              <i className="fas fa-table-list" style={{ color: "#c41e3a" }} />{" "}
-              All Events
-            </span>
-            {!loading && (
-              <span className="ae-table-panel__count">
-                {events.length} result{events.length !== 1 ? "s" : ""}
-              </span>
-            )}
+            <div className="ae-table-panel__title">
+              <i className="fas fa-calendar-alt" /> Events
+            </div>
+            <div className="ae-table-panel__info">
+              {!loading && (
+                <>
+                  <span className="ae-table-panel__count">
+                    {events.length} event{events.length !== 1 ? "s" : ""}
+                  </span>
+                  <span className="ae-table-panel__divider">•</span>
+                  <span className="ae-table-panel__sub">
+                    Page 1 of {Math.ceil(events.length / 10) || 1}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="ae-table-panel__scroll">
@@ -898,7 +984,7 @@ export default function AdminEvents() {
                 <tr>
                   <th>EVENT DETAILS</th>
                   <th>SERVICE</th>
-                  <th>DATE RANGE</th>
+                  <th>DATE & TIME</th>
                   <th>LOCATION</th>
                   <th>FEE</th>
                   <th>REGISTRATIONS</th>
@@ -911,11 +997,13 @@ export default function AdminEvents() {
                   <tr>
                     <td colSpan={8}>
                       <div className="ae-table__loading">
-                        <i
-                          className="fas fa-spinner fa-spin ae-table__loading-icon"
-                          style={{ color: "#c41e3a" }}
-                        />
-                        <p>Loading events…</p>
+                        <div className="ae-table__loading-spinner">
+                          <i className="fas fa-spinner fa-spin" />
+                        </div>
+                        <p>Loading events...</p>
+                        <span className="ae-table__loading-sub">
+                          Fetching event data
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -923,135 +1011,168 @@ export default function AdminEvents() {
                   <tr>
                     <td colSpan={8}>
                       <div className="ae-table__empty">
-                        <i
-                          className="fas fa-calendar-xmark ae-table__empty-icon"
-                          style={{ color: "#9ca3af" }}
-                        />
-                        <p>No events found</p>
+                        <div className="ae-table__empty-icon">
+                          <i className="fas fa-calendar-xmark" />
+                        </div>
+                        <h3 className="ae-table__empty-title">
+                          No Events Found
+                        </h3>
+                        <p className="ae-table__empty-message">
+                          {search ||
+                          filter !== "all" ||
+                          service !== "All Services"
+                            ? "Try adjusting your search or filter criteria"
+                            : "Get started by creating your first event"}
+                        </p>
+                        {(search ||
+                          filter !== "all" ||
+                          service !== "All Services") && (
+                          <button
+                            className="ae-table__empty-action"
+                            onClick={clearAllFilters}
+                          >
+                            <i className="fas fa-times" /> Clear Filters
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  events.map((evt) => (
-                    <tr key={evt.event_id}>
-                      <td>
-                        <div className="ae-event-cell">
-                          <div className="ae-event-cell__title">
-                            {evt.title}
+                  events.map((evt) => {
+                    const serviceColor =
+                      SERVICE_OPTIONS.find((s) => s.key === evt.major_service)
+                        ?.color || "#6b7280";
+                    return (
+                      <tr
+                        key={evt.event_id}
+                        onMouseEnter={() => setHoveredRow(evt.event_id)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        className={
+                          hoveredRow === evt.event_id
+                            ? "ae-table__row--hovered"
+                            : ""
+                        }
+                      >
+                        <td>
+                          <div className="ae-event-cell">
+                            <div className="ae-event-cell__title">
+                              {evt.title}
+                            </div>
+                            <div className="ae-event-cell__id">
+                              <i className="fas fa-hashtag" /> ID: #
+                              {evt.event_id}
+                            </div>
                           </div>
-                          <div className="ae-event-cell__id">
-                            ID: #{evt.event_id}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <ServiceBadge service={evt.major_service} />
-                      </td>
-                      <td>
-                        <div className="ae-date">
-                          <div>
-                            {new Date(evt.event_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
-                          {evt.event_end_date &&
-                            evt.event_end_date !== evt.event_date && (
-                              <div className="ae-date__end">
-                                to{" "}
-                                {new Date(
-                                  evt.event_end_date,
-                                ).toLocaleDateString("en-US", {
+                        </td>
+                        <td>
+                          <ServiceBadge service={evt.major_service} />
+                        </td>
+                        <td>
+                          <div className="ae-date">
+                            <div className="ae-date__main">
+                              {new Date(evt.event_date).toLocaleDateString(
+                                "en-US",
+                                {
                                   month: "short",
                                   day: "numeric",
-                                })}
-                              </div>
-                            )}
-                          <div className="ae-date__time">
-                            {evt.start_time?.slice(0, 5)} -{" "}
-                            {evt.end_time?.slice(0, 5)}
+                                  year: "numeric",
+                                },
+                              )}
+                            </div>
+                            {evt.event_end_date &&
+                              evt.event_end_date !== evt.event_date && (
+                                <div className="ae-date__end">
+                                  <i className="fas fa-arrow-right" />
+                                  {new Date(
+                                    evt.event_end_date,
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </div>
+                              )}
+                            <div className="ae-date__time">
+                              <i className="fas fa-clock" />
+                              {evt.start_time?.slice(0, 5)} -{" "}
+                              {evt.end_time?.slice(0, 5)}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td style={{ maxWidth: 200 }}>
-                        <div className="ae-location">
-                          {evt.location?.split("\n")[0]}
-                        </div>
-                      </td>
-                      <td>
-                        <FeeBadge fee={evt.fee} />
-                      </td>
-                      <td>
-                        <div className="ae-regs">
-                          <span className="ae-regs__count">
-                            {evt.approved_count}/
-                            {evt.capacity > 0 ? evt.capacity : "∞"}
-                          </span>
-                          {evt.pending_count > 0 && (
-                            <span
-                              className="ae-regs__pending"
+                        </td>
+                        <td style={{ maxWidth: 200 }}>
+                          <div className="ae-location" title={evt.location}>
+                            <i
+                              className="fas fa-map-marker-alt"
+                              style={{ color: serviceColor }}
+                            />
+                            {evt.location?.split("\n")[0]}
+                          </div>
+                        </td>
+                        <td>
+                          <FeeBadge fee={evt.fee} />
+                        </td>
+                        <td>
+                          <div className="ae-regs">
+                            <span className="ae-regs__count">
+                              {evt.approved_count}/
+                              {evt.capacity > 0 ? evt.capacity : "∞"}
+                            </span>
+                            {evt.pending_count > 0 && (
+                              <span className="ae-regs__pending">
+                                <i className="fas fa-clock" />
+                                {evt.pending_count} pending
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <StatusBadge
+                            isPast={evt.is_past}
+                            isUpcoming={evt.is_upcoming}
+                          />
+                        </td>
+                        <td>
+                          <div className="ae-actions">
+                            <button
+                              title="View Registrations"
+                              className="ae-action-btn ae-action-btn--view"
+                              onClick={() => setRegsEvent(evt)}
                               style={{
-                                background: "#f59e0b15",
-                                color: "#f59e0b",
+                                background: `${serviceColor}12`,
+                                color: serviceColor,
+                                borderColor: `${serviceColor}25`,
                               }}
                             >
-                              {evt.pending_count} pending
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <StatusBadge
-                          isPast={evt.is_past}
-                          isUpcoming={evt.is_upcoming}
-                        />
-                      </td>
-                      <td>
-                        <div className="ae-actions">
-                          <button
-                            title="View Registrations"
-                            className="ae-action-btn ae-action-btn--view"
-                            onClick={() => setRegsEvent(evt)}
-                            style={{
-                              background: "#c41e3a15",
-                              color: "#c41e3a",
-                              border: "1px solid #c41e3a33",
-                            }}
-                          >
-                            <i className="fas fa-users" />
-                          </button>
-                          <button
-                            title="Edit Event"
-                            className="ae-action-btn ae-action-btn--edit"
-                            onClick={() => setEditEvent(evt)}
-                            style={{
-                              background: "#3b82f615",
-                              color: "#3b82f6",
-                              border: "1px solid #3b82f633",
-                            }}
-                          >
-                            <i className="fas fa-pen" />
-                          </button>
-                          <button
-                            title="Archive Event"
-                            className="ae-action-btn ae-action-btn--delete"
-                            onClick={() => handleDelete(evt)}
-                            style={{
-                              background: "#6b728015",
-                              color: "#6b7280",
-                              border: "1px solid #6b728033",
-                            }}
-                          >
-                            <i className="fas fa-archive" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                              <i className="fas fa-users" />
+                            </button>
+                            <button
+                              title="Edit Event"
+                              className="ae-action-btn ae-action-btn--edit"
+                              onClick={() => setEditEvent(evt)}
+                              style={{
+                                background: "#3b82f612",
+                                color: "#3b82f6",
+                                borderColor: "#3b82f625",
+                              }}
+                            >
+                              <i className="fas fa-pen" />
+                            </button>
+                            <button
+                              title="Archive Event"
+                              className="ae-action-btn ae-action-btn--delete"
+                              onClick={() => handleDelete(evt)}
+                              style={{
+                                background: "#6b728012",
+                                color: "#6b7280",
+                                borderColor: "#6b728025",
+                              }}
+                            >
+                              <i className="fas fa-archive" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
