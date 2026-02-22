@@ -642,7 +642,7 @@
     &-title {
       font-size: $font-size-base;
       font-weight: $font-weight-bold;
-      margin: 0 0 $space-lg;
+      margin-bottom: $space-sm;
       color: $white;
       display: flex;
       align-items: center;
@@ -656,7 +656,7 @@
         img {
           height: 30px;
           width: auto;
-          filter: brightness(0) invert(1);
+          object-fit: contain;
         }
 
         span {
@@ -675,12 +675,14 @@
       font-size: $font-size-sm;
       line-height: 1.6;
       margin-bottom: $space-lg;
+      padding: 10rem;
     }
 
     &-links {
       list-style: none;
       margin: 0;
       padding: 0;
+      margin-top: $space-lg;
 
       li {
         margin-bottom: $space-sm;

@@ -1,11 +1,12 @@
 // Register.jsx
 // Path: frontend/src/pages/Register/Register.jsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import authService from "../../services/auth.service";
+import authService, { RECAPTCHA_SITE_KEY } from "../../services/auth.service";
 import "./Register.scss";
 
+/* global window */
 // Toast Notification Component
 function Toast({ message, type, onClose }) {
   useEffect(() => {
@@ -157,6 +158,112 @@ function PhoneInput({ value, onChange, error, onBlur }) {
   );
 }
 
+function GoogleRecaptcha({ onVerify, onExpired }) {
+  const recaptchaRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
+
+  // Load Google reCAPTCHA script
+  useEffect(() => {
+    const loadRecaptchaScript = () => {
+      return new Promise((resolve) => {
+        if (window.grecaptcha) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = `https://www.google.com/recaptcha/api.js?render=explicit`;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          window.grecaptcha.ready(() => {
+            resolve();
+          });
+        };
+        document.head.appendChild(script);
+      });
+    };
+
+    loadRecaptchaScript().then(() => {
+      setIsLoaded(true);
+    });
+
+    return () => {
+      // Cleanup - reset captcha if rendered
+      if (window.grecaptcha && window.__recaptchaWidgetId !== undefined) {
+        try {
+          window.grecaptcha.reset(window.__recaptchaWidgetId);
+        } catch (e) {
+          console.log("Error resetting reCAPTCHA:", e);
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Only render if script is loaded, element exists, and not already rendered
+    if (isLoaded && window.grecaptcha && recaptchaRef.current && !isRendered) {
+      // Check if there's already a reCAPTCHA in this element
+      if (recaptchaRef.current.hasChildNodes()) {
+        // Clear the element first
+        while (recaptchaRef.current.firstChild) {
+          recaptchaRef.current.removeChild(recaptchaRef.current.firstChild);
+        }
+      }
+
+      try {
+        // Render the reCAPTCHA widget
+        const id = window.grecaptcha.render(recaptchaRef.current, {
+          sitekey: RECAPTCHA_SITE_KEY,
+          callback: (response) => {
+            onVerify(response);
+          },
+          "expired-callback": () => {
+            onExpired();
+          },
+          "error-callback": () => {
+            console.error("reCAPTCHA error");
+            onExpired();
+          },
+          theme: "light",
+          size: "normal",
+        });
+
+        window.__recaptchaWidgetId = id;
+        setIsRendered(true);
+      } catch (error) {
+        console.error("Error rendering reCAPTCHA:", error);
+      }
+    }
+  }, [isLoaded, onVerify, onExpired, isRendered]);
+
+  const resetRecaptcha = () => {
+    if (window.grecaptcha && window.__recaptchaWidgetId !== undefined) {
+      try {
+        window.grecaptcha.reset(window.__recaptchaWidgetId);
+      } catch (e) {
+        console.log("Error resetting reCAPTCHA:", e);
+      }
+    }
+  };
+
+  // Expose reset method to parent
+  useEffect(() => {
+    window.__resetRecaptcha = resetRecaptcha;
+  }, []);
+
+  return (
+    <div className="google-recaptcha">
+      <div ref={recaptchaRef}></div>
+      {!isLoaded && (
+        <div className="recaptcha-loading">
+          <i className="fas fa-spinner fa-spin"></i> Loading reCAPTCHA...
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Register() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -178,8 +285,10 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(""); // CHANGED TO "" (empty string) since we won't be using it in test mode
   const [touchedFields, setTouchedFields] = useState({});
   const [toast, setToast] = useState(null);
+  const [recaptchaKey, setRecaptchaKey] = useState(0); // For resetting captcha
 
   const showToast = (message, type = "error") => {
     setToast({ message, type });
@@ -209,6 +318,29 @@ function Register() {
       setStep(3);
     } else {
       setStep(2);
+    }
+  };
+
+  const handleCaptchaVerify = (response) => {
+    setCaptchaVerified(true);
+    setCaptchaToken(response);
+    if (errors.captcha) {
+      setErrors((prev) => ({ ...prev, captcha: null }));
+    }
+  };
+
+  const handleCaptchaExpired = () => {
+    setCaptchaVerified(false);
+    setCaptchaToken("");
+    setRecaptchaKey((prev) => prev + 1); // Force re-render of reCAPTCHA
+  };
+
+  const resetCaptcha = () => {
+    setCaptchaVerified(false);
+    setCaptchaToken("");
+    setRecaptchaKey((prev) => prev + 1);
+    if (window.__resetRecaptcha) {
+      window.__resetRecaptcha();
     }
   };
 
@@ -290,8 +422,8 @@ function Register() {
       return;
     }
 
-    if (!captchaVerified) {
-      const msg = "Please verify you're not a robot";
+    if (!captchaVerified || !captchaToken) {
+      const msg = "Please complete the reCAPTCHA verification";
       setErrors({ captcha: msg });
       showToast(msg, "error");
       return;
@@ -308,18 +440,24 @@ function Register() {
         }
       });
 
+      // Add reCAPTCHA token to the form data (using dummy token for testing)
+      formDataToSend.append("recaptcha_token", captchaToken);
+
       const response = await authService.register(formDataToSend);
 
       if (response.success) {
         setShowSuccess(true);
+        resetCaptcha(); // Reset captcha on success
       } else {
         setErrors({ submit: response.message });
         showToast(response.message, "error");
+        resetCaptcha(); // Reset captcha on error so user can try again
       }
     } catch (err) {
       const errorMsg = err.message || "Registration failed. Please try again.";
       setErrors({ submit: errorMsg });
       showToast(errorMsg, "error");
+      resetCaptcha(); // Reset captcha on error
     } finally {
       setLoading(false);
     }
@@ -848,36 +986,30 @@ function Register() {
             </div>
           </div>
 
-          {/* reCAPTCHA */}
           <div className="form-group captcha-group">
-            <div
-              className={`recaptcha-placeholder ${errors.captcha ? "error" : ""}`}
-            >
-              <input
-                type="checkbox"
-                checked={captchaVerified}
-                onChange={(e) => {
-                  setCaptchaVerified(e.target.checked);
-                  if (errors.captcha) {
-                    setErrors({ ...errors, captcha: null });
-                  }
-                }}
-              />
-              <span>I'm not a robot</span>
-              <div className="recaptcha-logo">
-                <i className="fas fa-shield-alt"></i>
-                <small>reCAPTCHA</small>
-              </div>
-            </div>
+            <label>
+              <i className="fas fa-shield-alt"></i> Verification{" "}
+              <span className="required">*</span>
+            </label>
+            <GoogleRecaptcha
+              key={recaptchaKey}
+              onVerify={handleCaptchaVerify}
+              onExpired={handleCaptchaExpired}
+            />
             {errors.captcha && (
               <small className="error-message">{errors.captcha}</small>
+            )}
+            {captchaVerified && (
+              <small className="success-message">
+                <i className="fas fa-check-circle"></i> reCAPTCHA verified
+              </small>
             )}
           </div>
 
           <button
             type="submit"
             className="btn-register"
-            disabled={loading || !captchaVerified}
+            disabled={loading} // Removed !captchaVerified condition
           >
             {loading ? (
               <>

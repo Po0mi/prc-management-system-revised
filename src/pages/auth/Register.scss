@@ -693,7 +693,7 @@
     }
   }
 
-  // reCAPTCHA
+  // reCAPTCHA (keeping original for backward compatibility)
   .captcha-group {
     margin-top: 2rem;
 
@@ -876,6 +876,115 @@
   }
 }
 
+// Password Strength Styles
+.password-strength {
+  margin-top: 8px;
+
+  .strength-meter {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+
+    .strength-meter-fill {
+      height: 100%;
+      transition:
+        width 0.3s ease,
+        background-color 0.3s ease;
+    }
+  }
+
+  .strength-label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .strength-feedback {
+    font-size: 11px;
+    color: #6b7280;
+
+    small {
+      display: block;
+      margin: 2px 0;
+    }
+  }
+}
+
+// Form Validation Styles
+.form-group {
+  .help-text.valid {
+    color: #10b981;
+  }
+
+  .help-text.invalid {
+    color: #c41e3a;
+  }
+
+  input.error,
+  select.error {
+    border-color: #c41e3a;
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
+    }
+  }
+
+  .error-message {
+    color: #c41e3a;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    i {
+      font-size: 12px;
+    }
+  }
+}
+
+// Services Grid (if needed)
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+
+  .service-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f3f4f6;
+      border-color: #c41e3a;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+
+    i {
+      color: #c41e3a;
+      font-size: 14px;
+    }
+
+    span {
+      font-size: 13px;
+      color: #374151;
+    }
+  }
+}
+
 // Success Modal
 .modal-overlay {
   position: fixed;
@@ -993,180 +1102,6 @@
     }
   }
 
-  .btn-modal {
-    width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, $primary-red 0%, $primary-dark 100%);
-    color: $white;
-    font-weight: $font-weight-bold;
-    font-size: $font-size-base;
-    border: none;
-    border-radius: $radius-md;
-    cursor: pointer;
-    transition: all $transition-base;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 12px rgba($primary-red, 0.3);
-
-    i {
-      font-size: 1.125rem;
-    }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba($primary-red, 0.4);
-    }
-  }
-}
-// Add to Register.scss
-
-.password-strength {
-  margin-top: 8px;
-
-  .strength-meter {
-    height: 4px;
-    background: #e5e7eb;
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 4px;
-
-    .strength-meter-fill {
-      height: 100%;
-      transition:
-        width 0.3s ease,
-        background-color 0.3s ease;
-    }
-  }
-
-  .strength-label {
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .strength-feedback {
-    font-size: 11px;
-    color: #6b7280;
-
-    small {
-      display: block;
-      margin: 2px 0;
-    }
-  }
-}
-
-.form-group {
-  .help-text.valid {
-    color: #10b981;
-  }
-
-  .help-text.invalid {
-    color: #c41e3a;
-  }
-
-  input.error,
-  select.error {
-    border-color: #c41e3a;
-
-    &:focus {
-      box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1);
-    }
-  }
-
-  .error-message {
-    color: #c41e3a;
-    font-size: 12px;
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    i {
-      font-size: 12px;
-    }
-  }
-}
-
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-
-  .service-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background: #f3f4f6;
-      border-color: #c41e3a;
-    }
-
-    input[type="checkbox"] {
-      width: auto;
-      margin: 0;
-    }
-
-    i {
-      color: #c41e3a;
-      font-size: 14px;
-    }
-
-    span {
-      font-size: 13px;
-      color: #374151;
-    }
-  }
-}
-
-.recaptcha-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-
-  &.error {
-    border-color: #c41e3a;
-    background: #fef2f2;
-  }
-
-  input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin: 0;
-  }
-
-  .recaptcha-logo {
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    i {
-      color: #c41e3a;
-      font-size: 18px;
-    }
-
-    small {
-      font-size: 9px;
-      color: #6b7280;
-    }
-  }
-}
-
-.success-modal {
   .modal-actions {
     display: flex;
     gap: 10px;
@@ -1174,11 +1109,34 @@
 
     .btn-modal {
       flex: 1;
+      padding: 1rem;
+      background: linear-gradient(135deg, $primary-red 0%, $primary-dark 100%);
+      color: $white;
+      font-weight: $font-weight-bold;
+      font-size: $font-size-base;
+      border: none;
+      border-radius: $radius-md;
+      cursor: pointer;
+      transition: all $transition-base;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba($primary-red, 0.3);
+
+      i {
+        font-size: 1.125rem;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba($primary-red, 0.4);
+      }
 
       &.btn-outline {
         background: white;
-        color: #c41e3a;
-        border: 1px solid #c41e3a;
+        color: $primary-red;
+        border: 1px solid $primary-red;
 
         &:hover {
           background: #fef2f2;
@@ -1187,7 +1145,6 @@
     }
   }
 }
-// Add to your Register.scss
 
 // Toast Notification
 .toast {
@@ -1282,6 +1239,68 @@
     opacity: 1;
   }
 }
+
+// Google reCAPTCHA Styles (NEW)
+.google-recaptcha {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+  transform: scale(0.99);
+  transform-origin: 0 0;
+
+  @media (max-width: $breakpoint-sm) {
+    transform: scale(0.85);
+  }
+
+  iframe {
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+}
+
+.recaptcha-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: $gray-100;
+  border: 1px solid $gray-200;
+  border-radius: $radius-md;
+  color: $gray-600;
+  font-size: $font-size-sm;
+  width: 100%;
+  min-height: 78px; // Height of reCAPTCHA
+
+  i {
+    color: $primary-red;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Success message for captcha
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #10b981;
+  font-size: $font-size-xs;
+  margin-top: 0.5rem;
+
+  i {
+    font-size: $font-size-sm;
+  }
+}
+
 // Responsive
 @media (max-width: $breakpoint-sm) {
   .register-page {
@@ -1336,5 +1355,22 @@
     h2 {
       font-size: 1.5rem;
     }
+
+    .modal-actions {
+      flex-direction: column;
+    }
+  }
+
+  .toast {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    min-width: auto;
+    max-width: none;
+  }
+
+  // Google reCAPTCHA responsive
+  .google-recaptcha {
+    transform: scale(0.85);
   }
 }

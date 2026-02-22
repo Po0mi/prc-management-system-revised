@@ -9,6 +9,7 @@ import {
 import LandingPage from "./pages/public/LandingPage";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import VerifyEmail from "./pages/VerifyEmail/VerifyEmail";
 
 // User Pages
 import UserDashboard from "./pages/user/UserDashboard";
@@ -52,6 +53,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* User Routes - Protected */}
         <Route

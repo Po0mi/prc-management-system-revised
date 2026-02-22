@@ -5,6 +5,9 @@ import api from "./api";
 const AUTH = "/api/auth.php";
 const REGISTER = "/api/register.php";
 
+// Google reCAPTCHA site key
+// export const RECAPTCHA_SITE_KEY = "6LdKInQsAAAAAFJZRd65k9ftb0AqHunJZehNU7fu";
+
 const authService = {
   // ── LOGIN ───────────────────────────────────────────────────────────────────
   async login(username, password) {
