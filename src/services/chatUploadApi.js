@@ -30,7 +30,9 @@ export const uploadChatFile = async (file) => {
 };
 
 export const getFileDownloadUrl = (fileUrl) => {
-  return `http://localhost/prc-management-system/backend/api/chat_uploads.php?action=download&file=${encodeURIComponent(fileUrl)}`;
+  // Use the base URL from api instance to construct download URL
+  const baseURL = api.defaults.baseURL;
+  return `${baseURL}/api/chat_uploads.php?action=download&file=${encodeURIComponent(fileUrl)}`;
 };
 
 export default {

@@ -200,7 +200,9 @@ export const getCategoryIcon = (category) => {
 export const getImageUrl = (item) => {
   if (!item.image_url) return null;
   if (item.image_url.startsWith("http")) return item.image_url;
-  return `http://localhost/prc-management-system/${item.image_url}`;
+  // Use the API base URL to construct the full URL
+  const baseURL = api.defaults.baseURL;
+  return `${baseURL}/${item.image_url}`;
 };
 
 export default {

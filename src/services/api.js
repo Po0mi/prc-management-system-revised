@@ -1,10 +1,18 @@
 import axios from "axios";
 
-// ── Relative baseURL — Vite proxy forwards to XAMPP, no CORS ever ─────────────
-// /auth.php      → proxy → http://localhost/prc-management-system/backend/auth.php
-// /api/users.php → proxy → http://localhost/prc-management-system/backend/api/users.php
+// Determine which base URL to use
+const getBaseURL = () => {
+  const useLocal = import.meta.env.VITE_USE_LOCAL_API === "true";
+
+  if (useLocal) {
+    return import.meta.env.VITE_LOCAL_API_URL; // http://localhost/prc-management-system/backend
+  }
+
+  return import.meta.env.VITE_API_URL; // https://philippineredcross-iloilochapter.org
+};
+
 const api = axios.create({
-  baseURL: "/",
+  baseURL: getBaseURL(), // ← THIS is the key change!
   headers: { "Content-Type": "application/json", Accept: "application/json" },
   withCredentials: true,
   timeout: 30000,

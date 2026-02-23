@@ -31,9 +31,7 @@ function LandingPage() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch(
-        "http://localhost/prc-management-system/backend/api/announcements.php",
-      );
+      const response = await fetch("/api/announcements.php");
       const data = await response.json();
       if (data.success) {
         // Filter only published announcements and limit to 3
