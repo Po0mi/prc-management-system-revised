@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import api from "../../services/api"; // ✅ Import centralized API
 import "./UserAnnouncement.scss";
 
 // ─── TOAST COMPONENT ──────────────────────────────────────────────────────────
@@ -67,7 +68,8 @@ function AnnouncementCard({ announcement, onClick, isNew }) {
   const getImageUrl = (announcement) => {
     const imagePath = announcement.image_path || announcement.image_url;
     if (!imagePath) return null;
-    return `http://localhost/prc-management-system/${imagePath}`;
+    // ✅ Use relative path - api.defaults.baseURL handles the domain
+    return `/${imagePath}`;
   };
 
   const imageUrl = getImageUrl(announcement);
@@ -202,7 +204,8 @@ function AnnouncementDetails({ announcement, onClose }) {
   const getImageUrl = (announcement) => {
     const imagePath = announcement.image_path || announcement.image_url;
     if (!imagePath) return null;
-    return `http://localhost/prc-management-system/${imagePath}`;
+    // ✅ Use relative path
+    return `/${imagePath}`;
   };
 
   const categoryColor = getCategoryColor(announcement.category);
@@ -332,10 +335,9 @@ export default function UserAnnouncement() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch(
-        "http://localhost/prc-management-system/backend/api/announcements.php",
-      );
-      const data = await response.json();
+      // ✅ Using centralized API - no hardcoded URLs!
+      const { data } = await api.get("/api/announcements.php");
+
       if (data.success) {
         // Filter only published announcements
         const publishedAnnouncements = data.data.filter(
@@ -355,7 +357,10 @@ export default function UserAnnouncement() {
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
-      showToast("Failed to load announcements", "error");
+      showToast(
+        error.response?.data?.message || "Failed to load announcements",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
