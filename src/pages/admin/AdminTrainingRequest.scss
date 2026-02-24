@@ -51,6 +51,17 @@
   }
 }
 
+@keyframes confirmIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 // ─── ROOT / RESETS ────────────────────────────────────────────────────────────
 .atr-root {
   * {
@@ -188,6 +199,7 @@
   &__stats {
     display: flex;
     gap: $space-xl;
+    flex-wrap: wrap;
     background: rgba($white, 0.1);
     padding: $space-lg $space-xl;
     border-radius: $radius-lg;
@@ -198,6 +210,7 @@
     @media (max-width: $breakpoint-md) {
       width: 100%;
       justify-content: space-around;
+      gap: $space-md;
     }
   }
 
@@ -241,10 +254,10 @@
   z-index: 3;
 }
 
-// ─── STATUS FILTERS ───────────────────────────────────────────────────────────
+// ─── STATUS FILTER CARDS ──────────────────────────────────────────────────────
 .atr-filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: $space-md;
   margin-bottom: $space-xl;
 }
@@ -329,7 +342,7 @@
 
     &-input {
       width: 100%;
-      padding: $space-sm $space-md $space-sm $space-xl * 2;
+      padding: $space-sm $space-md $space-sm calc($space-xl * 2);
       border-radius: $radius-full;
       border: 1.5px solid $gray-200;
       font-size: $font-size-sm;
@@ -460,15 +473,12 @@
     font-weight: $font-weight-semibold;
     color: $gray-700;
   }
-
   &__divider {
     color: $gray-300;
   }
-
   &__sub {
     color: $gray-400;
   }
-
   &__scroll {
     overflow-x: auto;
   }
@@ -527,7 +537,6 @@
       color: $gray-600;
       margin-bottom: $space-xs;
     }
-
     &-message {
       font-size: $font-size-sm;
       color: $gray-500;
@@ -561,13 +570,11 @@
   }
 
   &__loading {
-    &-spinner {
-      i {
-        font-size: $font-size-2xl;
-        margin-bottom: $space-md;
-        color: $primary-red;
-        animation: spin 1s linear infinite;
-      }
+    &-spinner i {
+      font-size: $font-size-2xl;
+      margin-bottom: $space-md;
+      color: $primary-red;
+      animation: spin 1s linear infinite;
     }
 
     p {
@@ -584,7 +591,7 @@
   }
 }
 
-// ─── REQUEST ID ───────────────────────────────────────────────────────────────
+// ─── TABLE CELL ELEMENTS ──────────────────────────────────────────────────────
 .atr-req-id {
   display: flex;
   align-items: center;
@@ -599,7 +606,6 @@
   }
 }
 
-// ─── PROGRAM CELL ─────────────────────────────────────────────────────────────
 .atr-program {
   &__name {
     font-weight: $font-weight-semibold;
@@ -615,7 +621,6 @@
   }
 }
 
-// ─── SERVICE BADGE ────────────────────────────────────────────────────────────
 .atr-service-badge {
   display: inline-flex;
   align-items: center;
@@ -628,7 +633,6 @@
   border: 1px solid rgba($info, 0.25);
 }
 
-// ─── CONTACT CELL ─────────────────────────────────────────────────────────────
 .atr-contact {
   &__name {
     font-weight: $font-weight-semibold;
@@ -651,7 +655,6 @@
   }
 }
 
-// ─── PARTICIPANT COUNT ────────────────────────────────────────────────────────
 .atr-participant-count {
   display: inline-flex;
   align-items: center;
@@ -665,7 +668,6 @@
   }
 }
 
-// ─── DATE ─────────────────────────────────────────────────────────────────────
 .atr-date {
   display: flex;
   align-items: center;
@@ -692,28 +694,8 @@
   }
 }
 
-// ─── URGENCY BADGE ────────────────────────────────────────────────────────────
-.atr-urgency {
-  display: inline-flex;
-  align-items: center;
-  gap: $space-xs;
-  padding: $space-xs $space-md;
-  border-radius: $radius-full;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-bold;
-  white-space: nowrap;
-  transition: $transition-fast;
-
-  i {
-    font-size: 8px;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
-// ─── STATUS BADGE ─────────────────────────────────────────────────────────────
+// ─── URGENCY & STATUS INLINE BADGES (table) ───────────────────────────────────
+.atr-urgency,
 .atr-status {
   display: inline-flex;
   align-items: center;
@@ -724,6 +706,7 @@
   font-weight: $font-weight-bold;
   white-space: nowrap;
   transition: $transition-fast;
+  text-transform: capitalize;
 
   i {
     font-size: 8px;
@@ -734,7 +717,7 @@
   }
 }
 
-// ─── ACTIONS ──────────────────────────────────────────────────────────────────
+// ─── TABLE ACTIONS ────────────────────────────────────────────────────────────
 .atr-actions {
   display: flex;
   gap: $space-xs;
@@ -788,7 +771,21 @@
       filter: brightness(1.1);
     }
   }
-
+  &--approve {
+    &:hover {
+      background: rgba(#10b981, 0.2) !important;
+    }
+  }
+  &--reject {
+    &:hover {
+      background: rgba(#ef4444, 0.2) !important;
+    }
+  }
+  &--schedule {
+    &:hover {
+      background: rgba(#8b5cf6, 0.2) !important;
+    }
+  }
   &--create {
     &:hover {
       filter: brightness(1.1);
@@ -820,6 +817,11 @@
   justify-content: center;
   padding: $space-md;
   animation: fadeIn 200ms ease;
+
+  // Confirm dialogs stack above the details modal
+  &--confirm {
+    z-index: $z-modal-backdrop + 10;
+  }
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
@@ -837,7 +839,6 @@
   &--lg {
     max-width: 800px;
   }
-
   &--xl {
     max-width: 1000px;
   }
@@ -883,6 +884,7 @@
     i {
       font-size: $font-size-base;
     }
+
     &:hover {
       background: rgba($white, 0.3);
       transform: rotate(90deg);
@@ -896,7 +898,123 @@
   }
 }
 
-// ─── DETAIL MODAL STYLES ──────────────────────────────────────────────────────
+// ─── CONFIRM MODAL ────────────────────────────────────────────────────────────
+.atr-confirm {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: 2rem;
+  width: 440px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: $shadow-xl;
+  animation: confirmIn 0.22s ease;
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    margin-bottom: $space-lg;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin: 0 0 $space-sm;
+  }
+
+  &__message {
+    font-size: $font-size-sm;
+    color: $gray-500;
+    line-height: 1.6;
+    margin: 0 0 $space-lg;
+  }
+
+  // Rejection reason textarea (injected as children)
+  &__extra {
+    margin-bottom: $space-lg;
+    text-align: left;
+
+    &-label {
+      display: block;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-semibold;
+      color: $gray-700;
+      margin-bottom: $space-xs;
+    }
+
+    &-textarea {
+      width: 100%;
+      padding: $space-sm $space-md;
+      border: 1.5px solid $gray-200;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      font-family: $font-family-base;
+      color: $gray-900;
+      background: $white;
+      resize: vertical;
+      transition: $transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-red;
+        box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-md;
+    justify-content: center;
+  }
+
+  &__cancel {
+    flex: 1;
+    padding: $space-sm $space-lg;
+    border-radius: $radius-md;
+    border: 1.5px solid $gray-200;
+    background: $white;
+    color: $gray-700;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    font-family: $font-family-base;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:hover {
+      background: $gray-100;
+      border-color: $gray-300;
+    }
+  }
+
+  &__ok {
+    flex: 1;
+    padding: $space-sm $space-lg;
+    border-radius: $radius-md;
+    border: none;
+    color: $white;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    font-family: $font-family-base;
+    cursor: pointer;
+    transition: $transition-fast;
+
+    &:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+// ─── DETAIL MODAL CONTENTS ────────────────────────────────────────────────────
 .atr-detail-header {
   display: flex;
   gap: $space-md;
@@ -924,31 +1042,26 @@
     color: $warning;
     border: 1px solid rgba($warning, 0.25);
   }
-
   &--under_review {
     background: rgba($info, 0.12);
     color: $info;
     border: 1px solid rgba($info, 0.25);
   }
-
   &--approved {
     background: rgba($success, 0.12);
     color: $success;
     border: 1px solid rgba($success, 0.25);
   }
-
   &--scheduled {
     background: rgba($primary-blue-light, 0.12);
     color: $primary-blue-light;
     border: 1px solid rgba($primary-blue-light, 0.25);
   }
-
   &--completed {
     background: $gray-100;
     color: $gray-600;
     border: 1px solid $gray-200;
   }
-
   &--rejected {
     background: rgba($error, 0.12);
     color: $error;
@@ -962,19 +1075,16 @@
     color: $info;
     border: 1px solid rgba($info, 0.25);
   }
-
   &--normal {
     background: rgba($primary-blue-light, 0.12);
     color: $primary-blue-light;
     border: 1px solid rgba($primary-blue-light, 0.25);
   }
-
   &--high {
     background: rgba($warning, 0.12);
     color: $warning;
     border: 1px solid rgba($warning, 0.25);
   }
-
   &--urgent {
     background: rgba($error, 0.12);
     color: $error;
@@ -995,6 +1105,7 @@
     background: rgba($primary-red, 0.02);
     border-radius: $radius-lg;
     padding: $space-lg;
+    border: 1px solid rgba($primary-red, 0.08);
   }
 
   &--meta {
@@ -1114,7 +1225,6 @@
   font-weight: $font-weight-bold;
   color: $gray-900;
 }
-
 .atr-training-type {
   text-transform: capitalize;
   color: $gray-600;
@@ -1129,6 +1239,16 @@
   i {
     font-size: $font-size-xs;
   }
+}
+
+.atr-location,
+.atr-organization,
+.atr-time {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  color: $gray-900;
+  font-size: $font-size-sm;
 }
 
 // ─── DOCUMENT GRID ────────────────────────────────────────────────────────────
@@ -1154,14 +1274,12 @@
     font-size: $font-size-2xl;
     color: $primary-red;
   }
-
   span {
     font-size: $font-size-sm;
     font-weight: $font-weight-semibold;
     color: $gray-900;
     text-align: center;
   }
-
   small {
     font-size: $font-size-xs;
     color: $gray-500;
@@ -1184,27 +1302,87 @@
   background: $white;
   border-radius: $radius-md;
   padding: $space-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
 }
 
-.atr-action-buttons {
+// ─── FORM ELEMENTS ────────────────────────────────────────────────────────────
+.atr-form {
+  &__field {
+    margin-bottom: 0;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: $space-xs;
+
+    i {
+      color: $gray-400;
+      font-size: $font-size-xs;
+    }
+  }
+
+  &__select,
+  &__textarea {
+    width: 100%;
+    padding: $space-md;
+    border: 1.5px solid $gray-200;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-family: $font-family-base;
+    color: $gray-900;
+    background: $white;
+    transition: $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-red;
+      box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
+    }
+
+    &:disabled {
+      background: $gray-100;
+      color: $gray-500;
+      cursor: not-allowed;
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+// ─── DECISION ROW ─────────────────────────────────────────────────────────────
+.atr-decision-row {
   display: flex;
   gap: $space-md;
-  margin-bottom: $space-lg;
-  flex-wrap: wrap;
+
+  @media (max-width: $breakpoint-sm) {
+    flex-direction: column;
+  }
 }
 
+// ─── BUTTON SYSTEM ────────────────────────────────────────────────────────────
 .atr-btn {
-  padding: $space-sm $space-lg;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding: $space-sm $space-xl;
   border-radius: $radius-md;
+  border: none;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   font-family: $font-family-base;
   cursor: pointer;
   transition: $transition-fast;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: $space-sm;
   position: relative;
   overflow: hidden;
 
@@ -1227,7 +1405,7 @@
       height 0.6s;
   }
 
-  &:hover:not(:disabled) {
+  &:not(:disabled):hover {
     transform: translateY(-2px);
 
     &::before {
@@ -1241,12 +1419,50 @@
     cursor: not-allowed;
   }
 
+  &--approve {
+    flex: 1;
+    background: $success;
+    color: $white;
+    box-shadow: 0 2px 8px rgba($success, 0.3);
+
+    &:not(:disabled):hover {
+      filter: brightness(1.08);
+      box-shadow: 0 4px 14px rgba($success, 0.4);
+    }
+  }
+
+  &--reject {
+    flex: 1;
+    background: $error;
+    color: $white;
+    box-shadow: 0 2px 8px rgba($error, 0.3);
+
+    &:not(:disabled):hover {
+      filter: brightness(1.08);
+      box-shadow: 0 4px 14px rgba($error, 0.4);
+    }
+  }
+
+  &--schedule {
+    width: 100%;
+    padding: $space-md $space-xl;
+    font-size: $font-size-base;
+    background: #8b5cf6;
+    color: $white;
+    box-shadow: 0 2px 8px rgba(#8b5cf6, 0.3);
+
+    &:not(:disabled):hover {
+      filter: brightness(1.08);
+      box-shadow: 0 4px 14px rgba(#8b5cf6, 0.4);
+    }
+  }
+
   &--primary {
     background: $primary-red;
     color: $white;
     box-shadow: $shadow-sm;
 
-    &:hover:not(:disabled) {
+    &:not(:disabled):hover {
       background: $primary-dark;
       box-shadow: $shadow-md;
     }
@@ -1257,39 +1473,123 @@
     color: $white;
     box-shadow: $shadow-sm;
 
-    &:hover:not(:disabled) {
-      background: darken($success, 8%);
+    &:not(:disabled):hover {
+      filter: brightness(0.92);
       box-shadow: $shadow-md;
+    }
+  }
+}
+
+// ─── STATE BANNERS ────────────────────────────────────────────────────────────
+.atr-approved-state {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+  padding: $space-lg;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: $radius-lg;
+
+  &__info {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-md;
+  }
+
+  &__icon {
+    font-size: $font-size-xl;
+    color: $success;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-bold;
+      color: #065f46;
+    }
+    span {
+      font-size: $font-size-xs;
+      color: #047857;
+      line-height: 1.5;
+    }
+  }
+}
+
+.atr-rejected-state {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-md;
+  padding: $space-lg;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: $radius-lg;
+
+  &__icon {
+    font-size: $font-size-xl;
+    color: $error;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-bold;
+      color: #991b1b;
+    }
+    span {
+      font-size: $font-size-xs;
+      color: #b91c1c;
+      line-height: 1.5;
     }
   }
 }
 
 .atr-session-created {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: $space-md;
-  padding: $space-md;
-  background: rgba($success, 0.08);
-  border: 1px solid rgba($success, 0.2);
-  border-radius: $radius-md;
+  padding: $space-lg;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: $radius-lg;
 
-  i {
+  &__icon {
     font-size: $font-size-xl;
-    color: $success;
+    color: #8b5cf6;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 
-  div {
+  &__text {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 
     strong {
       font-size: $font-size-sm;
-      color: $success;
+      font-weight: $font-weight-bold;
+      color: #4c1d95;
     }
-
     span {
       font-size: $font-size-xs;
-      color: $gray-600;
+      color: #6d28d9;
+      line-height: 1.5;
+    }
+
+    .atr-session-created__title {
+      font-style: italic;
+      color: #7c3aed;
     }
   }
 }
@@ -1329,45 +1629,6 @@
     font-size: $font-size-sm;
     color: $gray-900;
     font-weight: $font-weight-medium;
-  }
-}
-
-// ─── FORM ELEMENTS ────────────────────────────────────────────────────────────
-.atr-form {
-  &__field {
-    margin-bottom: $space-lg;
-  }
-
-  &__label {
-    display: block;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    color: $gray-700;
-    margin-bottom: $space-xs;
-  }
-
-  &__select,
-  &__textarea {
-    width: 100%;
-    padding: $space-md;
-    border: 1.5px solid $gray-200;
-    border-radius: $radius-md;
-    font-size: $font-size-sm;
-    font-family: $font-family-base;
-    color: $gray-900;
-    background: $white;
-    transition: $transition-fast;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-red;
-      box-shadow: 0 0 0 3px rgba($primary-red, 0.1);
-    }
-  }
-
-  &__textarea {
-    resize: vertical;
-    min-height: 80px;
   }
 }
 
@@ -1473,7 +1734,6 @@
 @media (max-width: $breakpoint-lg) {
   .atr-header {
     padding: $space-xl $space-lg;
-
     &__title {
       font-size: $font-size-xl;
     }
@@ -1484,7 +1744,7 @@
   }
 
   .atr-filters {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -1496,12 +1756,10 @@
       flex-direction: column;
       align-items: flex-start;
     }
-
     &__stats {
       width: 100%;
       justify-content: space-around;
     }
-
     &__title {
       font-size: $font-size-lg;
     }
@@ -1524,19 +1782,12 @@
     }
   }
 
-  .atr-action-buttons {
+  .atr-decision-row {
     flex-direction: column;
-
-    .atr-btn {
-      width: 100%;
-      justify-content: center;
-    }
   }
-
   .atr-contact-grid {
     grid-template-columns: 1fr;
   }
-
   .atr-doc-grid {
     grid-template-columns: 1fr;
   }

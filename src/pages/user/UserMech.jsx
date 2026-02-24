@@ -396,13 +396,18 @@ export default function UserMerch() {
 
   const fetchItems = async () => {
     try {
+      // getMerchandise() passes available_only=true by default —
+      // backend also enforces this by session role, so no client-side
+      // is_available filter is needed here.
       const response = await getMerchandise();
-      // Only show available items on user side
-      const availableItems = response.data.filter((item) => item.is_available);
-      setItems(availableItems);
+      setItems(response.data);
     } catch (error) {
       console.error("Error fetching merchandise:", error);
-      showToast("Failed to load merchandise", "error");
+      // Show the actual error so production issues surface visibly
+      showToast(
+        `Failed to load merchandise: ${error.response?.data?.message ?? error.message}`,
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -411,7 +416,6 @@ export default function UserMerch() {
   const filterItems = () => {
     let filtered = [...items];
 
-    // Apply search filter
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(
@@ -422,7 +426,6 @@ export default function UserMerch() {
       );
     }
 
-    // Apply category filter
     if (categoryFilter !== "all") {
       filtered = filtered.filter((item) => item.category === categoryFilter);
     }
@@ -622,7 +625,7 @@ export default function UserMerch() {
           </div>
         ) : (
           <div className="um-grid">
-            {filteredItems.map((item, index) => (
+            {filteredItems.map((item) => (
               <MerchandiseCard
                 key={item.merch_id}
                 item={item}

@@ -572,7 +572,255 @@
     overflow-x: auto;
   }
 }
+// ─── ADD THESE STYLES TO YOUR AdminTraining.scss ─────────────────────────────
+// Paste this at the bottom of your existing AdminTraining.scss file
 
+// ── TABS ──────────────────────────────────────────────────────────────────────
+.at-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.35rem;
+  width: fit-content;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.at-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  i {
+    font-size: 0.8rem;
+  }
+
+  &:hover:not(.at-tab--active) {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  &--active {
+    background: #8b1e1e;
+    color: white;
+    box-shadow: 0 2px 6px rgba(139, 30, 30, 0.3);
+
+    &.at-tab--archived-active {
+      background: #92400e;
+      box-shadow: 0 2px 6px rgba(146, 64, 14, 0.3);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.25);
+    color: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+
+    &--muted {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}
+
+.at-tab:not(.at-tab--active) .at-tab__badge {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+// ── ARCHIVE INFO BANNER ───────────────────────────────────────────────────────
+.at-archive-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: #92400e;
+  font-size: 0.83rem;
+  line-height: 1.5;
+
+  i {
+    flex-shrink: 0;
+    color: #d97706;
+  }
+}
+
+// ── ARCHIVED TABLE VARIANT ────────────────────────────────────────────────────
+
+.at-table--archived {
+  tbody tr.at-table__row--archived {
+    opacity: 0.85;
+    &:hover {
+      opacity: 1;
+      background: #fef3c7 !important;
+    }
+  }
+}
+
+.at-event-cell__title--muted {
+  color: #6b7280 !important;
+  text-decoration: line-through;
+  text-decoration-color: #d1d5db;
+}
+
+.at-table-panel__archived-hint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 0.5rem;
+
+  &::before {
+    content: "— ";
+  }
+}
+
+// ── CONFIRM MODAL ─────────────────────────────────────────────────────────────
+.at-overlay--confirm {
+  z-index: 1100;
+}
+
+.at-confirm {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 420px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: at-confirm-in 0.22s ease;
+
+  @keyframes at-confirm-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.6rem;
+  }
+
+  &__message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  &__cancel {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f9fafb;
+    }
+  }
+
+  &__ok {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: none;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      filter 0.15s,
+      transform 0.1s;
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+// ── NEW ACTION BUTTON VARIANTS ────────────────────────────────────────────────
+.at-action-btn {
+  &--archive {
+    background: #f59e0b12;
+    color: #f59e0b;
+    border-color: #f59e0b25;
+    &:hover {
+      background: #f59e0b20 !important;
+    }
+  }
+
+  &--restore {
+    background: #10b98112;
+    color: #10b981;
+    border-color: #10b98125;
+    &:hover {
+      background: #10b98120 !important;
+    }
+  }
+
+  &--delete {
+    background: #ef444412;
+    color: #ef4444;
+    border-color: #ef444425;
+    &:hover {
+      background: #ef444420 !important;
+    }
+  }
+}
 // ─── TABLE ────────────────────────────────────────────────────────────────────
 .at-table {
   width: 100%;

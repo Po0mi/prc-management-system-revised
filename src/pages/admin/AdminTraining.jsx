@@ -16,8 +16,45 @@ import {
   rejectSessionRegistration,
   deleteSessionRegistration,
 } from "../../services/sessionRegistrationsApi";
+import api from "../../services/api";
 
-// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+// ─── ARCHIVE API HELPERS ──────────────────────────────────────────────────────
+const BASE = "/api/training_sessions.php";
+
+async function getArchivedSessions({
+  search = "",
+  service = "All Services",
+} = {}) {
+  const params = { action: "list", archived: "true" };
+  if (search.trim()) params.search = search.trim();
+  if (service && service !== "All Services") params.service = service;
+  const { data } = await api.get(BASE, { params });
+  if (!data.success)
+    throw new Error(data.message || "Failed to fetch archived sessions");
+  return { sessions: data.sessions ?? [] };
+}
+
+async function restoreSession(id) {
+  const { data } = await api.put(
+    BASE,
+    {},
+    { params: { action: "restore", id } },
+  );
+  if (!data.success)
+    throw new Error(data.message || "Failed to restore session");
+  return data;
+}
+
+async function permanentDeleteSession(id) {
+  const { data } = await api.delete(BASE, {
+    params: { action: "permanent-delete", id },
+  });
+  if (!data.success)
+    throw new Error(data.message || "Failed to permanently delete session");
+  return data;
+}
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const SERVICE_OPTIONS = [
   {
     key: "All Services",
@@ -74,68 +111,57 @@ const EMPTY_FORM = {
   instructor_credentials: "",
 };
 
-// ─── SERVICE BADGE COMPONENT ─────────────────────────────────────────────────
+// ─── SMALL COMPONENTS ─────────────────────────────────────────────────────────
 function ServiceBadge({ service }) {
-  const serviceConfig = SERVICE_OPTIONS.find((s) => s.key === service) || {
+  const cfg = SERVICE_OPTIONS.find((s) => s.key === service) || {
     label: service,
     color: "#6b7280",
     icon: "fa-tag",
   };
-
   return (
     <span
       className="at-badge at-badge--service"
       style={{
-        background: `${serviceConfig.color}12`,
-        color: serviceConfig.color,
-        border: `1px solid ${serviceConfig.color}25`,
+        background: `${cfg.color}12`,
+        color: cfg.color,
+        border: `1px solid ${cfg.color}25`,
       }}
     >
-      <i className={`fas ${serviceConfig.icon}`} />
-      {serviceConfig.label}
+      <i className={`fas ${cfg.icon}`} /> {cfg.label}
     </span>
   );
 }
 
-// ─── STATUS BADGE COMPONENT ──────────────────────────────────────────────────
-function StatusBadge({ isPast, isUpcoming, isOngoing }) {
-  let status = "Ongoing";
-  let color = "#f59e0b";
-  let bgColor = "#fef3c7";
-  let icon = "fa-clock";
-
+function StatusBadge({ isPast, isUpcoming }) {
+  let label = "Ongoing",
+    color = "#f59e0b",
+    bg = "#fef3c7",
+    icon = "fa-clock";
   if (isPast) {
-    status = "Completed";
+    label = "Completed";
     color = "#10b981";
-    bgColor = "#d1fae5";
+    bg = "#d1fae5";
     icon = "fa-check-circle";
-  } else if (isUpcoming) {
-    status = "Upcoming";
+  }
+  if (isUpcoming) {
+    label = "Upcoming";
     color = "#3b82f6";
-    bgColor = "#dbeafe";
+    bg = "#dbeafe";
     icon = "fa-calendar";
   }
-
   return (
     <span
       className="at-badge"
-      style={{
-        background: bgColor,
-        color: color,
-        border: `1px solid ${color}33`,
-      }}
+      style={{ background: bg, color, border: `1px solid ${color}33` }}
     >
-      <i className={`fas ${icon}`} /> {status}
+      <i className={`fas ${icon}`} /> {label}
     </span>
   );
 }
 
-// ─── FEE BADGE COMPONENT ─────────────────────────────────────────────────────
 function FeeBadge({ fee }) {
-  if (fee > 0) {
+  if (fee > 0)
     return <span className="at-fee">₱{parseFloat(fee).toFixed(2)}</span>;
-  }
-
   return (
     <span
       className="at-badge at-badge--free"
@@ -150,13 +176,11 @@ function FeeBadge({ fee }) {
   );
 }
 
-// ─── TOAST ───────────────────────────────────────────────────────────────────
 function Toast({ message, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3500);
     return () => clearTimeout(t);
   }, [onClose]);
-
   return (
     <div className={`at-toast at-toast--${type}`} onClick={onClose}>
       <div className="at-toast__icon">
@@ -177,12 +201,49 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-// ─── SESSION FORM MODAL ──────────────────────────────────────────────────────
+// ─── CONFIRM MODAL ────────────────────────────────────────────────────────────
+function ConfirmModal({
+  title,
+  message,
+  confirmLabel,
+  confirmColor = "#ef4444",
+  icon = "fa-triangle-exclamation",
+  onConfirm,
+  onCancel,
+}) {
+  return (
+    <div className="at-overlay at-overlay--confirm" onClick={onCancel}>
+      <div className="at-confirm" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="at-confirm__icon"
+          style={{ color: confirmColor, background: `${confirmColor}12` }}
+        >
+          <i className={`fas ${icon}`} />
+        </div>
+        <h3 className="at-confirm__title">{title}</h3>
+        <p className="at-confirm__message">{message}</p>
+        <div className="at-confirm__actions">
+          <button className="at-confirm__cancel" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            className="at-confirm__ok"
+            style={{ background: confirmColor }}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SESSION FORM MODAL ───────────────────────────────────────────────────────
 function SessionModal({ session, onClose, onSaved }) {
   const [form, setForm] = useState(session || { ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
-
   const isEdit = !!session;
 
   function set(k, v) {
@@ -206,14 +267,11 @@ function SessionModal({ session, onClose, onSaved }) {
       setErrors(v);
       return;
     }
-
     setSaving(true);
     try {
       const payload = { ...form };
-      if (!payload.session_end_date) {
+      if (!payload.session_end_date)
         payload.session_end_date = payload.session_date;
-      }
-
       const res = isEdit
         ? await updateTrainingSession(session.session_id, payload)
         : await createTrainingSession(payload);
@@ -242,15 +300,12 @@ function SessionModal({ session, onClose, onSaved }) {
             <i className="fas fa-xmark" />
           </button>
         </div>
-
         <form className="at-modal__body" onSubmit={handleSubmit}>
           {errors._global && (
             <div className="at-form__error-banner">
               <i className="fas fa-circle-exclamation" /> {errors._global}
             </div>
           )}
-
-          {/* Session Title */}
           <div className="at-form__field">
             <label className="at-form__label">
               Session Title <span className="at-form__required">*</span>
@@ -267,8 +322,6 @@ function SessionModal({ session, onClose, onSaved }) {
               </span>
             )}
           </div>
-
-          {/* Description */}
           <div className="at-form__field">
             <label className="at-form__label">Description</label>
             <textarea
@@ -279,8 +332,6 @@ function SessionModal({ session, onClose, onSaved }) {
               placeholder="Training session description, objectives, and learning outcomes"
             />
           </div>
-
-          {/* Major Service */}
           <div className="at-form__field">
             <label className="at-form__label">
               Major Service <span className="at-form__required">*</span>
@@ -306,8 +357,6 @@ function SessionModal({ session, onClose, onSaved }) {
               </span>
             )}
           </div>
-
-          {/* Start Date + End Date */}
           <div className="at-form__row">
             <div className="at-form__field">
               <label className="at-form__label">
@@ -339,8 +388,6 @@ function SessionModal({ session, onClose, onSaved }) {
               </small>
             </div>
           </div>
-
-          {/* Start Time + End Time */}
           <div className="at-form__row">
             <div className="at-form__field">
               <label className="at-form__label">Start Time</label>
@@ -361,8 +408,6 @@ function SessionModal({ session, onClose, onSaved }) {
               />
             </div>
           </div>
-
-          {/* Venue */}
           <div className="at-form__field">
             <label className="at-form__label">
               Training Venue <span className="at-form__required">*</span>
@@ -384,8 +429,6 @@ function SessionModal({ session, onClose, onSaved }) {
               </span>
             )}
           </div>
-
-          {/* Capacity + Fee */}
           <div className="at-form__row">
             <div className="at-form__field">
               <label className="at-form__label">Capacity</label>
@@ -414,8 +457,6 @@ function SessionModal({ session, onClose, onSaved }) {
               />
             </div>
           </div>
-
-          {/* Instructor */}
           <div className="at-form__field">
             <label className="at-form__label">Instructor/Facilitator</label>
             <input
@@ -429,8 +470,6 @@ function SessionModal({ session, onClose, onSaved }) {
               assigned
             </small>
           </div>
-
-          {/* Instructor Credentials */}
           <div className="at-form__field">
             <label className="at-form__label">Instructor Credentials</label>
             <input
@@ -440,8 +479,6 @@ function SessionModal({ session, onClose, onSaved }) {
               placeholder="e.g., MD, BLS Instructor, ACLS Provider"
             />
           </div>
-
-          {/* Instructor Bio */}
           <div className="at-form__field">
             <label className="at-form__label">Instructor Bio</label>
             <textarea
@@ -452,8 +489,6 @@ function SessionModal({ session, onClose, onSaved }) {
               placeholder="Brief professional background and experience"
             />
           </div>
-
-          {/* Requirements */}
           <div className="at-form__field">
             <label className="at-form__label">Training Requirements</label>
             <textarea
@@ -464,7 +499,6 @@ function SessionModal({ session, onClose, onSaved }) {
               placeholder="Prerequisites, materials to bring, documents needed, etc."
             />
           </div>
-
           <button type="submit" disabled={saving} className="at-form__submit">
             {saving ? (
               <>
@@ -483,7 +517,7 @@ function SessionModal({ session, onClose, onSaved }) {
   );
 }
 
-// ─── REGISTRATIONS MODAL ─────────────────────────────────────────────────────
+// ─── REGISTRATIONS MODAL ──────────────────────────────────────────────────────
 function RegistrationsModal({ session, onClose, onUpdate }) {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -504,14 +538,12 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
         session.session_id,
       );
       setRegistrations(regs);
-
-      const stats = {
+      setStats({
         total: regs.length,
         approved: regs.filter((r) => r.status === "approved").length,
         pending: regs.filter((r) => r.status === "pending").length,
         rejected: regs.filter((r) => r.status === "rejected").length,
-      };
-      setStats(stats);
+      });
     } catch (err) {
       console.error("Load registrations error:", err);
       showToast(err.message || "Failed to load registrations", "error");
@@ -562,7 +594,7 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
   function getInitials(name) {
     return name
       .split(" ")
-      .map((word) => word[0])
+      .map((w) => w[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
@@ -583,29 +615,23 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
             <i className="fas fa-xmark" />
           </button>
         </div>
-
         <div className="at-modal__body at-modal__body--regs">
-          {/* Stats Cards */}
           <div className="at-reg-stats">
-            <div className="at-reg-stat">
-              <div className="at-reg-stat__num">{stats.total}</div>
-              <div className="at-reg-stat__label">Total Registrations</div>
-            </div>
-            <div className="at-reg-stat at-reg-stat--approved">
-              <div className="at-reg-stat__num">{stats.approved}</div>
-              <div className="at-reg-stat__label">Approved</div>
-            </div>
-            <div className="at-reg-stat at-reg-stat--pending">
-              <div className="at-reg-stat__num">{stats.pending}</div>
-              <div className="at-reg-stat__label">Pending</div>
-            </div>
-            <div className="at-reg-stat at-reg-stat--rejected">
-              <div className="at-reg-stat__num">{stats.rejected}</div>
-              <div className="at-reg-stat__label">Rejected</div>
-            </div>
+            {[
+              ["Total Registrations", stats.total, ""],
+              ["Approved", stats.approved, "approved"],
+              ["Pending", stats.pending, "pending"],
+              ["Rejected", stats.rejected, "rejected"],
+            ].map(([label, val, mod]) => (
+              <div
+                key={label}
+                className={`at-reg-stat${mod ? ` at-reg-stat--${mod}` : ""}`}
+              >
+                <div className="at-reg-stat__num">{val}</div>
+                <div className="at-reg-stat__label">{label}</div>
+              </div>
+            ))}
           </div>
-
-          {/* Registrations Table */}
           {loading ? (
             <div className="at-reg-loading">
               <div className="at-reg-loading__spinner">
@@ -639,149 +665,141 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {registrations.map((reg) => {
-                    const serviceColor = "#c41e3a";
-                    return (
-                      <tr key={reg.registration_id} className="at-reg-row">
-                        <td>
-                          <div className="at-reg-user">
-                            <div
-                              className="at-reg-user__avatar"
-                              style={{
-                                background: `${serviceColor}12`,
-                                color: serviceColor,
-                                border: `2px solid ${serviceColor}25`,
-                              }}
-                            >
-                              {getInitials(reg.full_name)}
-                            </div>
-                            <div className="at-reg-user__info">
-                              <div className="at-reg-user__name">
-                                {reg.full_name}
-                              </div>
-                              <div className="at-reg-user__email">
-                                {reg.email}
-                              </div>
-                              {reg.age && (
-                                <div className="at-reg-user__meta">
-                                  <i className="fas fa-cake-candles" /> Age:{" "}
-                                  {reg.age}
-                                </div>
-                              )}
-                              {reg.location && (
-                                <div className="at-reg-user__meta">
-                                  <i className="fas fa-location-dot" />{" "}
-                                  {reg.location}
-                                </div>
-                              )}
-                            </div>
+                  {registrations.map((reg) => (
+                    <tr key={reg.registration_id} className="at-reg-row">
+                      <td>
+                        <div className="at-reg-user">
+                          <div
+                            className="at-reg-user__avatar"
+                            style={{
+                              background: "#c41e3a12",
+                              color: "#c41e3a",
+                              border: "2px solid #c41e3a25",
+                            }}
+                          >
+                            {getInitials(reg.full_name)}
                           </div>
-                        </td>
-                        <td>
-                          <div className="at-reg-date">
-                            <div className="at-reg-date__main">
-                              {new Date(
-                                reg.registration_date,
-                              ).toLocaleDateString("en-US", {
+                          <div className="at-reg-user__info">
+                            <div className="at-reg-user__name">
+                              {reg.full_name}
+                            </div>
+                            <div className="at-reg-user__email">
+                              {reg.email}
+                            </div>
+                            {reg.age && (
+                              <div className="at-reg-user__meta">
+                                <i className="fas fa-cake-candles" /> Age:{" "}
+                                {reg.age}
+                              </div>
+                            )}
+                            {reg.location && (
+                              <div className="at-reg-user__meta">
+                                <i className="fas fa-location-dot" />{" "}
+                                {reg.location}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="at-reg-date">
+                          <div className="at-reg-date__main">
+                            {new Date(reg.registration_date).toLocaleDateString(
+                              "en-US",
+                              {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
-                              })}
-                            </div>
-                            <div className="at-reg-date__time">
-                              {new Date(
-                                reg.registration_date,
-                              ).toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className={`at-status at-status--${reg.status}`}
-                          >
-                            {reg.status?.toUpperCase()}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="at-reg-docs">
-                            {reg.valid_id_path && (
-                              <a
-                                href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="at-doc-link"
-                              >
-                                <i className="fas fa-id-card" /> Valid ID
-                              </a>
-                            )}
-                            {reg.requirements_path && (
-                              <a
-                                href={`http://localhost/prc-management-system/${reg.requirements_path}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="at-doc-link"
-                              >
-                                <i className="fas fa-file-alt" /> Requirements
-                              </a>
-                            )}
-                            {reg.payment_receipt_path && (
-                              <a
-                                href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="at-doc-link"
-                              >
-                                <i className="fas fa-receipt" /> Receipt
-                              </a>
+                              },
                             )}
                           </div>
-                        </td>
-                        <td>
-                          <div className="at-reg-actions">
-                            {reg.status === "pending" && (
-                              <>
-                                <button
-                                  className="at-reg-btn at-reg-btn--approve"
-                                  onClick={() =>
-                                    handleApprove(reg.registration_id)
-                                  }
-                                  title="Approve Registration"
-                                >
-                                  <i className="fas fa-check" />
-                                </button>
-                                <button
-                                  className="at-reg-btn at-reg-btn--reject"
-                                  onClick={() =>
-                                    handleReject(reg.registration_id)
-                                  }
-                                  title="Reject Registration"
-                                >
-                                  <i className="fas fa-times" />
-                                </button>
-                              </>
+                          <div className="at-reg-date__time">
+                            {new Date(reg.registration_date).toLocaleTimeString(
+                              "en-US",
+                              { hour: "2-digit", minute: "2-digit" },
                             )}
-                            <button
-                              className="at-reg-btn at-reg-btn--delete"
-                              onClick={() => handleDelete(reg.registration_id)}
-                              title="Delete Registration"
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`at-status at-status--${reg.status}`}>
+                          {reg.status?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="at-reg-docs">
+                          {reg.valid_id_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.valid_id_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
                             >
-                              <i className="fas fa-trash" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <i className="fas fa-id-card" /> Valid ID
+                            </a>
+                          )}
+                          {reg.requirements_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.requirements_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
+                            >
+                              <i className="fas fa-file-alt" /> Requirements
+                            </a>
+                          )}
+                          {reg.payment_receipt_path && (
+                            <a
+                              href={`http://localhost/prc-management-system/${reg.payment_receipt_path}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="at-doc-link"
+                            >
+                              <i className="fas fa-receipt" /> Receipt
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="at-reg-actions">
+                          {reg.status === "pending" && (
+                            <>
+                              <button
+                                className="at-reg-btn at-reg-btn--approve"
+                                onClick={() =>
+                                  handleApprove(reg.registration_id)
+                                }
+                                title="Approve Registration"
+                              >
+                                <i className="fas fa-check" />
+                              </button>
+                              <button
+                                className="at-reg-btn at-reg-btn--reject"
+                                onClick={() =>
+                                  handleReject(reg.registration_id)
+                                }
+                                title="Reject Registration"
+                              >
+                                <i className="fas fa-times" />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            className="at-reg-btn at-reg-btn--delete"
+                            onClick={() => handleDelete(reg.registration_id)}
+                            title="Delete Registration"
+                          >
+                            <i className="fas fa-trash" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </div>
-
-        {/* Toast */}
         {toast && (
           <Toast
             message={toast.msg}
@@ -794,23 +812,36 @@ function RegistrationsModal({ session, onClose, onUpdate }) {
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function AdminTraining() {
+  // ── Tab ────────────────────────────────────────────────────────────────────
+  const [tab, setTab] = useState("active"); // "active" | "archived"
+
+  // ── Active sessions ────────────────────────────────────────────────────────
   const [sessions, setSessions] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [service, setService] = useState("All Services");
+
+  // ── Archived sessions ──────────────────────────────────────────────────────
+  const [archived, setArchived] = useState([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [archiveSearch, setArchiveSearch] = useState("");
+  const [archiveService, setArchiveService] = useState("All Services");
+
+  // ── UI ─────────────────────────────────────────────────────────────────────
   const [editSession, setEditSession] = useState(null);
   const [regsSession, setRegsSession] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [confirm, setConfirm] = useState(null);
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
-  // ── STATS ──────────────────────────────────────────────────────────────────
+  // ── Stats ──────────────────────────────────────────────────────────────────
   const refreshStats = useCallback(async () => {
     try {
       const { stats } = await getSessionStats();
@@ -824,7 +855,7 @@ export default function AdminTraining() {
     refreshStats();
   }, [refreshStats]);
 
-  // ── SESSIONS ───────────────────────────────────────────────────────────────
+  // ── Active sessions fetch ──────────────────────────────────────────────────
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     try {
@@ -835,7 +866,6 @@ export default function AdminTraining() {
       });
       setSessions(sess);
     } catch (err) {
-      console.error("Fetch sessions error:", err);
       showToast(err.message || "Failed to load training sessions", "error");
       setSessions([]);
     } finally {
@@ -844,24 +874,93 @@ export default function AdminTraining() {
   }, [filter, search, service]);
 
   useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+    if (tab === "active") fetchSessions();
+  }, [fetchSessions, tab]);
 
-  // ── DELETE ─────────────────────────────────────────────────────────────────
-  async function handleDelete(session) {
-    if (!window.confirm(`Are you sure you want to archive "${session.title}"?`))
-      return;
+  // ── Archived sessions fetch ────────────────────────────────────────────────
+  const fetchArchived = useCallback(async () => {
+    setArchiveLoading(true);
     try {
-      const res = await deleteTrainingSession(session.session_id);
-      showToast(res.message || "Session archived successfully");
-      fetchSessions();
-      refreshStats();
+      const { sessions: sess } = await getArchivedSessions({
+        search: archiveSearch,
+        service: archiveService,
+      });
+      setArchived(sess);
     } catch (err) {
-      showToast(err.message || "Failed to archive session", "error");
+      showToast(err.message || "Failed to load archived sessions", "error");
+      setArchived([]);
+    } finally {
+      setArchiveLoading(false);
+    }
+  }, [archiveSearch, archiveService]);
+
+  useEffect(() => {
+    if (tab === "archived") fetchArchived();
+  }, [fetchArchived, tab]);
+
+  // ── Confirm helpers ────────────────────────────────────────────────────────
+  function handleArchiveClick(sess) {
+    setConfirm({
+      type: "archive",
+      session: sess,
+      title: "Archive Session",
+      message: `Archive "${sess.title}"? It will be hidden from users and registered participants will be notified of cancellation.`,
+      confirmLabel: "Archive",
+      confirmColor: "#f59e0b",
+      icon: "fa-box-archive",
+    });
+  }
+
+  function handleRestoreClick(sess) {
+    setConfirm({
+      type: "restore",
+      session: sess,
+      title: "Restore Session",
+      message: `Restore "${sess.title}"? It will reappear in the active sessions list and be visible to users again.`,
+      confirmLabel: "Restore",
+      confirmColor: "#10b981",
+      icon: "fa-rotate-left",
+    });
+  }
+
+  function handlePermanentDeleteClick(sess) {
+    setConfirm({
+      type: "permanent",
+      session: sess,
+      title: "Permanently Delete Session",
+      message: `Permanently delete "${sess.title}"? This cannot be undone. All registration records will also be deleted.`,
+      confirmLabel: "Delete Permanently",
+      confirmColor: "#ef4444",
+      icon: "fa-trash",
+    });
+  }
+
+  async function executeConfirm() {
+    if (!confirm) return;
+    const { type, session: sess } = confirm;
+    setConfirm(null);
+    try {
+      if (type === "archive") {
+        await deleteTrainingSession(sess.session_id);
+        showToast(`"${sess.title}" archived successfully`);
+        fetchSessions();
+        refreshStats();
+      } else if (type === "restore") {
+        await restoreSession(sess.session_id);
+        showToast(`"${sess.title}" restored successfully`);
+        fetchArchived();
+        refreshStats();
+      } else if (type === "permanent") {
+        await permanentDeleteSession(sess.session_id);
+        showToast(`"${sess.title}" permanently deleted`);
+        fetchArchived();
+        refreshStats();
+      }
+    } catch (err) {
+      showToast(err.message || "Action failed", "error");
     }
   }
 
-  // ── SAVED ──────────────────────────────────────────────────────────────────
   function handleSaved(msg) {
     showToast(msg);
     setEditSession(null);
@@ -873,15 +972,14 @@ export default function AdminTraining() {
   const totalSessions = stats?.total ?? sessions.length;
   const upcomingSessions = stats?.upcoming ?? 0;
   const completedSessions = stats?.completed ?? 0;
-
   const serviceBreakdown = stats?.services || [];
 
   const getActiveFilterCount = () => {
-    let count = 0;
-    if (filter !== "all") count++;
-    if (search) count++;
-    if (service !== "All Services") count++;
-    return count;
+    let c = 0;
+    if (filter !== "all") c++;
+    if (search) c++;
+    if (service !== "All Services") c++;
+    return c;
   };
 
   const clearAllFilters = () => {
@@ -890,9 +988,10 @@ export default function AdminTraining() {
     setService("All Services");
   };
 
+  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div className="at-root">
-      {/* PAGE HEADER with Wave Effect */}
+      {/* PAGE HEADER */}
       <div className="at-header">
         <div className="at-header__container">
           <div className="at-header__content">
@@ -950,17 +1049,19 @@ export default function AdminTraining() {
                 ? totalSessions
                 : serviceBreakdown.find((s) => s.major_service === svc.key)
                     ?.count || 0;
-            const isActive = service === svc.key;
-
+            const isActive = service === svc.key && tab === "active";
             return (
               <button
                 key={svc.key}
-                className={`at-service-card ${isActive ? "at-service-card--active" : ""}`}
+                className={`at-service-card${isActive ? " at-service-card--active" : ""}`}
                 style={{
                   borderColor: svc.color,
                   background: isActive ? `${svc.color}08` : "white",
                 }}
-                onClick={() => setService(svc.key)}
+                onClick={() => {
+                  setService(svc.key);
+                  if (tab !== "active") setTab("active");
+                }}
               >
                 <i
                   className={`fas ${svc.icon}`}
@@ -982,313 +1083,592 @@ export default function AdminTraining() {
           })}
         </div>
 
-        {/* TOOLBAR */}
-        <div className="at-toolbar">
-          <div className="at-toolbar__search">
-            <i className="fas fa-search at-toolbar__search-icon" />
-            <input
-              className="at-toolbar__search-input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search sessions by title, instructor, or venue..."
-            />
-            {search && (
-              <button
-                className="at-toolbar__search-clear"
-                onClick={() => setSearch("")}
-              >
-                <i className="fas fa-times" />
-              </button>
-            )}
-          </div>
-
-          <div className="at-toolbar__filters">
-            {[
-              { key: "all", label: "All Sessions", color: "#6b7280" },
-              { key: "upcoming", label: "Upcoming", color: "#3b82f6" },
-              { key: "past", label: "Past Sessions", color: "#9ca3af" },
-            ].map(({ key, label, color }) => (
-              <button
-                key={key}
-                className={`at-toolbar__filter-btn ${filter === key ? "at-toolbar__filter-btn--active" : ""}`}
-                onClick={() => setFilter(key)}
-                style={
-                  filter === key
-                    ? { background: `${color}12`, color, borderColor: color }
-                    : {}
-                }
-              >
-                {label}
-              </button>
-            ))}
-
-            {getActiveFilterCount() > 0 && (
-              <button
-                className="at-toolbar__filter-clear"
-                onClick={clearAllFilters}
-              >
-                <i className="fas fa-times" />
-                Clear Filters ({getActiveFilterCount()})
-              </button>
-            )}
-          </div>
-
+        {/* TABS */}
+        <div className="at-tabs">
           <button
-            className="at-toolbar__create-btn"
-            onClick={() => setCreateOpen(true)}
+            className={`at-tab${tab === "active" ? " at-tab--active" : ""}`}
+            onClick={() => setTab("active")}
           >
-            <i className="fas fa-plus" /> Create Session
+            <i className="fas fa-graduation-cap" />
+            Active Sessions
+            {!loading && (
+              <span className="at-tab__badge">{sessions.length}</span>
+            )}
+          </button>
+          <button
+            className={`at-tab${tab === "archived" ? " at-tab--active at-tab--archived-active" : ""}`}
+            onClick={() => setTab("archived")}
+          >
+            <i className="fas fa-box-archive" />
+            Archived Sessions
+            {tab === "archived" && !archiveLoading && (
+              <span className="at-tab__badge at-tab__badge--muted">
+                {archived.length}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* TABLE */}
-        <div className="at-table-panel">
-          <div className="at-table-panel__head">
-            <div className="at-table-panel__title">
-              <i className="fas fa-graduation-cap" /> Training Sessions
+        {/* ══ ACTIVE TAB ══ */}
+        {tab === "active" && (
+          <>
+            <div className="at-toolbar">
+              <div className="at-toolbar__search">
+                <i className="fas fa-search at-toolbar__search-icon" />
+                <input
+                  className="at-toolbar__search-input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search sessions by title, instructor, or venue..."
+                />
+                {search && (
+                  <button
+                    className="at-toolbar__search-clear"
+                    onClick={() => setSearch("")}
+                  >
+                    <i className="fas fa-times" />
+                  </button>
+                )}
+              </div>
+              <div className="at-toolbar__filters">
+                {[
+                  { key: "all", label: "All Sessions", color: "#6b7280" },
+                  { key: "upcoming", label: "Upcoming", color: "#3b82f6" },
+                  { key: "past", label: "Past Sessions", color: "#9ca3af" },
+                ].map(({ key, label, color }) => (
+                  <button
+                    key={key}
+                    className={`at-toolbar__filter-btn${filter === key ? " at-toolbar__filter-btn--active" : ""}`}
+                    onClick={() => setFilter(key)}
+                    style={
+                      filter === key
+                        ? {
+                            background: `${color}12`,
+                            color,
+                            borderColor: color,
+                          }
+                        : {}
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+                {getActiveFilterCount() > 0 && (
+                  <button
+                    className="at-toolbar__filter-clear"
+                    onClick={clearAllFilters}
+                  >
+                    <i className="fas fa-times" /> Clear Filters (
+                    {getActiveFilterCount()})
+                  </button>
+                )}
+              </div>
+              <button
+                className="at-toolbar__create-btn"
+                onClick={() => setCreateOpen(true)}
+              >
+                <i className="fas fa-plus" /> Create Session
+              </button>
             </div>
-            <div className="at-table-panel__info">
-              {!loading && (
-                <>
-                  <span className="at-table-panel__count">
-                    {sessions.length} session{sessions.length !== 1 ? "s" : ""}
-                  </span>
-                  <span className="at-table-panel__divider">•</span>
-                  <span className="at-table-panel__sub">
-                    Page 1 of {Math.ceil(sessions.length / 10) || 1}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
 
-          <div className="at-table-panel__scroll">
-            <table className="at-table">
-              <thead>
-                <tr>
-                  <th>SESSION DETAILS</th>
-                  <th>SERVICE</th>
-                  <th>DATE & TIME</th>
-                  <th>INSTRUCTOR</th>
-                  <th>LOCATION</th>
-                  <th>FEE</th>
-                  <th>REGISTRATIONS</th>
-                  <th>STATUS</th>
-                  <th>ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={9}>
-                      <div className="at-table__loading">
-                        <div className="at-table__loading-spinner">
-                          <i className="fas fa-spinner fa-spin" />
-                        </div>
-                        <p>Loading training sessions...</p>
-                        <span className="at-table__loading-sub">
-                          Fetching session data
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : sessions.length === 0 ? (
-                  <tr>
-                    <td colSpan={9}>
-                      <div className="at-table__empty">
-                        <div className="at-table__empty-icon">
-                          <i className="fas fa-calendar-xmark" />
-                        </div>
-                        <h3 className="at-table__empty-title">
-                          No Sessions Found
-                        </h3>
-                        <p className="at-table__empty-message">
-                          {search ||
-                          filter !== "all" ||
-                          service !== "All Services"
-                            ? "Try adjusting your search or filter criteria"
-                            : "Get started by creating your first training session"}
-                        </p>
-                        {(search ||
-                          filter !== "all" ||
-                          service !== "All Services") && (
-                          <button
-                            className="at-table__empty-action"
-                            onClick={clearAllFilters}
-                          >
-                            <i className="fas fa-times" /> Clear Filters
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  sessions.map((sess) => {
-                    const serviceColor =
-                      SERVICE_OPTIONS.find((s) => s.key === sess.major_service)
-                        ?.color || "#6b7280";
-                    return (
-                      <tr
-                        key={sess.session_id}
-                        onMouseEnter={() => setHoveredRow(sess.session_id)}
-                        onMouseLeave={() => setHoveredRow(null)}
-                        className={
-                          hoveredRow === sess.session_id
-                            ? "at-table__row--hovered"
-                            : ""
-                        }
-                      >
-                        <td>
-                          <div className="at-event-cell">
-                            <div className="at-event-cell__title">
-                              {sess.title}
+            <div className="at-table-panel">
+              <div className="at-table-panel__head">
+                <div className="at-table-panel__title">
+                  <i className="fas fa-graduation-cap" /> Training Sessions
+                </div>
+                {!loading && (
+                  <div className="at-table-panel__info">
+                    <span className="at-table-panel__count">
+                      {sessions.length} session
+                      {sessions.length !== 1 ? "s" : ""}
+                    </span>
+                    <span className="at-table-panel__divider">•</span>
+                    <span className="at-table-panel__sub">
+                      Page 1 of {Math.ceil(sessions.length / 10) || 1}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="at-table-panel__scroll">
+                <table className="at-table">
+                  <thead>
+                    <tr>
+                      <th>SESSION DETAILS</th>
+                      <th>SERVICE</th>
+                      <th>DATE & TIME</th>
+                      <th>INSTRUCTOR</th>
+                      <th>LOCATION</th>
+                      <th>FEE</th>
+                      <th>REGISTRATIONS</th>
+                      <th>STATUS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={9}>
+                          <div className="at-table__loading">
+                            <div className="at-table__loading-spinner">
+                              <i className="fas fa-spinner fa-spin" />
                             </div>
-                            <div className="at-event-cell__id">
-                              <i className="fas fa-hashtag" /> ID: #
-                              {sess.session_id}
-                            </div>
-                            {sess.duration_days > 1 && (
-                              <div className="at-event-cell__duration">
-                                <i className="fas fa-calendar-week" />
-                                {sess.duration_days} days
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <ServiceBadge service={sess.major_service} />
-                        </td>
-                        <td>
-                          <div className="at-date">
-                            <div className="at-date__main">
-                              {new Date(sess.session_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
-                            {sess.session_end_date &&
-                              sess.session_end_date !== sess.session_date && (
-                                <div className="at-date__end">
-                                  <i className="fas fa-arrow-right" />
-                                  {new Date(
-                                    sess.session_end_date,
-                                  ).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}
-                                </div>
-                              )}
-                            <div className="at-date__time">
-                              <i className="fas fa-clock" />
-                              {sess.start_time?.slice(0, 5)} -{" "}
-                              {sess.end_time?.slice(0, 5)}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          {sess.instructor ? (
-                            <div className="at-instructor">
-                              <div className="at-instructor__name">
-                                {sess.instructor}
-                              </div>
-                              {sess.instructor_credentials && (
-                                <div className="at-instructor__credentials">
-                                  {sess.instructor_credentials}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="at-muted">
-                              <i className="fas fa-user-slash" /> Not assigned
+                            <p>Loading training sessions...</p>
+                            <span className="at-table__loading-sub">
+                              Fetching session data
                             </span>
-                          )}
-                        </td>
-                        <td style={{ maxWidth: 200 }}>
-                          <div className="at-location" title={sess.venue}>
-                            <i
-                              className="fas fa-map-marker-alt"
-                              style={{ color: serviceColor }}
-                            />
-                            {sess.venue?.split("\n")[0]}
-                          </div>
-                        </td>
-                        <td>
-                          <FeeBadge fee={sess.fee} />
-                        </td>
-                        <td>
-                          <div className="at-regs">
-                            <span className="at-regs__count">
-                              {sess.approved_count}/
-                              {sess.capacity > 0 ? sess.capacity : "∞"}
-                            </span>
-                            {sess.pending_count > 0 && (
-                              <span className="at-regs__pending">
-                                <i className="fas fa-clock" />
-                                {sess.pending_count} pending
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <StatusBadge
-                            isPast={sess.is_past}
-                            isUpcoming={sess.is_upcoming}
-                            isOngoing={sess.is_ongoing}
-                          />
-                        </td>
-                        <td>
-                          <div className="at-actions">
-                            <button
-                              title="View Registrations"
-                              className="at-action-btn at-action-btn--view"
-                              onClick={() => setRegsSession(sess)}
-                              style={{
-                                background: `${serviceColor}12`,
-                                color: serviceColor,
-                                borderColor: `${serviceColor}25`,
-                              }}
-                            >
-                              <i className="fas fa-users" />
-                            </button>
-                            <button
-                              title="Edit Session"
-                              className="at-action-btn at-action-btn--edit"
-                              onClick={() => setEditSession(sess)}
-                              style={{
-                                background: "#3b82f612",
-                                color: "#3b82f6",
-                                borderColor: "#3b82f625",
-                              }}
-                            >
-                              <i className="fas fa-pen" />
-                            </button>
-                            <button
-                              title="Archive Session"
-                              className="at-action-btn at-action-btn--delete"
-                              onClick={() => handleDelete(sess)}
-                              style={{
-                                background: "#6b728012",
-                                color: "#6b7280",
-                                borderColor: "#6b728025",
-                              }}
-                            >
-                              <i className="fas fa-archive" />
-                            </button>
                           </div>
                         </td>
                       </tr>
-                    );
-                  })
+                    ) : sessions.length === 0 ? (
+                      <tr>
+                        <td colSpan={9}>
+                          <div className="at-table__empty">
+                            <div className="at-table__empty-icon">
+                              <i className="fas fa-calendar-xmark" />
+                            </div>
+                            <h3 className="at-table__empty-title">
+                              No Sessions Found
+                            </h3>
+                            <p className="at-table__empty-message">
+                              {search ||
+                              filter !== "all" ||
+                              service !== "All Services"
+                                ? "Try adjusting your search or filter criteria"
+                                : "Get started by creating your first training session"}
+                            </p>
+                            {(search ||
+                              filter !== "all" ||
+                              service !== "All Services") && (
+                              <button
+                                className="at-table__empty-action"
+                                onClick={clearAllFilters}
+                              >
+                                <i className="fas fa-times" /> Clear Filters
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      sessions.map((sess) => {
+                        const svcColor =
+                          SERVICE_OPTIONS.find(
+                            (s) => s.key === sess.major_service,
+                          )?.color || "#6b7280";
+                        return (
+                          <tr
+                            key={sess.session_id}
+                            onMouseEnter={() => setHoveredRow(sess.session_id)}
+                            onMouseLeave={() => setHoveredRow(null)}
+                            className={
+                              hoveredRow === sess.session_id
+                                ? "at-table__row--hovered"
+                                : ""
+                            }
+                          >
+                            <td>
+                              <div className="at-event-cell">
+                                <div className="at-event-cell__title">
+                                  {sess.title}
+                                </div>
+                                <div className="at-event-cell__id">
+                                  <i className="fas fa-hashtag" /> ID: #
+                                  {sess.session_id}
+                                </div>
+                                {sess.duration_days > 1 && (
+                                  <div className="at-event-cell__duration">
+                                    <i className="fas fa-calendar-week" />
+                                    {sess.duration_days} days
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <ServiceBadge service={sess.major_service} />
+                            </td>
+                            <td>
+                              <div className="at-date">
+                                <div className="at-date__main">
+                                  {new Date(
+                                    sess.session_date,
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                {sess.session_end_date &&
+                                  sess.session_end_date !==
+                                    sess.session_date && (
+                                    <div className="at-date__end">
+                                      <i className="fas fa-arrow-right" />
+                                      {new Date(
+                                        sess.session_end_date,
+                                      ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </div>
+                                  )}
+                                <div className="at-date__time">
+                                  <i className="fas fa-clock" />
+                                  {sess.start_time?.slice(0, 5)} –{" "}
+                                  {sess.end_time?.slice(0, 5)}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              {sess.instructor ? (
+                                <div className="at-instructor">
+                                  <div className="at-instructor__name">
+                                    {sess.instructor}
+                                  </div>
+                                  {sess.instructor_credentials && (
+                                    <div className="at-instructor__credentials">
+                                      {sess.instructor_credentials}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="at-muted">
+                                  <i className="fas fa-user-slash" /> Not
+                                  assigned
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ maxWidth: 200 }}>
+                              <div className="at-location" title={sess.venue}>
+                                <i
+                                  className="fas fa-map-marker-alt"
+                                  style={{ color: svcColor }}
+                                />
+                                {sess.venue?.split("\n")[0]}
+                              </div>
+                            </td>
+                            <td>
+                              <FeeBadge fee={sess.fee} />
+                            </td>
+                            <td>
+                              <div className="at-regs">
+                                <span className="at-regs__count">
+                                  {sess.approved_count}/
+                                  {sess.capacity > 0 ? sess.capacity : "∞"}
+                                </span>
+                                {sess.pending_count > 0 && (
+                                  <span className="at-regs__pending">
+                                    <i className="fas fa-clock" />
+                                    {sess.pending_count} pending
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <StatusBadge
+                                isPast={sess.is_past}
+                                isUpcoming={sess.is_upcoming}
+                              />
+                            </td>
+                            <td>
+                              <div className="at-actions">
+                                <button
+                                  title="View Registrations"
+                                  className="at-action-btn at-action-btn--view"
+                                  onClick={() => setRegsSession(sess)}
+                                  style={{
+                                    background: `${svcColor}12`,
+                                    color: svcColor,
+                                    borderColor: `${svcColor}25`,
+                                  }}
+                                >
+                                  <i className="fas fa-users" />
+                                </button>
+                                <button
+                                  title="Edit Session"
+                                  className="at-action-btn at-action-btn--edit"
+                                  onClick={() => setEditSession(sess)}
+                                  style={{
+                                    background: "#3b82f612",
+                                    color: "#3b82f6",
+                                    borderColor: "#3b82f625",
+                                  }}
+                                >
+                                  <i className="fas fa-pen" />
+                                </button>
+                                <button
+                                  title="Archive Session"
+                                  className="at-action-btn at-action-btn--archive"
+                                  onClick={() => handleArchiveClick(sess)}
+                                  style={{
+                                    background: "#f59e0b12",
+                                    color: "#f59e0b",
+                                    borderColor: "#f59e0b25",
+                                  }}
+                                >
+                                  <i className="fas fa-box-archive" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ══ ARCHIVED TAB ══ */}
+        {tab === "archived" && (
+          <>
+            <div className="at-archive-banner">
+              <i className="fas fa-info-circle" />
+              Archived sessions are hidden from users. You can restore them to
+              make them active again, or permanently delete them to remove all
+              data.
+            </div>
+
+            <div className="at-toolbar">
+              <div className="at-toolbar__search">
+                <i className="fas fa-search at-toolbar__search-icon" />
+                <input
+                  className="at-toolbar__search-input"
+                  value={archiveSearch}
+                  onChange={(e) => setArchiveSearch(e.target.value)}
+                  placeholder="Search archived sessions..."
+                />
+                {archiveSearch && (
+                  <button
+                    className="at-toolbar__search-clear"
+                    onClick={() => setArchiveSearch("")}
+                  >
+                    <i className="fas fa-times" />
+                  </button>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </div>
+              <div className="at-toolbar__filters">
+                {SERVICE_OPTIONS.map((svc) => (
+                  <button
+                    key={svc.key}
+                    className={`at-toolbar__filter-btn${archiveService === svc.key ? " at-toolbar__filter-btn--active" : ""}`}
+                    onClick={() => setArchiveService(svc.key)}
+                    style={
+                      archiveService === svc.key
+                        ? {
+                            background: `${svc.color}12`,
+                            color: svc.color,
+                            borderColor: svc.color,
+                          }
+                        : {}
+                    }
+                  >
+                    {svc.label}
+                  </button>
+                ))}
+                {archiveService !== "All Services" && (
+                  <button
+                    className="at-toolbar__filter-clear"
+                    onClick={() => setArchiveService("All Services")}
+                  >
+                    <i className="fas fa-times" /> Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="at-table-panel at-table-panel--archived">
+              <div className="at-table-panel__head">
+                <div className="at-table-panel__title">
+                  <i className="fas fa-box-archive" /> Archived Sessions
+                  <span className="at-table-panel__archived-hint">
+                    Hidden from users
+                  </span>
+                </div>
+                {!archiveLoading && (
+                  <div className="at-table-panel__info">
+                    <span className="at-table-panel__count">
+                      {archived.length} archived
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="at-table-panel__scroll">
+                <table className="at-table at-table--archived">
+                  <thead>
+                    <tr>
+                      <th>SESSION DETAILS</th>
+                      <th>SERVICE</th>
+                      <th>DATE</th>
+                      <th>INSTRUCTOR</th>
+                      <th>LOCATION</th>
+                      <th>REGISTRATIONS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {archiveLoading ? (
+                      <tr>
+                        <td colSpan={7}>
+                          <div className="at-table__loading">
+                            <div className="at-table__loading-spinner">
+                              <i className="fas fa-spinner fa-spin" />
+                            </div>
+                            <p>Loading archived sessions...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : archived.length === 0 ? (
+                      <tr>
+                        <td colSpan={7}>
+                          <div className="at-table__empty">
+                            <div className="at-table__empty-icon">
+                              <i className="fas fa-box-open" />
+                            </div>
+                            <h3 className="at-table__empty-title">
+                              No Archived Sessions
+                            </h3>
+                            <p className="at-table__empty-message">
+                              Sessions you archive will appear here. You can
+                              restore them anytime.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      archived.map((sess) => {
+                        const svcColor =
+                          SERVICE_OPTIONS.find(
+                            (s) => s.key === sess.major_service,
+                          )?.color || "#6b7280";
+                        return (
+                          <tr
+                            key={sess.session_id}
+                            className="at-table__row--archived"
+                          >
+                            <td>
+                              <div className="at-event-cell">
+                                <div className="at-event-cell__title at-event-cell__title--muted">
+                                  {sess.title}
+                                </div>
+                                <div className="at-event-cell__id">
+                                  <i className="fas fa-hashtag" /> ID: #
+                                  {sess.session_id}
+                                </div>
+                                {sess.duration_days > 1 && (
+                                  <div className="at-event-cell__duration">
+                                    <i className="fas fa-calendar-week" />
+                                    {sess.duration_days} days
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <ServiceBadge service={sess.major_service} />
+                            </td>
+                            <td>
+                              <div className="at-date">
+                                <div className="at-date__main">
+                                  {new Date(
+                                    sess.session_date,
+                                  ).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                {sess.session_end_date &&
+                                  sess.session_end_date !==
+                                    sess.session_date && (
+                                    <div className="at-date__end">
+                                      <i className="fas fa-arrow-right" />
+                                      {new Date(
+                                        sess.session_end_date,
+                                      ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </div>
+                                  )}
+                              </div>
+                            </td>
+                            <td>
+                              {sess.instructor ? (
+                                <div className="at-instructor">
+                                  <div className="at-instructor__name">
+                                    {sess.instructor}
+                                  </div>
+                                  {sess.instructor_credentials && (
+                                    <div className="at-instructor__credentials">
+                                      {sess.instructor_credentials}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="at-muted">
+                                  <i className="fas fa-user-slash" /> Not
+                                  assigned
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ maxWidth: 200 }}>
+                              <div className="at-location" title={sess.venue}>
+                                <i
+                                  className="fas fa-map-marker-alt"
+                                  style={{ color: svcColor }}
+                                />
+                                {sess.venue?.split("\n")[0]}
+                              </div>
+                            </td>
+                            <td>
+                              <div className="at-regs">
+                                <span className="at-regs__count">
+                                  {sess.total_registrations ?? 0} registered
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="at-actions">
+                                <button
+                                  title="Restore Session"
+                                  className="at-action-btn at-action-btn--restore"
+                                  onClick={() => handleRestoreClick(sess)}
+                                  style={{
+                                    background: "#10b98112",
+                                    color: "#10b981",
+                                    borderColor: "#10b98125",
+                                  }}
+                                >
+                                  <i className="fas fa-rotate-left" />
+                                </button>
+                                <button
+                                  title="Permanently Delete"
+                                  className="at-action-btn at-action-btn--delete"
+                                  onClick={() =>
+                                    handlePermanentDeleteClick(sess)
+                                  }
+                                  style={{
+                                    background: "#ef444412",
+                                    color: "#ef4444",
+                                    borderColor: "#ef444425",
+                                  }}
+                                >
+                                  <i className="fas fa-trash" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </div>
+      {/* /at-body */}
 
       {/* MODALS */}
       {(createOpen || editSession) && (
@@ -1301,7 +1681,6 @@ export default function AdminTraining() {
           onSaved={handleSaved}
         />
       )}
-
       {regsSession && (
         <RegistrationsModal
           session={regsSession}
@@ -1310,6 +1689,17 @@ export default function AdminTraining() {
             fetchSessions();
             refreshStats();
           }}
+        />
+      )}
+      {confirm && (
+        <ConfirmModal
+          title={confirm.title}
+          message={confirm.message}
+          confirmLabel={confirm.confirmLabel}
+          confirmColor={confirm.confirmColor}
+          icon={confirm.icon}
+          onConfirm={executeConfirm}
+          onCancel={() => setConfirm(null)}
         />
       )}
 
