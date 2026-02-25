@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import api from "../../services/api";
 import "./VerifyEmail.scss";
 
 function VerifyEmail() {
@@ -9,12 +10,9 @@ function VerifyEmail() {
   const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState("");
   const token = searchParams.get("token");
-
-  // ✅ Add this ref to prevent double calls
   const hasVerified = useRef(false);
 
   useEffect(() => {
-    // ✅ Check if already verified
     if (hasVerified.current) return;
 
     if (!token) {
@@ -25,15 +23,13 @@ function VerifyEmail() {
 
     const verifyEmail = async () => {
       try {
-        // ✅ Mark as verified immediately to prevent second call
         hasVerified.current = true;
 
-        const apiUrl = `http://localhost/prc-management-system/backend/api/verify-email.php?token=${token}`;
-        console.log("Calling API:", apiUrl);
-
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        console.log("Response:", data);
+        // Use the same api instance as the rest of the app (handles baseURL automatically)
+        const response = await api.get(
+          `/api/verify-email.php?token=${encodeURIComponent(token)}`,
+        );
+        const data = response.data;
 
         if (data.success) {
           setStatus("success");
@@ -43,14 +39,17 @@ function VerifyEmail() {
           setMessage(data.message || "Verification failed");
         }
       } catch (error) {
-        console.error("Fetch error:", error);
+        console.error("Verify error:", error);
+        const msg =
+          error.response?.data?.message ||
+          "Connection error. Please try again.";
         setStatus("error");
-        setMessage("Connection error. Please try again.");
+        setMessage(msg);
       }
     };
 
     verifyEmail();
-  }, [token]); // ✅ Remove hasVerified from dependencies
+  }, [token]);
 
   return (
     <div className="verify-page">

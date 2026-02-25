@@ -6,7 +6,7 @@ const AUTH = "/api/auth.php";
 const REGISTER = "/api/register.php";
 
 // Google reCAPTCHA site key
-export const RECAPTCHA_SITE_KEY = "6LdKInQsAAAAAFJZRd65k9ftb0AqHunJZehNU7fu";
+export const RECAPTCHA_SITE_KEY = "6LeDGXcsAAAAANq-QgLBT142BfWld6f50WOHjGUw";
 
 const authService = {
   // ── LOGIN ───────────────────────────────────────────────────────────────────

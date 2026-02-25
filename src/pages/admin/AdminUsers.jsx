@@ -9,6 +9,20 @@ import {
   deleteUser as apiDeleteUser,
 } from "../../services/usersApi";
 
+// ─── FILE URL HELPER ──────────────────────────────────────────────────────────
+// Files are stored in public_html/uploads/documents/ — directly web accessible
+const getFileURL = (filePath) => {
+  if (import.meta.env.VITE_USE_LOCAL_API === "true") {
+    const base = (import.meta.env.VITE_LOCAL_API_URL || "").replace(
+      /\/backend\/?$/,
+      "",
+    );
+    return `${base}/${filePath}`;
+  }
+  const base = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+  return `${base}/${filePath}`;
+};
+
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const ROLE_CONFIG = {
   super_admin: {
@@ -158,7 +172,6 @@ function Avatar({ name, role, size = "md" }) {
         .slice(0, 2)
         .toUpperCase()
     : "?";
-
   return (
     <div
       className={`au-avatar au-avatar--${size}`}
@@ -214,7 +227,6 @@ function Toast({ message, type, onClose }) {
     const t = setTimeout(onClose, 3500);
     return () => clearTimeout(t);
   }, [onClose]);
-
   return (
     <div className={`au-toast au-toast--${type}`}>
       <div className="au-toast__icon">
@@ -235,10 +247,139 @@ function Toast({ message, type, onClose }) {
   );
 }
 
+// ─── FILE PREVIEW MODAL ───────────────────────────────────────────────────────
+function FilePreviewModal({ doc, onClose }) {
+  const fileUrl = getFileURL(doc.file_path);
+  const ext = doc.file_path.split(".").pop().toLowerCase();
+  const isPdf = ext === "pdf";
+  const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+
+  return (
+    <div className="au-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
+      <div
+        className="au-modal au-modal--preview"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "90vw",
+          maxWidth: 900,
+          height: "85vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div className="au-modal__header">
+          <div className="au-modal__title">
+            <i className={`fas ${isPdf ? "fa-file-pdf" : "fa-file-image"}`} />{" "}
+            {doc.original_name}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <a
+              href={fileUrl}
+              download={doc.original_name}
+              className="au-action-btn au-action-btn--edit"
+              title="Download"
+              style={{
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                padding: "6px 10px",
+              }}
+            >
+              <i className="fas fa-download" />
+            </a>
+            <button className="au-modal__close" onClick={onClose}>
+              <i className="fas fa-xmark" />
+            </button>
+          </div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            background: "#1a1a1a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {isPdf ? (
+            <iframe
+              src={fileUrl}
+              style={{ width: "100%", height: "100%", border: "none" }}
+              title={doc.original_name}
+            />
+          ) : isImage ? (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+              }}
+            >
+              <img
+                src={fileUrl}
+                alt={doc.original_name}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "90%",
+                  objectFit: "contain",
+                }}
+                onError={(e) => {
+                  e.target.parentNode.innerHTML = `
+                    <div style="color:#fff;text-align:center;padding:40px">
+                      <p style="margin-bottom:8px;opacity:0.7">Failed to load image</p>
+                      <p style="font-size:11px;opacity:0.5;word-break:break-all;margin-bottom:16px">${fileUrl}</p>
+                      <a href="${fileUrl}" download style="color:#c41e3a">Download instead</a>
+                    </div>`;
+                }}
+              />
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.4)",
+                  fontSize: 11,
+                  wordBreak: "break-all",
+                  padding: "0 20px",
+                  textAlign: "center",
+                }}
+              >
+                {fileUrl}
+              </p>
+            </div>
+          ) : (
+            <div style={{ color: "#fff", textAlign: "center", padding: 40 }}>
+              <i
+                className="fas fa-file fa-3x"
+                style={{ marginBottom: 16, opacity: 0.5 }}
+              />
+              <p>Preview not available for this file type.</p>
+              <a
+                href={fileUrl}
+                download={doc.original_name}
+                style={{
+                  color: "#c41e3a",
+                  marginTop: 12,
+                  display: "inline-block",
+                }}
+              >
+                <i className="fas fa-download" /> Download File
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── DOCUMENTS MODAL ─────────────────────────────────────────────────────────
 function DocsModal({ user, onClose }) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   useEffect(() => {
     getUserDocuments(user.user_id)
@@ -259,72 +400,81 @@ function DocsModal({ user, onClose }) {
   };
 
   return (
-    <div className="au-overlay" onClick={onClose}>
-      <div
-        className="au-modal au-modal--sm"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="au-modal__header">
-          <div className="au-modal__title">
-            <i className="fas fa-folder-open" /> Documents —{" "}
-            <strong>{user.username}</strong>
+    <>
+      <div className="au-overlay" onClick={onClose}>
+        <div
+          className="au-modal au-modal--sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="au-modal__header">
+            <div className="au-modal__title">
+              <i className="fas fa-folder-open" /> Documents —{" "}
+              <strong>{user.username}</strong>
+            </div>
+            <button className="au-modal__close" onClick={onClose}>
+              <i className="fas fa-xmark" />
+            </button>
           </div>
-          <button className="au-modal__close" onClick={onClose}>
-            <i className="fas fa-xmark" />
-          </button>
-        </div>
-        <div className="au-modal__body au-modal__body--docs">
-          {loading ? (
-            <div className="au-docs__loading">
-              <div className="au-docs__spinner">
-                <i className="fas fa-spinner fa-spin" />
-              </div>
-              <p>Loading documents…</p>
-            </div>
-          ) : docs.length === 0 ? (
-            <div className="au-docs__empty">
-              <div className="au-docs__empty-icon">
-                <i className="fas fa-folder-open" />
-              </div>
-              <h3 className="au-docs__empty-title">No Documents Found</h3>
-              <p className="au-docs__empty-message">
-                This user hasn't uploaded any documents yet.
-              </p>
-            </div>
-          ) : (
-            <div className="au-docs">
-              {docs.map((doc, i) => (
-                <div key={i} className={docItemClass(doc.document_type)}>
-                  <div className="au-docs__file-icon">
-                    <i
-                      className={`fas ${doc.file_type === "pdf" ? "fa-file-pdf" : "fa-file-image"}`}
-                    />
-                  </div>
-                  <div className="au-docs__info">
-                    <div className="au-docs__name">{doc.original_name}</div>
-                    <div className="au-docs__meta">
-                      <span className="au-docs__type-tag">
-                        {DOC_TYPE_LABEL[doc.document_type] || "Other"}
-                      </span>
-                      {(doc.file_size / 1024).toFixed(1)} KB •{" "}
-                      {new Date(doc.uploaded_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <a
-                    href={`http://localhost/prc-management-system/${doc.file_path}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="au-docs__view-link"
-                  >
-                    <i className="fas fa-external-link-alt" /> View
-                  </a>
+          <div className="au-modal__body au-modal__body--docs">
+            {loading ? (
+              <div className="au-docs__loading">
+                <div className="au-docs__spinner">
+                  <i className="fas fa-spinner fa-spin" />
                 </div>
-              ))}
-            </div>
-          )}
+                <p>Loading documents…</p>
+              </div>
+            ) : docs.length === 0 ? (
+              <div className="au-docs__empty">
+                <div className="au-docs__empty-icon">
+                  <i className="fas fa-folder-open" />
+                </div>
+                <h3 className="au-docs__empty-title">No Documents Found</h3>
+                <p className="au-docs__empty-message">
+                  This user hasn't uploaded any documents yet.
+                </p>
+              </div>
+            ) : (
+              <div className="au-docs">
+                {docs.map((doc, i) => (
+                  <div key={i} className={docItemClass(doc.document_type)}>
+                    <div className="au-docs__file-icon">
+                      <i
+                        className={`fas ${doc.file_path?.endsWith(".pdf") ? "fa-file-pdf" : "fa-file-image"}`}
+                      />
+                    </div>
+                    <div className="au-docs__info">
+                      <div className="au-docs__name">{doc.original_name}</div>
+                      <div className="au-docs__meta">
+                        <span className="au-docs__type-tag">
+                          {DOC_TYPE_LABEL[doc.document_type] || "Other"}
+                        </span>
+                        {(doc.file_size / 1024).toFixed(1)} KB •{" "}
+                        {new Date(doc.uploaded_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    {/* Opens inline preview modal instead of routing */}
+                    <button
+                      className="au-docs__view-link"
+                      onClick={() => setPreviewDoc(doc)}
+                    >
+                      <i className="fas fa-eye" /> View
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* File Preview Modal — rendered on top */}
+      {previewDoc && (
+        <FilePreviewModal
+          doc={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -362,9 +512,8 @@ function UserModal({ user, onClose, onSaved }) {
       e.password = "Password is required for new users";
     if (!form.full_name.trim()) e.full_name = "Full name is required";
     if (!form.role) e.role = "Role is required";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       e.email = "Invalid email format";
-    }
     return e;
   }
 
@@ -413,7 +562,6 @@ function UserModal({ user, onClose, onSaved }) {
             </div>
           )}
 
-          {/* Username + Password */}
           <div className="au-form__row">
             <div className="au-form__field">
               <label className="au-form__label">
@@ -453,7 +601,6 @@ function UserModal({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Full Name */}
           <div className="au-form__field">
             <label className="au-form__label">
               Full Name <span className="au-form__required">*</span>
@@ -471,7 +618,6 @@ function UserModal({ user, onClose, onSaved }) {
             )}
           </div>
 
-          {/* First + Last */}
           <div className="au-form__row">
             <div className="au-form__field">
               <label className="au-form__label">First Name</label>
@@ -493,7 +639,6 @@ function UserModal({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Role + User Type */}
           <div className="au-form__row">
             <div className="au-form__field">
               <label className="au-form__label">
@@ -533,7 +678,6 @@ function UserModal({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Email + Phone */}
           <div className="au-form__row">
             <div className="au-form__field">
               <label className="au-form__label">Email Address</label>
@@ -561,7 +705,6 @@ function UserModal({ user, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Gender + RCY Role */}
           <div className="au-form__row">
             <div className="au-form__field">
               <label className="au-form__label">Gender</label>
@@ -592,7 +735,6 @@ function UserModal({ user, onClose, onSaved }) {
             )}
           </div>
 
-          {/* RCY Services */}
           {isRCY && (
             <div className="au-form__services">
               <div className="au-form__services-title">
@@ -663,7 +805,6 @@ export default function AdminUsers() {
 
   const showToast = (msg, type = "success") => setToast({ msg, type });
 
-  // ── STATS ──────────────────────────────────────────────────────────────────
   const refreshStats = useCallback(async () => {
     try {
       const { stats } = await getUserStats();
@@ -677,7 +818,6 @@ export default function AdminUsers() {
     refreshStats();
   }, [refreshStats]);
 
-  // ── USERS ──────────────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -696,7 +836,6 @@ export default function AdminUsers() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // ── DELETE ─────────────────────────────────────────────────────────────────
   async function handleDelete(user) {
     if (
       !window.confirm(
@@ -714,7 +853,6 @@ export default function AdminUsers() {
     }
   }
 
-  // ── SAVED ──────────────────────────────────────────────────────────────────
   function handleSaved(msg) {
     showToast(msg);
     setEditUser(null);
@@ -723,7 +861,6 @@ export default function AdminUsers() {
     refreshStats();
   }
 
-  // ── DERIVED COUNTS ─────────────────────────────────────────────────────────
   const totalUsers = stats?.total ?? users.length;
   const admins =
     stats?.admins ?? users.filter((u) => u.role.includes("admin")).length;
@@ -762,10 +899,9 @@ export default function AdminUsers() {
     },
   ];
 
-  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div className="au-root">
-      {/* PAGE HEADER with Wave Effect */}
+      {/* HEADER */}
       <div className="au-header">
         <div className="au-header__container">
           <div className="au-header__content">
@@ -873,7 +1009,6 @@ export default function AdminUsers() {
               </button>
             )}
           </div>
-
           <div className="au-toolbar__filters">
             {FILTER_TABS.map(({ key, label, count, icon }) => (
               <button
@@ -887,7 +1022,6 @@ export default function AdminUsers() {
               </button>
             ))}
           </div>
-
           <button
             className="au-toolbar__create-btn"
             onClick={() => setCreateOpen(true)}
@@ -916,7 +1050,6 @@ export default function AdminUsers() {
               )}
             </div>
           </div>
-
           <div className="au-table-panel__scroll">
             <table className="au-table">
               <thead>
@@ -989,7 +1122,6 @@ export default function AdminUsers() {
                         hoveredRow === u.user_id ? "au-table__row--hovered" : ""
                       }
                     >
-                      {/* USER */}
                       <td>
                         <div className="au-user-cell">
                           <Avatar name={u.full_name} role={u.role} />
@@ -1008,13 +1140,9 @@ export default function AdminUsers() {
                           </div>
                         </div>
                       </td>
-
-                      {/* ROLE */}
                       <td>
                         <RoleBadge role={u.role} />
                       </td>
-
-                      {/* TYPE */}
                       <td>
                         <span
                           className={`au-badge au-badge--type ${u.user_type === "rcy_member" ? "au-badge--type-rcy" : "au-badge--type-non"}`}
@@ -1025,8 +1153,6 @@ export default function AdminUsers() {
                           {u.user_type === "rcy_member" ? " RCY" : " Non-RCY"}
                         </span>
                       </td>
-
-                      {/* GENDER */}
                       <td>
                         {u.gender ? (
                           <span className="au-gender">
@@ -1040,8 +1166,6 @@ export default function AdminUsers() {
                           <span className="au-muted">—</span>
                         )}
                       </td>
-
-                      {/* RCY ROLE */}
                       <td>
                         {u.rcy_role ? (
                           <span className="au-badge au-badge--rcy-role">
@@ -1053,8 +1177,6 @@ export default function AdminUsers() {
                           <span className="au-muted">—</span>
                         )}
                       </td>
-
-                      {/* SERVICES */}
                       <td style={{ maxWidth: 220 }}>
                         {u.services?.length > 0 ? (
                           <div className="au-services">
@@ -1074,8 +1196,6 @@ export default function AdminUsers() {
                           <span className="au-muted">—</span>
                         )}
                       </td>
-
-                      {/* CONTACT */}
                       <td style={{ maxWidth: 200 }}>
                         {u.email && (
                           <div className="au-contact__email" title={u.email}>
@@ -1093,8 +1213,6 @@ export default function AdminUsers() {
                           <span className="au-muted">—</span>
                         )}
                       </td>
-
-                      {/* ACTIONS */}
                       <td>
                         <div className="au-actions">
                           <button
@@ -1146,8 +1264,6 @@ export default function AdminUsers() {
       {docsUser && (
         <DocsModal user={docsUser} onClose={() => setDocsUser(null)} />
       )}
-
-      {/* TOAST */}
       {toast && (
         <Toast
           message={toast.msg}
