@@ -1,4 +1,10 @@
 // src/services/chatService.js
+//
+// KEY DESIGN DECISION:
+// All participant IDs stored as PHP user_id strings (e.g. "5", "7")
+// Firebase UIDs are only used locally for auth — never stored in conversation docs
+// This ensures both users can find the same conversation regardless of their Firebase UID
+//
 import {
   collection,
   query,
@@ -9,213 +15,198 @@ import {
   updateDoc,
   doc,
   getDocs,
-  getDoc, // ← ADD THIS MISSING IMPORT
+  getDoc,
+  setDoc,
   serverTimestamp,
   writeBatch,
+  increment,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import api from "./api";
 
-// ─── CONVERSATIONS ───────────────────────────────────────────────────────────
+// ─── USER REGISTRY ────────────────────────────────────────────────────────────
+// Maps firebaseUid → phpUserId so we can resolve the current user's PHP ID
 
-// Get or create a conversation between two users
-export const getOrCreateConversation = async (firebaseUid, otherUserId) => {
-  try {
-    console.log(
-      "Getting/creating conversation between",
+const _uidToPhpId = new Map(); // in-memory cache
+
+export const registerUser = async (firebaseUid, phpUserId, name, role) => {
+  const phpId = phpUserId.toString();
+
+  // Cache locally
+  _uidToPhpId.set(firebaseUid, phpId);
+
+  // Store in Firestore: keyed by phpUserId so anyone can look up by PHP ID
+  const userRef = doc(db, "userRegistry", phpId);
+  const snap = await getDoc(userRef);
+
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      phpUserId: phpId,
       firebaseUid,
-      "and",
-      otherUserId,
-    );
-
-    // Check if conversation already exists
-    const conversationsRef = collection(db, "conversations");
-    const q = query(
-      conversationsRef,
-      where("participants", "array-contains", firebaseUid),
-    );
-
-    const querySnapshot = await getDocs(q);
-    let existingConversation = null;
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.participants.includes(otherUserId)) {
-        existingConversation = { id: doc.id, ...data };
-      }
-    });
-
-    if (existingConversation) {
-      console.log("Found existing conversation:", existingConversation);
-      return existingConversation;
-    }
-
-    // Create new conversation
-    console.log("Creating new conversation");
-    const newConversation = {
-      participants: [firebaseUid, otherUserId],
+      name: name || "User",
+      role: role || "user",
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      lastMessage: null,
-      lastMessageTime: null,
-      unreadCount: { [firebaseUid]: 0, [otherUserId]: 0 },
-    };
-
-    const docRef = await addDoc(
-      collection(db, "conversations"),
-      newConversation,
-    );
-    console.log("New conversation created with ID:", docRef.id);
-    return { id: docRef.id, ...newConversation };
-  } catch (error) {
-    console.error("Error getting/creating conversation:", error);
-    throw error;
+    });
+  } else {
+    // Update firebaseUid in case it changed (anonymous re-auth)
+    await updateDoc(userRef, {
+      firebaseUid,
+      name: name || snap.data().name,
+      lastActive: serverTimestamp(),
+    });
+    _uidToPhpId.set(firebaseUid, snap.data().phpUserId);
   }
+
+  return phpId;
 };
 
-// Get user's conversations with real-time updates
-export const subscribeToConversations = (firebaseUid, callback) => {
-  console.log("Setting up conversation listener for:", firebaseUid);
+export const getPhpUserId = (firebaseUid) => {
+  return _uidToPhpId.get(firebaseUid) || null;
+};
+
+const getUserInfo = async (phpUserId) => {
+  const phpId = phpUserId.toString();
+
+  // Try Firestore registry first
+  try {
+    const userRef = doc(db, "userRegistry", phpId);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      return {
+        user_id: phpId,
+        full_name: snap.data().name,
+        role: snap.data().role,
+      };
+    }
+  } catch (e) {
+    // fall through to PHP
+  }
+
+  // Fallback: PHP backend
+  try {
+    const res = await api.get("/api/users.php", { params: { id: phpId } });
+    const u = res.data?.data || res.data?.user;
+    if (u) return { user_id: phpId, full_name: u.full_name, role: u.role };
+  } catch (e) {
+    // ignore
+  }
+
+  return { user_id: phpId, full_name: "Unknown User", role: "user" };
+};
+
+// ─── CONVERSATIONS ────────────────────────────────────────────────────────────
+
+// Both myPhpId and otherPhpId are PHP user_id strings
+export const getOrCreateConversation = async (myPhpId, otherPhpId) => {
+  const id1 = myPhpId.toString();
+  const id2 = otherPhpId.toString();
+
+  // Canonical conversation ID: sorted IDs joined, avoids duplicate convos
+  const conversationId = [id1, id2].sort().join("_");
+
+  const conversationRef = doc(db, "conversations", conversationId);
+  const snap = await getDoc(conversationRef);
+
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+
+  // Create new conversation with deterministic ID
+  const newConversation = {
+    participants: [id1, id2], // Always PHP user IDs
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    lastMessage: null,
+    lastMessageTime: null,
+    unreadCount: { [id1]: 0, [id2]: 0 },
+  };
+
+  await setDoc(conversationRef, newConversation);
+  return { id: conversationId, ...newConversation };
+};
+
+export const subscribeToConversations = (myPhpId, callback) => {
+  const phpId = myPhpId.toString();
 
   const conversationsRef = collection(db, "conversations");
   const q = query(
     conversationsRef,
-    where("participants", "array-contains", firebaseUid),
+    where("participants", "array-contains", phpId),
     orderBy("updatedAt", "desc"),
   );
 
   return onSnapshot(
     q,
     async (snapshot) => {
-      console.log("Conversation snapshot received, size:", snapshot.size);
-      const conversations = [];
+      const conversations = await Promise.all(
+        snapshot.docs.map(async (docSnapshot) => {
+          const data = docSnapshot.data();
+          const otherPhpId = data.participants.find((id) => id !== phpId);
+          const otherUser = await getUserInfo(otherPhpId);
 
-      for (const docSnapshot of snapshot.docs) {
-        const data = docSnapshot.data();
-        const otherUserId = data.participants.find((id) => id !== firebaseUid);
-
-        // First try to get user from Firestore
-        try {
-          const userDocRef = doc(db, "users", otherUserId);
-          const userDoc = await getDoc(userDocRef);
-
-          if (userDoc.exists()) {
-            // User found in Firestore
-            conversations.push({
-              id: docSnapshot.id,
-              ...data,
-              otherUser: {
-                user_id: userDoc.data().userId,
-                full_name: userDoc.data().name,
-                role: userDoc.data().role,
-              },
-              unread: data.unreadCount?.[firebaseUid] || 0,
-            });
-            continue; // Skip the PHP fetch
-          }
-        } catch (firestoreError) {
-          console.log(
-            "User not found in Firestore, trying PHP...",
-            firestoreError,
-          );
-        }
-
-        // Fallback to PHP backend if not in Firestore
-        try {
-          const userRes = await api.get("/api/users.php", {
-            params: { id: otherUserId },
-          });
-
-          conversations.push({
+          return {
             id: docSnapshot.id,
             ...data,
-            otherUser: userRes.data?.data || {
-              full_name: "Unknown User",
-              user_id: otherUserId,
-            },
-            unread: data.unreadCount?.[firebaseUid] || 0,
-          });
-        } catch (error) {
-          console.error("Error fetching user from PHP:", error);
-          conversations.push({
-            id: docSnapshot.id,
-            ...data,
-            otherUser: {
-              full_name: "Unknown User",
-              user_id: otherUserId,
-            },
-            unread: data.unreadCount?.[firebaseUid] || 0,
-          });
-        }
-      }
+            otherUser,
+            unread: data.unreadCount?.[phpId] || 0,
+          };
+        }),
+      );
 
       callback(conversations);
     },
     (error) => {
       console.error("Conversation listener error:", error);
-      callback([]); // Return empty array on error
+      callback([]);
     },
   );
 };
 
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
 
-// Send a message
 export const sendMessage = async (
   conversationId,
-  senderId,
-  recipientId,
+  senderPhpId,
+  recipientPhpId,
   content,
   messageType = "text",
   fileUrl = null,
 ) => {
-  try {
-    console.log("Sending message:", {
-      conversationId,
-      senderId,
-      recipientId,
-      content,
-    });
+  const senderId = senderPhpId.toString();
+  const recipientId = recipientPhpId.toString();
 
-    const messagesRef = collection(
-      db,
-      "conversations",
-      conversationId,
-      "messages",
-    );
+  const messagesRef = collection(
+    db,
+    "conversations",
+    conversationId,
+    "messages",
+  );
 
-    const message = {
-      senderId,
-      recipientId,
-      content,
-      messageType,
-      fileUrl,
-      createdAt: serverTimestamp(),
-      read: false,
-    };
+  const message = {
+    senderId, // PHP user ID
+    recipientId, // PHP user ID
+    content,
+    messageType,
+    fileUrl,
+    createdAt: serverTimestamp(),
+    read: false,
+  };
 
-    await addDoc(messagesRef, message);
+  await addDoc(messagesRef, message);
 
-    // Update conversation last message
-    const conversationRef = doc(db, "conversations", conversationId);
-    await updateDoc(conversationRef, {
-      lastMessage: content,
-      lastMessageTime: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      [`unreadCount.${recipientId}`]: (data) => (data || 0) + 1,
-    });
+  // Update conversation metadata
+  const conversationRef = doc(db, "conversations", conversationId);
+  await updateDoc(conversationRef, {
+    lastMessage: content,
+    lastMessageTime: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    [`unreadCount.${recipientId}`]: increment(1),
+  });
 
-    return message;
-  } catch (error) {
-    console.error("Error sending message:", error);
-    throw error;
-  }
+  return message;
 };
 
-// Subscribe to messages in a conversation
 export const subscribeToMessages = (conversationId, callback) => {
-  console.log("Setting up message listener for conversation:", conversationId);
-
   const messagesRef = collection(
     db,
     "conversations",
@@ -230,19 +221,20 @@ export const subscribeToMessages = (conversationId, callback) => {
       const messages = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
       }));
       callback(messages);
     },
     (error) => {
       console.error("Message listener error:", error);
-      callback([]); // Return empty array on error
+      callback([]);
     },
   );
 };
 
-// Mark messages as read
-export const markMessagesAsRead = async (conversationId, userId) => {
+export const markMessagesAsRead = async (conversationId, myPhpId) => {
+  const phpId = myPhpId.toString();
+
   try {
     const messagesRef = collection(
       db,
@@ -252,24 +244,18 @@ export const markMessagesAsRead = async (conversationId, userId) => {
     );
     const q = query(
       messagesRef,
-      where("recipientId", "==", userId),
+      where("recipientId", "==", phpId),
       where("read", "==", false),
     );
 
     const snapshot = await getDocs(q);
-
     if (snapshot.empty) return;
 
     const batch = writeBatch(db);
-
-    snapshot.forEach((doc) => {
-      batch.update(doc.ref, { read: true });
-    });
+    snapshot.forEach((d) => batch.update(d.ref, { read: true }));
 
     const conversationRef = doc(db, "conversations", conversationId);
-    batch.update(conversationRef, {
-      [`unreadCount.${userId}`]: 0,
-    });
+    batch.update(conversationRef, { [`unreadCount.${phpId}`]: 0 });
 
     await batch.commit();
   } catch (error) {

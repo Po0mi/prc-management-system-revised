@@ -1,27 +1,13 @@
 // src/components/FloatingChat.jsx
 import { useState, useEffect, useRef } from "react";
-import { auth, db } from "../firebase/config";
+import { auth } from "../firebase/config";
 import { signInAnonymously } from "firebase/auth";
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  serverTimestamp,
-  getDocs,
-  writeBatch,
-} from "firebase/firestore";
-import {
-  subscribeToConversations,
+  registerUser,
   getOrCreateConversation,
   sendMessage,
   subscribeToMessages,
+  subscribeToConversations,
   markMessagesAsRead,
 } from "../services/chatService";
 import { uploadChatFile, getFileDownloadUrl } from "../services/chatUploadApi";
@@ -30,7 +16,6 @@ import "./FloatingChat.scss";
 
 function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -38,7 +23,6 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
   const [showUserList, setShowUserList] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [firebaseUser, setFirebaseUser] = useState(null);
   const [authError, setAuthError] = useState(null);
 
   // ChatBox states
@@ -50,14 +34,20 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Sign in to Firebase
+  // myPhpId is the PHP user_id as a string — this is our consistent identifier
+  const myPhpId = currentUserId?.toString();
+
+  // ── FIREBASE AUTH + USER REGISTRATION ──────────────────────────────────────
+  // We sign in anonymously just to satisfy Firebase security rules.
+  // We do NOT use the Firebase UID for conversations — PHP user_id is used instead.
   useEffect(() => {
-    const signInToFirebase = async () => {
+    if (!myPhpId) return;
+
+    const init = async () => {
       try {
-        console.log("Signing in to Firebase...");
         const result = await signInAnonymously(auth);
-        setFirebaseUser(result.user);
-        console.log("Firebase user:", result.user.uid);
+        // Register this user in Firestore userRegistry so others can look them up
+        await registerUser(result.user.uid, myPhpId, currentUserName, userRole);
         setIsLoading(false);
       } catch (error) {
         console.error("Firebase auth error:", error);
@@ -66,160 +56,76 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
       }
     };
 
-    signInToFirebase();
-  }, []);
+    init();
+  }, [myPhpId, currentUserName, userRole]);
 
-  // Initialize user in Firestore
+  // ── SUBSCRIBE TO CONVERSATIONS (keyed by PHP user ID) ──────────────────────
   useEffect(() => {
-    const initializeUser = async () => {
-      if (!firebaseUser || !currentUserId) {
-        return;
-      }
+    if (!myPhpId || isLoading) return;
 
-      try {
-        console.log("Initializing user in Firestore...");
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          await setDoc(userRef, {
-            userId: currentUserId,
-            firebaseUid: firebaseUser.uid,
-            name: currentUserName || "User",
-            role: userRole,
-            createdAt: new Date(),
-            lastActive: new Date(),
-          });
-          console.log("User created in Firestore");
-        }
-      } catch (error) {
-        console.error("Error initializing user:", error);
-      }
-    };
-
-    initializeUser();
-  }, [firebaseUser, currentUserId, currentUserName, userRole]);
-
-  // Subscribe to conversations
-  useEffect(() => {
-    if (!firebaseUser) return;
-
-    console.log(
-      "Subscribing to conversations for Firebase user:",
-      firebaseUser.uid,
-    );
-
-    const unsubscribe = subscribeToConversations(firebaseUser.uid, (convs) => {
-      console.log("Received conversations:", convs);
+    const unsubscribe = subscribeToConversations(myPhpId, (convs) => {
       setConversations(convs);
-      const totalUnread = convs.reduce(
-        (sum, conv) => sum + (conv.unread || 0),
-        0,
-      );
+      const totalUnread = convs.reduce((sum, c) => sum + (c.unread || 0), 0);
       setUnreadCount(totalUnread);
     });
 
     return () => unsubscribe();
-  }, [firebaseUser]);
+  }, [myPhpId, isLoading]);
 
-  // Subscribe to messages when a chat is selected
+  // ── SUBSCRIBE TO MESSAGES ─────────────────────────────────────────────────
   useEffect(() => {
-    if (!selectedChat?.conversationId || !firebaseUser) return;
-
-    console.log(
-      "Subscribing to messages for conversation:",
-      selectedChat.conversationId,
-    );
+    if (!selectedChat?.conversationId || !myPhpId) return;
 
     const unsubscribe = subscribeToMessages(
       selectedChat.conversationId,
       (msgs) => {
-        console.log("Received messages:", msgs);
         setMessages(msgs);
-
         if (msgs.length > 0) {
-          markMessagesAsRead(
-            selectedChat.conversationId,
-            firebaseUser.uid,
-          ).catch((err) =>
-            console.error("Error marking messages as read:", err),
+          markMessagesAsRead(selectedChat.conversationId, myPhpId).catch(
+            console.error,
           );
         }
       },
     );
 
     inputRef.current?.focus();
-
     return () => unsubscribe();
-  }, [selectedChat?.conversationId, firebaseUser]);
+  }, [selectedChat?.conversationId, myPhpId]);
 
-  // Scroll to bottom when messages change
+  // ── SCROLL TO BOTTOM ──────────────────────────────────────────────────────
   useEffect(() => {
-    scrollToBottom();
+    setTimeout(
+      () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+      100,
+    );
   }, [messages]);
 
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  };
-
-  // Fetch available users from PHP backend
+  // ── FETCH AVAILABLE USERS ─────────────────────────────────────────────────
   const fetchAvailableUsers = async () => {
     setLoadingUsers(true);
     try {
       const response = await api.get("/api/users.php");
-
       if (response.data?.success) {
-        const allUsers = response.data.users || [];
-
-        const filtered = allUsers
-          .filter((u) => u.user_id.toString() !== currentUserId?.toString())
+        const filtered = (response.data.users || [])
+          .filter((u) => u.user_id.toString() !== myPhpId)
           .map((u) => ({
             user_id: u.user_id,
             full_name: u.full_name,
             role: u.role,
           }));
-
-        setAvailableUsers(filtered);
-      } else {
-        // Fallback mock data if API fails
-        const mockUsers = [
-          { user_id: 2, full_name: "Admin User", role: "admin" },
-          { user_id: 3, full_name: "Safety Admin", role: "safety_admin" },
-          { user_id: 4, full_name: "Health Admin", role: "health_admin" },
-          { user_id: 5, full_name: "Welfare Admin", role: "welfare_admin" },
-          { user_id: 6, full_name: "Disaster Admin", role: "disaster_admin" },
-          { user_id: 7, full_name: "Youth Admin", role: "youth_admin" },
-        ];
-
-        const filtered = mockUsers.filter(
-          (u) => u.user_id.toString() !== currentUserId?.toString(),
-        );
         setAvailableUsers(filtered);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      // Fallback mock data
-      const mockUsers = [
-        { user_id: 2, full_name: "Admin User", role: "admin" },
-        { user_id: 3, full_name: "Safety Admin", role: "safety_admin" },
-        { user_id: 4, full_name: "Health Admin", role: "health_admin" },
-      ];
-
-      const filtered = mockUsers.filter(
-        (u) => u.user_id.toString() !== currentUserId?.toString(),
-      );
-      setAvailableUsers(filtered);
     } finally {
       setLoadingUsers(false);
     }
   };
 
+  // ── HANDLERS ──────────────────────────────────────────────────────────────
   const toggleChat = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      setIsMinimized(false);
+    setIsOpen((o) => !o);
+    if (isOpen) {
       setShowUserList(false);
       setSelectedChat(null);
       setMessages([]);
@@ -234,71 +140,46 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
   };
 
   const handleSelectUser = async (user) => {
+    if (!myPhpId) return;
+    setShowUserList(false);
+    setLoadingUsers(true);
     try {
-      if (!firebaseUser) {
-        console.error("No Firebase user");
-        return;
-      }
-
-      console.log("Selecting user:", user);
-      setShowUserList(false);
-      setLoadingUsers(true);
-
+      // Both sides use PHP user IDs — conversation will be found by either user
       const conversation = await getOrCreateConversation(
-        firebaseUser.uid,
+        myPhpId,
         user.user_id.toString(),
       );
-
-      console.log("Conversation created/retrieved:", conversation);
-
       setSelectedChat({
         conversationId: conversation.id,
-        recipientId: user.user_id,
+        recipientId: user.user_id.toString(),
         recipientName: user.full_name,
       });
-
-      setIsMinimized(false);
-      setLoadingUsers(false);
     } catch (error) {
       console.error("Error creating conversation:", error);
+    } finally {
       setLoadingUsers(false);
     }
   };
 
-  const handleSelectChat = async (conv) => {
-    console.log("Selecting existing chat:", conv);
+  const handleSelectChat = (conv) => {
     setSelectedChat({
       conversationId: conv.id,
-      recipientId: conv.otherUser.user_id,
+      recipientId: conv.otherUser.user_id.toString(),
       recipientName: conv.otherUser.full_name,
     });
-    setIsMinimized(false);
     setShowUserList(false);
   };
 
-  const handleCloseChat = () => {
-    setSelectedChat(null);
-    setIsMinimized(true);
-    setMessages([]);
-  };
-
-  const handleBackToList = () => {
-    setSelectedChat(null);
-    setShowUserList(false);
-    setMessages([]);
-  };
-
-  // Chat functions
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || sending || !selectedChat) return;
+    if (!newMessage.trim() || sending || !selectedChat || !myPhpId) return;
 
     setSending(true);
     try {
       await sendMessage(
         selectedChat.conversationId,
-        firebaseUser.uid,
-        selectedChat.recipientId.toString(),
+        myPhpId, // sender PHP ID
+        selectedChat.recipientId, // recipient PHP ID
         newMessage.trim(),
         "text",
         null,
@@ -314,7 +195,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file || !selectedChat) return;
+    if (!file || !selectedChat || !myPhpId) return;
 
     if (file.size > 10 * 1024 * 1024) {
       alert("File too large. Max size is 10MB.");
@@ -327,8 +208,8 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
       if (result.success) {
         await sendMessage(
           selectedChat.conversationId,
-          firebaseUser.uid,
-          selectedChat.recipientId.toString(),
+          myPhpId,
+          selectedChat.recipientId,
           `Sent a file: ${result.fileName}`,
           "file",
           result.fileUrl,
@@ -338,7 +219,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
       console.error("Error uploading file:", error);
     } finally {
       setUploading(false);
-      fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -349,6 +230,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     }
   };
 
+  // ── HELPERS ───────────────────────────────────────────────────────────────
   const formatTime = (date) => {
     if (!date) return "";
     return new Date(date).toLocaleTimeString("en-US", {
@@ -361,33 +243,24 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    const messageDate = new Date(date);
-
-    if (messageDate.toDateString() === today.toDateString()) {
-      return "Today";
-    } else if (messageDate.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
-    } else {
-      return messageDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    }
+    const d = new Date(date);
+    if (d.toDateString() === today.toDateString()) return "Today";
+    if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const renderMessage = (msg, index) => {
-    const isCurrentUser = msg.senderId === firebaseUser?.uid;
+    const isCurrentUser = msg.senderId === myPhpId;
     const showDate =
       index === 0 ||
       !messages[index - 1]?.createdAt ||
-      formatDate(new Date(msg.createdAt)) !==
-        formatDate(new Date(messages[index - 1].createdAt));
+      formatDate(msg.createdAt) !== formatDate(messages[index - 1].createdAt);
 
     return (
       <div key={msg.id}>
         {showDate && (
           <div className="chat-date-divider">
-            <span>{formatDate(new Date(msg.createdAt))}</span>
+            <span>{formatDate(msg.createdAt)}</span>
           </div>
         )}
         <div className={`message-wrapper ${isCurrentUser ? "own" : "other"}`}>
@@ -396,7 +269,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
           >
             {msg.messageType === "file" ? (
               <div className="file-attachment">
-                <i className="fa-solid fa-paperclip"></i>
+                <i className="fa-solid fa-paperclip" />
                 <a
                   href={getFileDownloadUrl(msg.fileUrl)}
                   target="_blank"
@@ -414,7 +287,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
               {isCurrentUser && (
                 <i
                   className={`fa-solid ${msg.read ? "fa-check-double" : "fa-check"}`}
-                ></i>
+                />
               )}
             </span>
           </div>
@@ -423,6 +296,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     );
   };
 
+  // ── RENDER STATES ─────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="floating-chat-button" onClick={toggleChat}>
@@ -431,15 +305,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     );
   }
 
-  if (authError) {
-    return (
-      <div className="floating-chat-button" onClick={toggleChat}>
-        <div className="chat-icon">❌</div>
-      </div>
-    );
-  }
-
-  if (!firebaseUser || !currentUserId) {
+  if (authError || !myPhpId) {
     return null;
   }
 
@@ -453,31 +319,42 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
       </div>
 
       {isOpen && (
-        <div
-          className={`floating-chat-window ${isMinimized ? "minimized" : "expanded"}`}
-        >
+        <div className="floating-chat-window expanded">
           {selectedChat ? (
-            // Chat View (messages)
+            // ── CHAT VIEW ──────────────────────────────────────────────────
             <div className="chat-view">
               <div className="chat-header">
                 <div className="chat-header-info">
-                  <button className="back-btn" onClick={handleBackToList}>
-                    <i className="fa-solid fa-arrow-left"></i>
+                  <button
+                    className="back-btn"
+                    onClick={() => {
+                      setSelectedChat(null);
+                      setMessages([]);
+                    }}
+                  >
+                    <i className="fa-solid fa-arrow-left" />
                   </button>
                   <div className="chat-avatar">
                     {selectedChat.recipientName?.charAt(0).toUpperCase()}
                   </div>
                   <h3>{selectedChat.recipientName}</h3>
                 </div>
-                <button className="chat-close-btn" onClick={handleCloseChat}>
-                  <i className="fa-solid fa-times"></i>
+                <button
+                  className="chat-close-btn"
+                  onClick={() => {
+                    setSelectedChat(null);
+                    setIsOpen(false);
+                    setMessages([]);
+                  }}
+                >
+                  <i className="fa-solid fa-times" />
                 </button>
               </div>
 
               <div className="chat-messages">
                 {messages.length === 0 ? (
                   <div className="chat-empty">
-                    <i className="fa-regular fa-message"></i>
+                    <i className="fa-regular fa-message" />
                     <p>No messages yet. Say hello!</p>
                   </div>
                 ) : (
@@ -511,25 +388,25 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
                 >
                   <i
                     className={`fa-solid ${uploading ? "fa-spinner fa-spin" : "fa-paperclip"}`}
-                  ></i>
+                  />
                 </button>
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || sending || uploading}
                 >
-                  <i className="fa-solid fa-paper-plane"></i>
+                  <i className="fa-solid fa-paper-plane" />
                 </button>
               </form>
             </div>
           ) : showUserList ? (
-            // User List View (select user to chat with)
+            // ── USER LIST VIEW ─────────────────────────────────────────────
             <div className="conversations-view">
               <div className="chat-header">
                 <button
                   className="back-btn"
                   onClick={() => setShowUserList(false)}
                 >
-                  <i className="fa-solid fa-arrow-left"></i>
+                  <i className="fa-solid fa-arrow-left" />
                 </button>
                 <h3>Select User</h3>
                 <button
@@ -542,7 +419,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
               <div className="conversations-list">
                 {loadingUsers ? (
                   <div className="empty-state">
-                    <i className="fa-solid fa-spinner fa-spin"></i>
+                    <i className="fa-solid fa-spinner fa-spin" />
                     <p>Loading users...</p>
                   </div>
                 ) : availableUsers.length === 0 ? (
@@ -569,7 +446,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
               </div>
             </div>
           ) : (
-            // Conversations List View
+            // ── CONVERSATIONS LIST VIEW ────────────────────────────────────
             <div className="conversations-view">
               <div className="chat-header">
                 <h3>Messages</h3>
@@ -581,7 +458,7 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
                 </button>
               </div>
               <button className="new-chat-btn" onClick={handleNewChat}>
-                <i className="fa-solid fa-plus"></i> New Chat
+                <i className="fa-solid fa-plus" /> New Chat
               </button>
               <div className="conversations-list">
                 {conversations.length === 0 ? (

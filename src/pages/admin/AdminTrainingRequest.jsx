@@ -29,12 +29,6 @@ const STATUS_OPTIONS = [
     icon: "fa-calendar-check",
   },
   {
-    key: "completed",
-    label: "Completed",
-    color: "#059669",
-    icon: "fa-graduation-cap",
-  },
-  {
     key: "rejected",
     label: "Rejected",
     color: "#ef4444",
@@ -131,8 +125,7 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
   const isPending = request.status === "pending";
   const isApproved = request.status === "approved";
   const isRejected = request.status === "rejected";
-  const isScheduled =
-    request.status === "scheduled" || request.status === "completed";
+  const isScheduled = request.status === "scheduled";
   const hasSession = !!request.created_session_id;
 
   async function doApprove() {
@@ -502,7 +495,7 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
                   </div>
                 )}
 
-                {/* Existing notes read-only when scheduled/completed */}
+                {/* Existing notes read-only when scheduled */}
                 {isScheduled && adminNotes && (
                   <div className="atr-form__field">
                     <label className="atr-form__label">
@@ -584,7 +577,7 @@ function RequestDetailsModal({ request, onClose, onUpdate }) {
                   </div>
                 )}
 
-                {/* ── SCHEDULED / COMPLETED: session info ── */}
+                {/* ── SCHEDULED: session info ── */}
                 {hasSession && (
                   <div className="atr-session-created">
                     <div className="atr-session-created__icon">
