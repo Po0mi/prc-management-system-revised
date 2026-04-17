@@ -2,13 +2,15 @@ import axios from "axios";
 
 // Determine which base URL to use
 const getBaseURL = () => {
-  const useLocal = import.meta.env.VITE_USE_LOCAL_API === "true";
-
-  if (useLocal) {
-    return import.meta.env.VITE_LOCAL_API_URL; // http://localhost/prc-management-system/backend
+  // In production builds always use the production URL, regardless of VITE_USE_LOCAL_API
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL;
   }
 
-  return import.meta.env.VITE_API_URL; // https://philippineredcross-iloilochapter.org
+  const useLocal = import.meta.env.VITE_USE_LOCAL_API === "true";
+  return useLocal
+    ? import.meta.env.VITE_LOCAL_API_URL  // http://localhost/prc-management-system/backend
+    : import.meta.env.VITE_API_URL;       // https://philippineredcross-iloilochapter.org
 };
 
 const api = axios.create({

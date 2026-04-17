@@ -3,29 +3,19 @@ import { useState, useEffect } from "react";
 import FloatingChat from "../components/FloatingChat";
 import Notifications from "../components/Notifications";
 import authService from "../services/auth.service";
-import {
-  hasPermission,
-  isSuperAdmin,
-  getRoleLabel,
-  getUserRole,
-} from "../utils/permissions";
+import { getRoleLabel, getUserRole } from "../utils/permissions";
 import "./styles/AdminLayout.scss";
 
 function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user] = useState(() => authService.getCurrentUser());
   const [currentTime, setCurrentTime] = useState(new Date());
   const [hoveredItem, setHoveredItem] = useState(null);
   const userRole = getUserRole();
 
   useEffect(() => {
-    // Get user data
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
-
-    // Update time every minute
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
