@@ -1,4 +1,5 @@
 @use "../../styles/variables.scss" as *;
+@use "sass:color";
 
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
 @keyframes fadeIn {
@@ -1683,7 +1684,7 @@
   }
 
   &__submit {
-    background: linear-gradient(135deg, $success, darken($success, 10%));
+    background: linear-gradient(135deg, $success, color.adjust($success, $lightness: -10%));
     color: $white;
     flex: 1;
 

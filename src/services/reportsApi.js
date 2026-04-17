@@ -168,7 +168,7 @@ export const exportReport = async (reportType, filters = {}) => {
     link.href = url;
     link.setAttribute(
       "download",
-      `${reportType}_report_${new Date().toISOString().split("T")[0]}.xlsx`,
+      `${reportType}_report_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();

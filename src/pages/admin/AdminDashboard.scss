@@ -405,6 +405,62 @@
   }
 }
 
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+.db-section--tabs {
+  padding: 0;
+}
+
+.db-tabs {
+  background: #fff;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  &__nav {
+    display: flex;
+    border-bottom: 1px solid $gray-100;
+    padding: 0 $space-md;
+    gap: 2px;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    padding: $space-md $space-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $gray-400;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    transition:
+      color 150ms,
+      border-color 150ms;
+    white-space: nowrap;
+
+    i {
+      font-size: 13px;
+    }
+
+    &:hover {
+      color: $gray-700;
+    }
+
+    &--active {
+      color: $primary-red;
+      border-bottom-color: $primary-red;
+      font-weight: $font-weight-bold;
+    }
+  }
+
+  &__panel {
+    padding: $space-lg;
+  }
+}
+
 // ─── GRID ─────────────────────────────────────────────────────────────────────
 .db-grid {
   display: grid;

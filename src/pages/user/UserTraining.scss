@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../styles/variables.scss" as *;
 
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
@@ -1741,7 +1742,7 @@
   }
 
   &__submit {
-    background: linear-gradient(135deg, $success, darken($success, 10%));
+    background: linear-gradient(135deg, $success, color.adjust($success, $lightness: -10%));
     color: $white;
     flex: 1;
 

@@ -12,7 +12,7 @@ export const getDashboardStats = async () => {
     api.get("/api/training_sessions.php", { params: { action: "stats" } }),
     api.get("/api/training_requests.php", { params: { action: "stats" } }),
     api.get("/api/volunteers.php"),
-    api.get("/api/inventory.php"),
+    api.get("/api/inventory.php", { params: { action: "inventory" } }),
     api.get("/api/merchandise.php"),
     api.get("/api/blood_bank.php"),
     api.get("/api/announcements.php"),
@@ -84,19 +84,24 @@ export const getDashboardStats = async () => {
 // Pending items that need admin attention
 export const getPendingItems = async () => {
   const results = await Promise.allSettled([
-    api.get("/api/registrations.php"),
-    api.get("/api/session_registrations.php"),
-    api.get("/api/training_requests.php"),
+    api.get("/api/registrations.php",       { params: { action: "stats" } }),
+    api.get("/api/session_registrations.php", { params: { action: "stats" } }),
+    api.get("/api/training_requests.php",   { params: { action: "stats" } }),
   ]);
 
-  const safeRegs   = results[0].status === "fulfilled" ? results[0].value.data?.registrations ?? [] : [];
-  const safeSeRegs = results[1].status === "fulfilled" ? results[1].value.data?.registrations ?? [] : [];
-  const safeReqs   = results[2].status === "fulfilled" ? results[2].value.data?.requests ?? [] : [];
+  const flatPending = (i) =>
+    results[i].status === "fulfilled" ? (results[i].value.data?.stats?.pending ?? 0) : 0;
+
+  // training_requests returns by_status array [{status,count}]
+  const reqsByStatus = results[2].status === "fulfilled"
+    ? results[2].value.data?.stats?.by_status ?? []
+    : [];
+  const reqPending = reqsByStatus.find(s => s.status === "pending")?.count ?? 0;
 
   return {
-    event_registrations:    safeRegs.filter(r => r.status === "pending").length,
-    training_registrations: safeSeRegs.filter(r => r.status === "pending").length,
-    training_requests:      safeReqs.filter(r => r.status === "pending").length,
+    event_registrations:    flatPending(0),
+    training_registrations: flatPending(1),
+    training_requests:      Number(reqPending),
   };
 };
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./UserDashboard.scss";
 import {
-  getDashboardOverview,
   getUserStats,
   getUserUpcomingEvents,
   getUserUpcomingTraining,
@@ -254,25 +253,17 @@ function UserDashboard() {
     };
   };
 
-  const formatDateTime = (dateString, timeString) => {
-    const date = new Date(dateString);
-    return `${date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })} • ${timeString}`;
-  };
 
   const handleViewEvent = (eventId) => {
     navigate(`/user/events/${eventId}`);
   };
 
-  const handleViewTraining = (trainingId) => {
-    navigate(`/user/training/${trainingId}`);
+  const handleViewTraining = () => {
+    navigate("/user/training");
   };
 
-  const handleViewAnnouncement = (announcementId) => {
-    navigate(`/user/announcements/${announcementId}`);
+  const handleViewAnnouncement = () => {
+    navigate("/user/announcements");
   };
 
   const handleBloodMap = () => {
@@ -431,7 +422,7 @@ function UserDashboard() {
                   <span className="stats-label">Active requests</span>
                 </div>
               </div>
-              <Link to="/user/requests" className="stats-card-link">
+              <Link to="/user/training" className="stats-card-link">
                 View Requests <i className="fa-solid fa-arrow-right"></i>
               </Link>
             </div>

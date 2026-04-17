@@ -65,6 +65,7 @@ export const getPhpUserId = (firebaseUid) => {
 };
 
 const getUserInfo = async (phpUserId) => {
+  if (!phpUserId) return { user_id: null, full_name: "Unknown User", role: "user" };
   const phpId = phpUserId.toString();
 
   // Try Firestore registry first
@@ -74,20 +75,20 @@ const getUserInfo = async (phpUserId) => {
     if (snap.exists()) {
       return {
         user_id: phpId,
-        full_name: snap.data().name,
-        role: snap.data().role,
+        full_name: snap.data().name || "Unknown User",
+        role: snap.data().role || "user",
       };
     }
-  } catch (e) {
+  } catch {
     // fall through to PHP
   }
 
   // Fallback: PHP backend
   try {
-    const res = await api.get("/api/users.php", { params: { id: phpId } });
-    const u = res.data?.data || res.data?.user;
-    if (u) return { user_id: phpId, full_name: u.full_name, role: u.role };
-  } catch (e) {
+    const res = await api.get("/api/users.php", { params: { action: "get", id: phpId } });
+    const u = res.data?.user;
+    if (u) return { user_id: phpId, full_name: u.full_name || "Unknown User", role: u.role || "user" };
+  } catch {
     // ignore
   }
 
@@ -135,31 +136,53 @@ export const subscribeToConversations = (myPhpId, callback) => {
     orderBy("updatedAt", "desc"),
   );
 
-  return onSnapshot(
-    q,
-    async (snapshot) => {
-      const conversations = await Promise.all(
-        snapshot.docs.map(async (docSnapshot) => {
-          const data = docSnapshot.data();
-          const otherPhpId = data.participants.find((id) => id !== phpId);
-          const otherUser = await getUserInfo(otherPhpId);
+  let unsubscribeFn = null;
+  let retryTimeout = null;
+  let retryCount = 0;
+  let cancelled = false;
 
-          return {
-            id: docSnapshot.id,
-            ...data,
-            otherUser,
-            unread: data.unreadCount?.[phpId] || 0,
-          };
-        }),
-      );
+  const attach = () => {
+    if (cancelled) return;
 
-      callback(conversations);
-    },
-    (error) => {
-      console.error("Conversation listener error:", error);
-      callback([]);
-    },
-  );
+    unsubscribeFn = onSnapshot(
+      q,
+      async (snapshot) => {
+        retryCount = 0;
+        const conversations = await Promise.all(
+          snapshot.docs.map(async (docSnapshot) => {
+            const data = docSnapshot.data();
+            const participants = Array.isArray(data.participants) ? data.participants : [];
+            const otherPhpId = participants.find((id) => id !== phpId) ?? null;
+            const otherUser = await getUserInfo(otherPhpId);
+            return {
+              id: docSnapshot.id,
+              ...data,
+              otherUser,
+              unread: data.unreadCount?.[phpId] || 0,
+            };
+          }),
+        );
+        callback(conversations);
+      },
+      (error) => {
+        console.error("Conversation listener error:", error.code, error.message);
+        unsubscribeFn = null;
+        if (cancelled) return;
+        const delay = Math.min(1000 * 2 ** retryCount, 30000);
+        retryCount++;
+        console.warn(`Retrying conversation subscription in ${delay}ms (attempt ${retryCount})`);
+        retryTimeout = setTimeout(attach, delay);
+      },
+    );
+  };
+
+  attach();
+
+  return () => {
+    cancelled = true;
+    clearTimeout(retryTimeout);
+    unsubscribeFn?.();
+  };
 };
 
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
@@ -171,6 +194,7 @@ export const sendMessage = async (
   content,
   messageType = "text",
   fileUrl = null,
+  fileMime = null,
 ) => {
   const senderId = senderPhpId.toString();
   const recipientId = recipientPhpId.toString();
@@ -183,11 +207,12 @@ export const sendMessage = async (
   );
 
   const message = {
-    senderId, // PHP user ID
-    recipientId, // PHP user ID
+    senderId,
+    recipientId,
     content,
     messageType,
     fileUrl,
+    fileMime,
     createdAt: serverTimestamp(),
     read: false,
   };
@@ -196,8 +221,13 @@ export const sendMessage = async (
 
   // Update conversation metadata
   const conversationRef = doc(db, "conversations", conversationId);
+  const lastMessagePreview =
+    messageType === "image" ? "📷 Image" :
+    messageType === "file"  ? "📎 File" :
+    content || "";
+
   await updateDoc(conversationRef, {
-    lastMessage: content,
+    lastMessage: lastMessagePreview,
     lastMessageTime: serverTimestamp(),
     updatedAt: serverTimestamp(),
     [`unreadCount.${recipientId}`]: increment(1),
@@ -207,29 +237,51 @@ export const sendMessage = async (
 };
 
 export const subscribeToMessages = (conversationId, callback) => {
-  const messagesRef = collection(
-    db,
-    "conversations",
-    conversationId,
-    "messages",
-  );
-  const q = query(messagesRef, orderBy("createdAt", "asc"));
+  let unsubscribeFn = null;
+  let retryTimeout = null;
+  let retryCount = 0;
+  let cancelled = false;
 
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const messages = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-      }));
-      callback(messages);
-    },
-    (error) => {
-      console.error("Message listener error:", error);
-      callback([]);
-    },
-  );
+  const attach = () => {
+    if (cancelled) return;
+
+    const messagesRef = collection(db, "conversations", conversationId, "messages");
+    const q = query(messagesRef, orderBy("createdAt", "asc"));
+
+    unsubscribeFn = onSnapshot(
+      q,
+      (snapshot) => {
+        retryCount = 0; // reset on success
+        const messages = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          createdAt: d.data().createdAt?.toDate() || new Date(),
+        }));
+        callback(messages);
+      },
+      (error) => {
+        console.error("Message listener error:", error.code, error.message);
+        unsubscribeFn = null;
+
+        if (cancelled) return;
+
+        // Retry with exponential back-off (max 30 s)
+        const delay = Math.min(1000 * 2 ** retryCount, 30000);
+        retryCount++;
+        console.warn(`Retrying message subscription in ${delay}ms (attempt ${retryCount})`);
+        retryTimeout = setTimeout(attach, delay);
+      },
+    );
+  };
+
+  attach();
+
+  // Return a cancel function that stops both the listener and any pending retry
+  return () => {
+    cancelled = true;
+    clearTimeout(retryTimeout);
+    unsubscribeFn?.();
+  };
 };
 
 export const markMessagesAsRead = async (conversationId, myPhpId) => {

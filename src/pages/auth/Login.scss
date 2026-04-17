@@ -146,6 +146,18 @@
     font-size: 1.25rem;
     flex-shrink: 0;
   }
+
+  &--lockout {
+    background: linear-gradient(135deg, rgba(#f59e0b, 0.12) 0%, rgba(#f59e0b, 0.06) 100%);
+    color: #92400e;
+    border-color: rgba(#f59e0b, 0.35);
+    flex-wrap: wrap;
+  }
+}
+
+.lockout-timer {
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .login-form {

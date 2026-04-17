@@ -1,4 +1,5 @@
 @use "../../styles/variables.scss" as *;
+@use "sass:color";
 
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
 @keyframes fadeInUp {
@@ -315,19 +316,19 @@
         }
 
         &.events {
-          background: linear-gradient(135deg, $info, darken($info, 15%));
+          background: linear-gradient(135deg, $info, color.adjust($info, $lightness: -15%));
         }
 
         &.training {
-          background: linear-gradient(135deg, $success, darken($success, 15%));
+          background: linear-gradient(135deg, $success, color.adjust($success, $lightness: -15%));
         }
 
         &.requests {
-          background: linear-gradient(135deg, $warning, darken($warning, 15%));
+          background: linear-gradient(135deg, $warning, color.adjust($warning, $lightness: -15%));
         }
 
         &.blood {
-          background: linear-gradient(135deg, $error, darken($error, 15%));
+          background: linear-gradient(135deg, $error, color.adjust($error, $lightness: -15%));
         }
       }
 
@@ -971,7 +972,7 @@
       justify-content: center;
       min-width: 70px;
       padding: $space-sm;
-      background: linear-gradient(135deg, $info, darken($info, 15%));
+      background: linear-gradient(135deg, $info, color.adjust($info, $lightness: -15%));
       color: $white;
       border-radius: $radius-md;
       flex-shrink: 0;
@@ -1040,12 +1041,12 @@
 
           &.status-approved {
             background: rgba($success, 0.12);
-            color: darken($success, 10%);
+            color: color.adjust($success, $lightness: -10%);
           }
 
           &.status-pending {
             background: rgba($warning, 0.12);
-            color: darken($warning, 10%);
+            color: color.adjust($warning, $lightness: -10%);
           }
 
           &.status-rejected {
@@ -1186,12 +1187,12 @@
 
           &.status-approved {
             background: rgba($success, 0.12);
-            color: darken($success, 10%);
+            color: color.adjust($success, $lightness: -10%);
           }
 
           &.status-pending {
             background: rgba($warning, 0.12);
-            color: darken($warning, 10%);
+            color: color.adjust($warning, $lightness: -10%);
           }
 
           &.status-rejected {

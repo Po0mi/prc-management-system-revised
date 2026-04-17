@@ -25,104 +25,80 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [authError, setAuthError] = useState(null);
 
-  // ChatBox states
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [uploadState, setUploadState] = useState(null); // { name, preview, file, mime }
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
 
-  // myPhpId is the PHP user_id as a string — this is our consistent identifier
   const myPhpId = currentUserId?.toString();
 
-  // ── FIREBASE AUTH + USER REGISTRATION ──────────────────────────────────────
-  // We sign in anonymously just to satisfy Firebase security rules.
-  // We do NOT use the Firebase UID for conversations — PHP user_id is used instead.
+  // ── FIREBASE INIT ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!myPhpId) return;
-
     const init = async () => {
       try {
         const result = await signInAnonymously(auth);
-        // Register this user in Firestore userRegistry so others can look them up
         await registerUser(result.user.uid, myPhpId, currentUserName, userRole);
         setIsLoading(false);
-      } catch (error) {
-        console.error("Firebase auth error:", error);
-        setAuthError(error.message);
+      } catch (err) {
+        console.error("Firebase auth error:", err);
+        setAuthError(err.message);
         setIsLoading(false);
       }
     };
-
     init();
   }, [myPhpId, currentUserName, userRole]);
 
-  // ── SUBSCRIBE TO CONVERSATIONS (keyed by PHP user ID) ──────────────────────
+  // ── CONVERSATIONS SUBSCRIPTION ─────────────────────────────────────────────
   useEffect(() => {
     if (!myPhpId || isLoading) return;
-
-    const unsubscribe = subscribeToConversations(myPhpId, (convs) => {
+    const unsub = subscribeToConversations(myPhpId, (convs) => {
       setConversations(convs);
-      const totalUnread = convs.reduce((sum, c) => sum + (c.unread || 0), 0);
-      setUnreadCount(totalUnread);
+      setUnreadCount(convs.reduce((s, c) => s + (c.unread || 0), 0));
     });
-
-    return () => unsubscribe();
+    return unsub;
   }, [myPhpId, isLoading]);
 
-  // ── SUBSCRIBE TO MESSAGES ─────────────────────────────────────────────────
+  // ── MESSAGES SUBSCRIPTION ──────────────────────────────────────────────────
   useEffect(() => {
     if (!selectedChat?.conversationId || !myPhpId) return;
-
-    const unsubscribe = subscribeToMessages(
-      selectedChat.conversationId,
-      (msgs) => {
-        setMessages(msgs);
-        if (msgs.length > 0) {
-          markMessagesAsRead(selectedChat.conversationId, myPhpId).catch(
-            console.error,
-          );
-        }
-      },
-    );
-
+    const unsub = subscribeToMessages(selectedChat.conversationId, (msgs) => {
+      setMessages(msgs);
+      if (msgs.length > 0)
+        markMessagesAsRead(selectedChat.conversationId, myPhpId).catch(console.error);
+    });
     inputRef.current?.focus();
-    return () => unsubscribe();
+    return unsub;
   }, [selectedChat?.conversationId, myPhpId]);
 
-  // ── SCROLL TO BOTTOM ──────────────────────────────────────────────────────
+  // ── SCROLL TO BOTTOM ───────────────────────────────────────────────────────
   useEffect(() => {
-    setTimeout(
-      () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
-      100,
-    );
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
   }, [messages]);
 
-  // ── FETCH AVAILABLE USERS ─────────────────────────────────────────────────
+  // ── FETCH USERS ────────────────────────────────────────────────────────────
   const fetchAvailableUsers = async () => {
     setLoadingUsers(true);
     try {
-      const response = await api.get("/api/users.php");
-      if (response.data?.success) {
-        const filtered = (response.data.users || [])
-          .filter((u) => u.user_id.toString() !== myPhpId)
-          .map((u) => ({
-            user_id: u.user_id,
-            full_name: u.full_name,
-            role: u.role,
-          }));
-        setAvailableUsers(filtered);
+      const { data } = await api.get("/api/users.php");
+      if (data?.success) {
+        setAvailableUsers(
+          (data.users || [])
+            .filter((u) => u.user_id.toString() !== myPhpId)
+            .map(({ user_id, full_name, role }) => ({ user_id, full_name, role })),
+        );
       }
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (err) {
+      console.error("Error fetching users:", err);
     } finally {
       setLoadingUsers(false);
     }
   };
 
-  // ── HANDLERS ──────────────────────────────────────────────────────────────
+  // ── HANDLERS ───────────────────────────────────────────────────────────────
   const toggleChat = () => {
     setIsOpen((o) => !o);
     if (isOpen) {
@@ -144,18 +120,14 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     setShowUserList(false);
     setLoadingUsers(true);
     try {
-      // Both sides use PHP user IDs — conversation will be found by either user
-      const conversation = await getOrCreateConversation(
-        myPhpId,
-        user.user_id.toString(),
-      );
+      const conv = await getOrCreateConversation(myPhpId, user.user_id.toString());
       setSelectedChat({
-        conversationId: conversation.id,
+        conversationId: conv.id,
         recipientId: user.user_id.toString(),
         recipientName: user.full_name,
       });
-    } catch (error) {
-      console.error("Error creating conversation:", error);
+    } catch (err) {
+      console.error("Error creating conversation:", err);
     } finally {
       setLoadingUsers(false);
     }
@@ -170,91 +142,115 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     setShowUserList(false);
   };
 
-  const handleSendMessage = async (e) => {
+  const handleBack = () => {
+    setSelectedChat(null);
+    setMessages([]);
+    setUploadState(null);
+  };
+
+  // File picked — show preview, don't upload yet
+  const handleFilePick = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File too large. Max size is 10 MB.");
+      return;
+    }
+    const isImage = file.type.startsWith("image/");
+    setUploadState({
+      file,
+      name: file.name,
+      mime: file.type,
+      preview: isImage ? URL.createObjectURL(file) : null,
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    inputRef.current?.focus();
+  };
+
+  const clearUpload = () => {
+    if (uploadState?.preview) URL.revokeObjectURL(uploadState.preview);
+    setUploadState(null);
+  };
+
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || sending || !selectedChat || !myPhpId) return;
+    const hasText = newMessage.trim();
+    const hasFile = !!uploadState;
+    if ((!hasText && !hasFile) || sending || !selectedChat || !myPhpId) return;
 
     setSending(true);
     try {
-      await sendMessage(
-        selectedChat.conversationId,
-        myPhpId, // sender PHP ID
-        selectedChat.recipientId, // recipient PHP ID
-        newMessage.trim(),
-        "text",
-        null,
-      );
+      if (hasFile) {
+        const result = await uploadChatFile(uploadState.file);
+        if (result.success) {
+          await sendMessage(
+            selectedChat.conversationId,
+            myPhpId,
+            selectedChat.recipientId,
+            hasText || uploadState.name,
+            uploadState.mime.startsWith("image/") ? "image" : "file",
+            result.fileUrl,
+            result.fileType,
+          );
+        }
+        clearUpload();
+        if (hasText) {
+          await sendMessage(
+            selectedChat.conversationId,
+            myPhpId,
+            selectedChat.recipientId,
+            hasText,
+          );
+        }
+      } else {
+        await sendMessage(
+          selectedChat.conversationId,
+          myPhpId,
+          selectedChat.recipientId,
+          hasText,
+        );
+      }
       setNewMessage("");
       inputRef.current?.focus();
-    } catch (error) {
-      console.error("Error sending message:", error);
+    } catch (err) {
+      console.error("Send error:", err);
     } finally {
       setSending(false);
     }
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !selectedChat || !myPhpId) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert("File too large. Max size is 10MB.");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const result = await uploadChatFile(file);
-      if (result.success) {
-        await sendMessage(
-          selectedChat.conversationId,
-          myPhpId,
-          selectedChat.recipientId,
-          `Sent a file: ${result.fileName}`,
-          "file",
-          result.fileUrl,
-        );
-      }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage(e);
+      handleSend(e);
     }
   };
 
-  // ── HELPERS ───────────────────────────────────────────────────────────────
-  const formatTime = (date) => {
-    if (!date) return "";
-    return new Date(date).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  // ── HELPERS ────────────────────────────────────────────────────────────────
+  const formatTime = (date) =>
+    date
+      ? new Date(date).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      : "";
 
   const formatDate = (date) => {
+    const d = new Date(date);
     const today = new Date();
     const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const d = new Date(date);
+    yesterday.setDate(today.getDate() - 1);
     if (d.toDateString() === today.toDateString()) return "Today";
     if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const renderMessage = (msg, index) => {
-    const isCurrentUser = msg.senderId === myPhpId;
+    const isOwn = msg.senderId === myPhpId;
     const showDate =
       index === 0 ||
       !messages[index - 1]?.createdAt ||
       formatDate(msg.createdAt) !== formatDate(messages[index - 1].createdAt);
+
+    const isImage = msg.messageType === "image";
+    const isFile = msg.messageType === "file";
 
     return (
       <div key={msg.id}>
@@ -263,31 +259,39 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
             <span>{formatDate(msg.createdAt)}</span>
           </div>
         )}
-        <div className={`message-wrapper ${isCurrentUser ? "own" : "other"}`}>
-          <div
-            className={`message-bubble ${msg.messageType === "file" ? "file-message" : ""}`}
-          >
-            {msg.messageType === "file" ? (
-              <div className="file-attachment">
-                <i className="fa-solid fa-paperclip" />
-                <a
-                  href={getFileDownloadUrl(msg.fileUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                >
-                  {msg.content.replace("Sent a file: ", "")}
-                </a>
-              </div>
+        <div className={`msg-row ${isOwn ? "own" : "other"}`}>
+          <div className={`bubble ${isImage ? "bubble--image" : ""} ${isFile ? "bubble--file" : ""}`}>
+            {isImage ? (
+              <a
+                href={getFileDownloadUrl(msg.fileUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={getFileDownloadUrl(msg.fileUrl)}
+                  alt={msg.content}
+                  className="chat-img"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              </a>
+            ) : isFile ? (
+              <a
+                className="file-row"
+                href={getFileDownloadUrl(msg.fileUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+              >
+                <i className="fa-solid fa-file-arrow-down" />
+                <span>{msg.content}</span>
+              </a>
             ) : (
               <p>{msg.content}</p>
             )}
-            <span className="message-time">
+            <span className="bubble-meta">
               {formatTime(msg.createdAt)}
-              {isCurrentUser && (
-                <i
-                  className={`fa-solid ${msg.read ? "fa-check-double" : "fa-check"}`}
-                />
+              {isOwn && (
+                <i className={`fa-solid ${msg.read ? "fa-check-double" : "fa-check"}`} />
               )}
             </span>
           </div>
@@ -296,203 +300,174 @@ function FloatingChat({ userRole = "user", currentUserId, currentUserName }) {
     );
   };
 
-  // ── RENDER STATES ─────────────────────────────────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="floating-chat-button" onClick={toggleChat}>
-        <div className="chat-icon">⏳</div>
-      </div>
-    );
-  }
-
-  if (authError || !myPhpId) {
-    return null;
-  }
+  // ── RENDER ─────────────────────────────────────────────────────────────────
+  if (authError || !myPhpId) return null;
 
   return (
     <>
-      <div className="floating-chat-button" onClick={toggleChat}>
-        <div className="chat-icon">💬</div>
-        {unreadCount > 0 && (
-          <div className="notification-badge">{unreadCount}</div>
+      <button className="chat-fab" onClick={toggleChat} aria-label="Toggle chat">
+        {isLoading ? (
+          <i className="fa-solid fa-circle-notch fa-spin" />
+        ) : (
+          <i className="fa-solid fa-comment-dots" />
         )}
-      </div>
+        {!isLoading && unreadCount > 0 && (
+          <span className="chat-fab__badge">{unreadCount > 99 ? "99+" : unreadCount}</span>
+        )}
+      </button>
 
-      {isOpen && (
-        <div className="floating-chat-window expanded">
+      {isOpen && !isLoading && (
+        <div className="chat-window">
           {selectedChat ? (
-            // ── CHAT VIEW ──────────────────────────────────────────────────
-            <div className="chat-view">
-              <div className="chat-header">
-                <div className="chat-header-info">
-                  <button
-                    className="back-btn"
-                    onClick={() => {
-                      setSelectedChat(null);
-                      setMessages([]);
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-left" />
-                  </button>
-                  <div className="chat-avatar">
-                    {selectedChat.recipientName?.charAt(0).toUpperCase()}
-                  </div>
-                  <h3>{selectedChat.recipientName}</h3>
-                </div>
-                <button
-                  className="chat-close-btn"
-                  onClick={() => {
-                    setSelectedChat(null);
-                    setIsOpen(false);
-                    setMessages([]);
-                  }}
-                >
-                  <i className="fa-solid fa-times" />
+            // ── CHAT VIEW ────────────────────────────────────────────────────
+            <>
+              <header className="chat-header">
+                <button className="icon-btn" onClick={handleBack} aria-label="Back">
+                  <i className="fa-solid fa-arrow-left" />
                 </button>
-              </div>
+                <div className="chat-header__avatar">{selectedChat.recipientName?.charAt(0).toUpperCase()}</div>
+                <span className="chat-header__name">{selectedChat.recipientName}</span>
+                <button className="icon-btn ml-auto" onClick={() => { handleBack(); setIsOpen(false); }} aria-label="Close">
+                  <i className="fa-solid fa-xmark" />
+                </button>
+              </header>
 
               <div className="chat-messages">
                 {messages.length === 0 ? (
                   <div className="chat-empty">
-                    <i className="fa-regular fa-message" />
-                    <p>No messages yet. Say hello!</p>
+                    <i className="fa-regular fa-comments" />
+                    <p>No messages yet</p>
                   </div>
                 ) : (
-                  messages.map((msg, index) => renderMessage(msg, index))
+                  messages.map((msg, i) => renderMessage(msg, i))
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              <form className="chat-input" onSubmit={handleSendMessage}>
+              {/* Upload preview */}
+              {uploadState && (
+                <div className="upload-preview">
+                  {uploadState.preview ? (
+                    <img src={uploadState.preview} alt="preview" />
+                  ) : (
+                    <i className="fa-solid fa-file" />
+                  )}
+                  <span className="upload-preview__name">{uploadState.name}</span>
+                  <button className="icon-btn" onClick={clearUpload} aria-label="Remove">
+                    <i className="fa-solid fa-xmark" />
+                  </button>
+                </div>
+              )}
+
+              <form className="chat-input" onSubmit={handleSend}>
+                <button
+                  type="button"
+                  className="icon-btn attach-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={sending}
+                  aria-label="Attach file"
+                >
+                  <i className="fa-solid fa-paperclip" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFilePick}
+                  accept="image/*,.pdf,.doc,.docx"
+                  style={{ display: "none" }}
+                />
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Type a message..."
+                  placeholder={uploadState ? "Add a caption…" : "Message…"}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={sending || uploading}
+                  onKeyDown={handleKeyDown}
+                  disabled={sending}
                 />
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  style={{ display: "none" }}
-                  accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
-                />
-                <button
-                  type="button"
-                  className="file-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading || sending}
-                >
-                  <i
-                    className={`fa-solid ${uploading ? "fa-spinner fa-spin" : "fa-paperclip"}`}
-                  />
-                </button>
                 <button
                   type="submit"
-                  disabled={!newMessage.trim() || sending || uploading}
+                  className="send-btn"
+                  disabled={(!newMessage.trim() && !uploadState) || sending}
+                  aria-label="Send"
                 >
-                  <i className="fa-solid fa-paper-plane" />
+                  {sending ? (
+                    <i className="fa-solid fa-circle-notch fa-spin" />
+                  ) : (
+                    <i className="fa-solid fa-paper-plane" />
+                  )}
                 </button>
               </form>
-            </div>
+            </>
           ) : showUserList ? (
-            // ── USER LIST VIEW ─────────────────────────────────────────────
-            <div className="conversations-view">
-              <div className="chat-header">
-                <button
-                  className="back-btn"
-                  onClick={() => setShowUserList(false)}
-                >
+            // ── USER LIST VIEW ────────────────────────────────────────────────
+            <>
+              <header className="chat-header">
+                <button className="icon-btn" onClick={() => setShowUserList(false)}>
                   <i className="fa-solid fa-arrow-left" />
                 </button>
-                <h3>Select User</h3>
-                <button
-                  className="minimize-btn"
-                  onClick={() => setIsOpen(false)}
-                >
-                  ✕
+                <span className="chat-header__name">New Message</span>
+                <button className="icon-btn ml-auto" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-xmark" />
                 </button>
-              </div>
-              <div className="conversations-list">
+              </header>
+              <div className="chat-list">
                 {loadingUsers ? (
-                  <div className="empty-state">
-                    <i className="fa-solid fa-spinner fa-spin" />
-                    <p>Loading users...</p>
+                  <div className="chat-empty">
+                    <i className="fa-solid fa-circle-notch fa-spin" />
                   </div>
                 ) : availableUsers.length === 0 ? (
-                  <div className="empty-state">
-                    <p>No other users available</p>
-                  </div>
+                  <div className="chat-empty"><p>No users available</p></div>
                 ) : (
-                  availableUsers.map((user) => (
-                    <div
-                      key={user.user_id}
-                      className="conversation-item"
-                      onClick={() => handleSelectUser(user)}
-                    >
-                      <div className="avatar">
-                        {user.full_name?.charAt(0).toUpperCase()}
+                  availableUsers.map((u) => (
+                    <button key={u.user_id} className="conv-item" onClick={() => handleSelectUser(u)}>
+                      <div className="conv-item__avatar">{u.full_name?.charAt(0).toUpperCase()}</div>
+                      <div className="conv-item__info">
+                        <strong>{u.full_name}</strong>
+                        <small>{u.role}</small>
                       </div>
-                      <div className="conversation-info">
-                        <h4>{user.full_name}</h4>
-                        <p>{user.role}</p>
-                      </div>
-                    </div>
+                    </button>
                   ))
                 )}
               </div>
-            </div>
+            </>
           ) : (
-            // ── CONVERSATIONS LIST VIEW ────────────────────────────────────
-            <div className="conversations-view">
-              <div className="chat-header">
-                <h3>Messages</h3>
-                <button
-                  className="minimize-btn"
-                  onClick={() => setIsOpen(false)}
-                >
-                  ✕
+            // ── CONVERSATIONS LIST ─────────────────────────────────────────────
+            <>
+              <header className="chat-header">
+                <span className="chat-header__name" style={{ marginLeft: 0 }}>Messages</span>
+                <button className="icon-btn ml-auto new-chat-icon" onClick={handleNewChat} aria-label="New chat">
+                  <i className="fa-solid fa-pen-to-square" />
                 </button>
-              </div>
-              <button className="new-chat-btn" onClick={handleNewChat}>
-                <i className="fa-solid fa-plus" /> New Chat
-              </button>
-              <div className="conversations-list">
+                <button className="icon-btn" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-xmark" />
+                </button>
+              </header>
+              <div className="chat-list">
                 {conversations.length === 0 ? (
-                  <div className="empty-state">
+                  <div className="chat-empty">
+                    <i className="fa-regular fa-comment-dots" />
                     <p>No conversations yet</p>
-                    <button className="start-chat-btn" onClick={handleNewChat}>
-                      Start a new chat
-                    </button>
+                    <button className="start-btn" onClick={handleNewChat}>Start a chat</button>
                   </div>
                 ) : (
                   conversations.map((conv) => (
-                    <div
-                      key={conv.id}
-                      className="conversation-item"
-                      onClick={() => handleSelectChat(conv)}
-                    >
-                      <div className="avatar">
-                        {conv.otherUser?.full_name?.charAt(0).toUpperCase() ||
-                          "?"}
+                    <button key={conv.id} className="conv-item" onClick={() => handleSelectChat(conv)}>
+                      <div className="conv-item__avatar">
+                        {conv.otherUser?.full_name?.charAt(0).toUpperCase() || "?"}
                       </div>
-                      <div className="conversation-info">
-                        <h4>{conv.otherUser?.full_name || "Unknown User"}</h4>
-                        <p className="last-message">
-                          {conv.lastMessage || "No messages yet"}
-                        </p>
+                      <div className="conv-item__info">
+                        <strong>{conv.otherUser?.full_name || "Unknown"}</strong>
+                        <small className="last-msg">{conv.lastMessage || "No messages"}</small>
                       </div>
                       {conv.unread > 0 && (
-                        <span className="unread-badge">{conv.unread}</span>
+                        <span className="unread-dot">{conv.unread}</span>
                       )}
-                    </div>
+                    </button>
                   ))
                 )}
               </div>
-            </div>
+            </>
           )}
         </div>
       )}

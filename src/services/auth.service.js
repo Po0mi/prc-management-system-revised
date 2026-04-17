@@ -77,7 +77,7 @@ const authService = {
   async logout() {
     try {
       await api.post(AUTH, {}, { params: { action: "logout" } });
-    } catch (_) {
+    } catch {
       // ignore network errors — still clear local state
     } finally {
       localStorage.removeItem("user");
@@ -86,7 +86,7 @@ const authService = {
         const { getAuth, signOut } = await import("firebase/auth");
         const auth = getAuth();
         await signOut(auth);
-      } catch (e) {
+      } catch {
         // Firebase might not be initialized, ignore
       }
       window.location.href = "/login";

@@ -400,7 +400,11 @@ function UserLayout() {
       </div>
 
       {/* Floating Chat Widget */}
-      <FloatingChat userRole="user" />
+      <FloatingChat
+        userRole="user"
+        currentUserId={user?.user_id || null}
+        currentUserName={user?.full_name || user?.username || "User"}
+      />
     </>
   );
 }

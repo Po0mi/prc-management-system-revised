@@ -1,4 +1,5 @@
 @use "../../styles/variables.scss" as *;
+@use "sass:color";
 
 // ─── ANIMATIONS ───────────────────────────────────────────────────────────────
 @keyframes slideUp {
@@ -497,7 +498,7 @@
 
 .ar-export-btn {
   padding: $space-sm $space-xl;
-  background: linear-gradient(135deg, $success, darken($success, 10%));
+  background: linear-gradient(135deg, $success, color.adjust($success, $lightness: -10%));
   color: $white;
   border: none;
   border-radius: $radius-md;
@@ -856,5 +857,343 @@
     right: $space-md;
     min-width: auto;
     max-width: none;
+  }
+}
+
+// ─── TAB BAR (underline style) ────────────────────────────────────────────────
+.ar-tabs-bar {
+  background: $white;
+  border-bottom: 1px solid $gray-200;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 $space-2xl;
+    display: flex;
+    gap: 2px;
+
+    &::-webkit-scrollbar {
+      height: 0;
+    }
+  }
+}
+
+.ar-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  padding: $space-md $space-lg;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $gray-400;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition:
+    color 150ms,
+    border-color 150ms;
+  white-space: nowrap;
+
+  i {
+    font-size: 13px;
+  }
+
+  &:hover {
+    color: $gray-700;
+  }
+
+  &--active {
+    color: $primary-red;
+    border-bottom-color: $primary-red;
+    font-weight: $font-weight-bold;
+  }
+}
+
+// ─── MINI STATS ROW ───────────────────────────────────────────────────────────
+.ar-mini-stats {
+  display: flex;
+  gap: $space-md;
+  margin-bottom: $space-lg;
+  flex-wrap: wrap;
+}
+
+.ar-mini-stat {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-md;
+  padding: $space-sm $space-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+
+  &__value {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    line-height: 1.3;
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+}
+
+// ─── TABLE CARD ───────────────────────────────────────────────────────────────
+.ar-table-card {
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1px solid $gray-200;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+  animation: slideUp 300ms ease;
+
+  &__header {
+    padding: $space-sm $space-lg;
+    border-bottom: 1px solid $gray-200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: $gray-100;
+    flex-wrap: wrap;
+    gap: $space-sm;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-500;
+
+    i {
+      font-size: 11px;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-sm;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.ar-table-wrap {
+  overflow-x: auto;
+  max-height: 560px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: $radius-full;
+  }
+}
+
+// ─── BUTTONS ─────────────────────────────────────────────────────────────────
+.ar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  padding: $space-xs $space-md;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  font-family: $font-family-base;
+  cursor: pointer;
+  border: none;
+  transition: $transition-fast;
+  white-space: nowrap;
+
+  i {
+    font-size: 12px;
+  }
+
+  &--primary {
+    background: $primary-red;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: $primary-dark;
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &--ghost {
+    background: none;
+    color: $gray-600;
+    border: 1px solid $gray-200;
+
+    &:hover {
+      background: $gray-100;
+      border-color: $gray-300;
+      color: $gray-900;
+    }
+  }
+
+  &--sm {
+    padding: 3px $space-sm;
+    font-size: $font-size-xs;
+  }
+}
+
+// ─── FILTERS BAR ─────────────────────────────────────────────────────────────
+.ar-filters {
+  display: flex;
+  gap: $space-md;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: $space-lg;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-md;
+  padding: $space-md $space-lg;
+}
+
+.ar-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  span {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $gray-400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  input,
+  select {
+    padding: 5px $space-sm;
+    border: 1px solid $gray-200;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    color: $gray-700;
+    background: $white;
+    font-family: $font-family-base;
+    outline: none;
+
+    &:focus {
+      border-color: $primary-red;
+    }
+  }
+}
+
+// ─── EMPTY STATE ──────────────────────────────────────────────────────────────
+.ar-empty {
+  padding: $space-2xl;
+  text-align: center;
+  color: $gray-400;
+
+  i {
+    font-size: 2rem;
+    opacity: 0.4;
+    display: block;
+    margin-bottom: $space-md;
+  }
+  p {
+    margin: 0;
+    font-size: $font-size-sm;
+  }
+}
+
+// ─── BADGES ───────────────────────────────────────────────────────────────────
+.ar-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  text-transform: capitalize;
+  background: $gray-100;
+  color: $gray-700;
+
+  &--admin {
+    background: rgba(#7c3aed, 0.1);
+    color: #7c3aed;
+  }
+  &--user {
+    background: rgba($primary-red, 0.1);
+    color: $primary-red;
+  }
+  &--current {
+    background: rgba($success, 0.1);
+    color: $success;
+  }
+  &--graduated {
+    background: rgba(#7c3aed, 0.1);
+    color: #7c3aed;
+  }
+  &--inactive {
+    background: rgba($gray-500, 0.1);
+    color: $gray-500;
+  }
+  &--active {
+    background: rgba($success, 0.1);
+    color: $success;
+  }
+}
+
+// ─── LOADING (direct i child) ─────────────────────────────────────────────────
+.ar-loading > i {
+  font-size: $font-size-2xl;
+  margin-bottom: $space-md;
+  color: $primary-red;
+}
+
+// ─── TOAST (simplified structure) ────────────────────────────────────────────
+.ar-toast {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-md $space-lg;
+  cursor: pointer;
+
+  > i {
+    font-size: $font-size-lg;
+  }
+  > span {
+    flex: 1;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $gray-900;
+  }
+  > button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gray-400;
+    font-size: $font-size-sm;
+    padding: 2px;
+    &:hover {
+      color: $gray-700;
+    }
+  }
+
+  &--success > i {
+    color: $success;
+  }
+  &--error > i {
+    color: $error;
   }
 }

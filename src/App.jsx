@@ -36,6 +36,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminTrainingRequest from "./pages/admin/AdminTrainingRequest";
+import AdminDonations from "./pages/admin/AdminDonations";
 
 // Layouts
 import UserLayout from "./layouts/UserLayout";
@@ -100,6 +101,7 @@ function App() {
           <Route path="training-requests" element={<AdminTrainingRequest />} />
           <Route path="/admin/training-sessions" element={<AdminTraining />} />
           <Route path="reports" element={<AdminReports />} />
+          <Route path="donations" element={<AdminDonations />} />
         </Route>
 
         {/* Fallback */}

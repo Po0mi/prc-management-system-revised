@@ -756,7 +756,7 @@ export default function UserEvents() {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const { events: evts } = await getEvents({ filter: "upcoming", search });
+      const { events: evts } = await getEvents({ filter, search });
       setEvents(evts);
     } catch (err) {
       console.error("Fetch events error:", err);
@@ -764,7 +764,7 @@ export default function UserEvents() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [filter, search]);
 
   useEffect(() => {
     fetchEvents();

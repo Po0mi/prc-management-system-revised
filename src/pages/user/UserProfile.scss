@@ -1,0 +1,229 @@
+@use "../../styles/variables.scss" as *;
+
+.up-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+.up-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+
+  &--success { background: #1b8a4e; color: #fff; }
+  &--error   { background: #c0392b; color: #fff; }
+}
+
+// ── Hero card ─────────────────────────────────────────────────────────────────
+.up-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, $primary-red, $primary-dark);
+  color: #fff;
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  position: relative;
+
+  &__avatar {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+    border: 3px solid rgba(255,255,255,.4);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__role {
+    display: inline-block;
+    background: rgba(255,255,255,.2);
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 6px;
+  }
+
+  &__email {
+    margin: 0;
+    font-size: 13px;
+    opacity: .85;
+  }
+}
+
+.up-edit-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.35);
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s;
+
+  &:hover { background: rgba(255,255,255,.28); }
+
+  @media (max-width: 480px) { position: static; margin-top: 12px; }
+}
+
+// ── Body card ─────────────────────────────────────────────────────────────────
+.up-body {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+
+  h2 {
+    margin: 0 0 20px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+  }
+}
+
+// ── Details list ──────────────────────────────────────────────────────────────
+.up-dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 500px) { grid-template-columns: 1fr; }
+
+  > div {
+    padding: 14px 16px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    border: 1px solid #efefef;
+  }
+
+  dt {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #888;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    i { color: $primary-red; font-size: 12px; }
+  }
+
+  dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222;
+    word-break: break-all;
+  }
+}
+
+// ── Edit form ─────────────────────────────────────────────────────────────────
+.up-form {
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    @media (max-width: 500px) { grid-template-columns: 1fr; }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+
+      span { color: $primary-red; }
+    }
+
+    input, select {
+      padding: 9px 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fafafa;
+      transition: border-color .15s;
+
+      &:focus { outline: none; border-color: $primary-red; background: #fff; }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+}
+
+.up-btn {
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity .15s, transform .1s;
+
+  &:disabled { opacity: .55; cursor: not-allowed; }
+  &:hover:not(:disabled) { transform: translateY(-1px); }
+
+  &--primary {
+    background: $primary-red;
+    color: #fff;
+    &:hover:not(:disabled) { background: $primary-dark; }
+  }
+
+  &--ghost {
+    background: #f0f0f0;
+    color: #555;
+    &:hover:not(:disabled) { background: #e4e4e4; }
+  }
+}

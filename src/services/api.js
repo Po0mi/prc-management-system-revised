@@ -46,11 +46,14 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    const status = error.response?.status;
+    // 404s are often expected (deleted items, empty lookups) — log as warning not error
     if (import.meta.env.DEV) {
-      console.error("❌ API Error:", {
+      const log = status === 404 ? console.warn : console.error;
+      log("❌ API Error:", {
         message: error.message,
         url: error.config?.url,
-        status: error.response?.status,
+        status,
         data: error.response?.data,
       });
     }

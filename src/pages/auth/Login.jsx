@@ -1,38 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import authService from "../../services/auth.service";
 import "./Login.scss";
 
 function Login() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lockoutSecs, setLockoutSecs] = useState(0);
+  const timerRef = useRef(null);
+
+  // Countdown tick
+  useEffect(() => {
+    if (lockoutSecs <= 0) return;
+    timerRef.current = setInterval(() => {
+      setLockoutSecs((s) => {
+        if (s <= 1) { clearInterval(timerRef.current); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [lockoutSecs]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (lockoutSecs > 0) return;
     setError("");
     setLoading(true);
 
     try {
-      const response = await authService.login(
-        formData.username,
-        formData.password,
-      );
+      const response = await authService.login(formData.username, formData.password);
       if (response.success) {
         const user = response.user;
-
-        // Redirect based on role
         if (user.is_admin === 1 || user.role === "admin") {
           navigate("/admin/dashboard");
         } else {
@@ -40,11 +44,23 @@ function Login() {
         }
       }
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      const retryAfter = err.response?.data?.retry_after;
+      if (err.response?.status === 429 && retryAfter) {
+        setLockoutSecs(retryAfter);
+        setError(err.response.data.message || "Too many attempts. Please wait.");
+      } else {
+        setError(err.message || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const mins = Math.floor(lockoutSecs / 60);
+  const secs = lockoutSecs % 60;
+  const countdownLabel = lockoutSecs > 0
+    ? `${mins}:${String(secs).padStart(2, "0")}`
+    : null;
 
   return (
     <div className="login-page">
@@ -63,9 +79,12 @@ function Login() {
         </div>
 
         {error && (
-          <div className="error-message">
+          <div className={`error-message${lockoutSecs > 0 ? " error-message--lockout" : ""}`}>
             <i className="fas fa-exclamation-circle"></i>
             {error}
+            {countdownLabel && (
+              <span className="lockout-timer"> Retry in {countdownLabel}</span>
+            )}
           </div>
         )}
 
@@ -82,6 +101,7 @@ function Login() {
               onChange={handleChange}
               required
               placeholder="Enter your username"
+              disabled={lockoutSecs > 0}
             />
           </div>
 
@@ -97,13 +117,18 @@ function Login() {
               onChange={handleChange}
               required
               placeholder="Enter your password"
+              disabled={lockoutSecs > 0}
             />
           </div>
 
-          <button type="submit" className="btn-login" disabled={loading}>
+          <button type="submit" className="btn-login" disabled={loading || lockoutSecs > 0}>
             {loading ? (
               <>
                 <i className="fas fa-spinner fa-spin"></i> Logging in...
+              </>
+            ) : lockoutSecs > 0 ? (
+              <>
+                <i className="fas fa-lock"></i> Locked ({countdownLabel})
               </>
             ) : (
               <>

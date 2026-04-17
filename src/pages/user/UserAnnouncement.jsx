@@ -2,7 +2,7 @@
 // Path: src/pages/UserAnnouncement/UserAnnouncement.jsx
 
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import api from "../../services/api"; // ✅ Import centralized API
 import "./UserAnnouncement.scss";
 
@@ -68,8 +68,8 @@ function AnnouncementCard({ announcement, onClick, isNew }) {
   const getImageUrl = (announcement) => {
     const imagePath = announcement.image_path || announcement.image_url;
     if (!imagePath) return null;
-    // ✅ Use relative path - api.defaults.baseURL handles the domain
-    return `/${imagePath}`;
+    const base = api.defaults.baseURL.replace(/\/backend\/?$/, "");
+    return `${base}/${imagePath}`;
   };
 
   const imageUrl = getImageUrl(announcement);
@@ -204,8 +204,8 @@ function AnnouncementDetails({ announcement, onClose }) {
   const getImageUrl = (announcement) => {
     const imagePath = announcement.image_path || announcement.image_url;
     if (!imagePath) return null;
-    // ✅ Use relative path
-    return `/${imagePath}`;
+    const base = api.defaults.baseURL.replace(/\/backend\/?$/, "");
+    return `${base}/${imagePath}`;
   };
 
   const categoryColor = getCategoryColor(announcement.category);
@@ -325,13 +325,11 @@ export default function UserAnnouncement() {
     setToast({ message, type });
   };
 
-  useEffect(() => {
-    fetchAnnouncements();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAnnouncements(); }, []);
 
-  useEffect(() => {
-    filterAnnouncements();
-  }, [search, categoryFilter, announcements]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { filterAnnouncements(); }, [search, categoryFilter, announcements]);
 
   const fetchAnnouncements = async () => {
     try {

@@ -124,6 +124,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [selectedTimeRange, setSelectedTimeRange] = useState("week");
+  const [activeTab, setActiveTab] = useState("people");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    load();
+    load(); // eslint-disable-line react-hooks/set-state-in-effect
   }, [load]);
 
   // Auto-refresh every 2 minutes
@@ -258,13 +259,13 @@ export default function AdminDashboard() {
                 </strong>
                 <div className="db-header__alert-links">
                   {pending.event_registrations > 0 && (
-                    <Link to="/admin/registrations">
+                    <Link to="/admin/events">
                       {pending.event_registrations} event registration
                       {pending.event_registrations !== 1 ? "s" : ""}
                     </Link>
                   )}
                   {pending.training_registrations > 0 && (
-                    <Link to="/admin/session-registrations">
+                    <Link to="/admin/training">
                       {pending.training_registrations} training registration
                       {pending.training_registrations !== 1 ? "s" : ""}
                     </Link>
@@ -312,165 +313,168 @@ export default function AdminDashboard() {
 
       <div className="db-body">
         {/* ── Row 1: People ── */}
-        <section className="db-section">
-          <div className="db-section__head">
-            <div className="db-section__head-icon">
-              <i className="fa-solid fa-users" />
+        <section className="db-section db-section--tabs">
+          <div className="db-tabs">
+            <div className="db-tabs__nav">
+              {[
+                { key: "people", icon: "fa-solid fa-users", label: "People" },
+                { key: "activity", icon: "fa-solid fa-calendar-days", label: "Events & Training" },
+                { key: "commerce", icon: "fa-solid fa-boxes-stacked", label: "Inventory & Commerce" },
+              ].map(({ key, icon, label }) => (
+                <button
+                  key={key}
+                  className={`db-tabs__btn${activeTab === key ? " db-tabs__btn--active" : ""}`}
+                  onClick={() => setActiveTab(key)}
+                >
+                  <i className={icon} />
+                  {label}
+                </button>
+              ))}
             </div>
-            <span>People</span>
-          </div>
-          <div className="db-grid db-grid--4">
-            <StatCard
-              icon="fa-solid fa-users"
-              label="Total Users"
-              value={fmt(stats?.users?.total ?? 0)}
-              color="#cc0000"
-              to="/admin/users"
-              loading={loading}
-            />
-            <StatCard
-              icon="fa-solid fa-user-shield"
-              label="Admins"
-              value={fmt(stats?.users?.admins ?? 0)}
-              color="#7c3aed"
-              to="/admin/users"
-              loading={loading}
-            />
-            <StatCard
-              icon="fa-solid fa-hand-holding-heart"
-              label="Volunteers"
-              value={fmt(stats?.volunteers?.total ?? 0)}
-              color="#0891b2"
-              to="/admin/volunteers"
-              loading={loading}
-              sub={
-                stats?.volunteers?.by_status?.active
-                  ? `${stats.volunteers.by_status.active} active`
-                  : null
-              }
-            />
-            <StatCard
-              icon="fa-solid fa-user-plus"
-              label="New This Week"
-              value={fmt(stats?.users?.new_this_week ?? 0)}
-              color="#059669"
-              loading={loading}
-            />
-          </div>
-        </section>
 
-        {/* ── Row 2: Events & Training ── */}
-        <section className="db-section">
-          <div className="db-section__head">
-            <div className="db-section__head-icon">
-              <i className="fa-solid fa-calendar-days" />
-            </div>
-            <span>Events & Training</span>
-          </div>
-          <div className="db-grid db-grid--4">
-            <StatCard
-              icon="fa-solid fa-calendar-days"
-              label="Total Events"
-              value={fmt(stats?.events?.total ?? 0)}
-              color="#cc0000"
-              to="/admin/events"
-              loading={loading}
-              sub={
-                stats?.events?.upcoming
-                  ? `${stats.events.upcoming} upcoming`
-                  : null
-              }
-            />
-            <StatCard
-              icon="fa-solid fa-clipboard-list"
-              label="Event Registrations"
-              value={fmt(stats?.events?.total_registrations ?? 0)}
-              color="#b45309"
-              to="/admin/registrations"
-              loading={loading}
-            />
-            <StatCard
-              icon="fa-solid fa-graduation-cap"
-              label="Training Sessions"
-              value={fmt(stats?.training?.total ?? 0)}
-              color="#7c3aed"
-              to="/admin/training"
-              loading={loading}
-              sub={
-                stats?.training?.upcoming
-                  ? `${stats.training.upcoming} upcoming`
-                  : null
-              }
-            />
-            <StatCard
-              icon="fa-solid fa-file-pen"
-              label="Training Requests"
-              value={fmt(stats?.requests?.total ?? 0)}
-              color="#0891b2"
-              to="/admin/training-requests"
-              loading={loading}
-              sub={(() => {
-                const pend =
-                  stats?.requests?.by_status?.find?.(
-                    (s) => s.status === "pending",
-                  )?.count ?? 0;
-                return pend > 0 ? `${pend} pending` : null;
-              })()}
-            />
-          </div>
-        </section>
+            <div className="db-tabs__panel">
+              {activeTab === "people" && (
+                <div className="db-grid db-grid--4">
+                  <StatCard
+                    icon="fa-solid fa-users"
+                    label="Total Users"
+                    value={fmt(stats?.users?.total ?? 0)}
+                    color="#cc0000"
+                    to="/admin/users"
+                    loading={loading}
+                  />
+                  <StatCard
+                    icon="fa-solid fa-user-shield"
+                    label="Admins"
+                    value={fmt(stats?.users?.admins ?? 0)}
+                    color="#7c3aed"
+                    to="/admin/users"
+                    loading={loading}
+                  />
+                  <StatCard
+                    icon="fa-solid fa-hand-holding-heart"
+                    label="Volunteers"
+                    value={fmt(stats?.volunteers?.total ?? 0)}
+                    color="#0891b2"
+                    to="/admin/volunteers"
+                    loading={loading}
+                    sub={
+                      stats?.volunteers?.by_status?.active
+                        ? `${stats.volunteers.by_status.active} active`
+                        : null
+                    }
+                  />
+                  <StatCard
+                    icon="fa-solid fa-user-plus"
+                    label="New This Week"
+                    value={fmt(stats?.users?.new_this_week ?? 0)}
+                    color="#059669"
+                    loading={loading}
+                  />
+                </div>
+              )}
 
-        {/* ── Row 3: Inventory & Commerce ── */}
-        <section className="db-section">
-          <div className="db-section__head">
-            <div className="db-section__head-icon">
-              <i className="fa-solid fa-boxes-stacked" />
+              {activeTab === "activity" && (
+                <div className="db-grid db-grid--4">
+                  <StatCard
+                    icon="fa-solid fa-calendar-days"
+                    label="Total Events"
+                    value={fmt(stats?.events?.total ?? 0)}
+                    color="#cc0000"
+                    to="/admin/events"
+                    loading={loading}
+                    sub={
+                      stats?.events?.upcoming
+                        ? `${stats.events.upcoming} upcoming`
+                        : null
+                    }
+                  />
+                  <StatCard
+                    icon="fa-solid fa-clipboard-list"
+                    label="Event Registrations"
+                    value={fmt(stats?.events?.total_registrations ?? 0)}
+                    color="#b45309"
+                    to="/admin/events"
+                    loading={loading}
+                  />
+                  <StatCard
+                    icon="fa-solid fa-graduation-cap"
+                    label="Training Sessions"
+                    value={fmt(stats?.training?.total ?? 0)}
+                    color="#7c3aed"
+                    to="/admin/training"
+                    loading={loading}
+                    sub={
+                      stats?.training?.upcoming
+                        ? `${stats.training.upcoming} upcoming`
+                        : null
+                    }
+                  />
+                  <StatCard
+                    icon="fa-solid fa-file-pen"
+                    label="Training Requests"
+                    value={fmt(stats?.requests?.total ?? 0)}
+                    color="#0891b2"
+                    to="/admin/training-requests"
+                    loading={loading}
+                    sub={(() => {
+                      const pend =
+                        stats?.requests?.by_status?.find?.(
+                          (s) => s.status === "pending",
+                        )?.count ?? 0;
+                      return pend > 0 ? `${pend} pending` : null;
+                    })()}
+                  />
+                </div>
+              )}
+
+              {activeTab === "commerce" && (
+                <div className="db-grid db-grid--4">
+                  <StatCard
+                    icon="fa-solid fa-box-open"
+                    label="Inventory Items"
+                    value={fmt(stats?.inventory?.total_items ?? 0)}
+                    color="#0891b2"
+                    to="/admin/inventory"
+                    loading={loading}
+                    sub={
+                      stats?.inventory?.low_stock
+                        ? `${stats.inventory.low_stock} low stock`
+                        : "All stocked"
+                    }
+                  />
+                  <StatCard
+                    icon="fa-solid fa-sack-dollar"
+                    label="Inventory Value"
+                    value={fmtPeso(stats?.inventory?.total_value ?? 0)}
+                    color="#059669"
+                    to="/admin/inventory"
+                    loading={loading}
+                  />
+                  <StatCard
+                    icon="fa-solid fa-store"
+                    label="Merchandise Items"
+                    value={fmt(stats?.merchandise?.total ?? 0)}
+                    color="#c2410c"
+                    to="/admin/merchandise"
+                    loading={loading}
+                    sub={
+                      stats?.merchandise?.total_stock
+                        ? `${stats.merchandise.total_stock} units`
+                        : null
+                    }
+                  />
+                  <StatCard
+                    icon="fa-solid fa-tags"
+                    label="Merch Value"
+                    value={fmtPeso(stats?.merchandise?.total_value ?? 0)}
+                    color="#7c3aed"
+                    to="/admin/merchandise"
+                    loading={loading}
+                  />
+                </div>
+              )}
             </div>
-            <span>Inventory & Commerce</span>
-          </div>
-          <div className="db-grid db-grid--4">
-            <StatCard
-              icon="fa-solid fa-box-open"
-              label="Inventory Items"
-              value={fmt(stats?.inventory?.total_items ?? 0)}
-              color="#0891b2"
-              to="/admin/inventory"
-              loading={loading}
-              sub={
-                stats?.inventory?.low_stock
-                  ? `${stats.inventory.low_stock} low stock`
-                  : "All stocked"
-              }
-            />
-            <StatCard
-              icon="fa-solid fa-sack-dollar"
-              label="Inventory Value"
-              value={fmtPeso(stats?.inventory?.total_value ?? 0)}
-              color="#059669"
-              to="/admin/inventory"
-              loading={loading}
-            />
-            <StatCard
-              icon="fa-solid fa-store"
-              label="Merchandise Items"
-              value={fmt(stats?.merchandise?.total ?? 0)}
-              color="#c2410c"
-              to="/admin/merchandise"
-              loading={loading}
-              sub={
-                stats?.merchandise?.total_stock
-                  ? `${stats.merchandise.total_stock} units`
-                  : null
-              }
-            />
-            <StatCard
-              icon="fa-solid fa-tags"
-              label="Merch Value"
-              value={fmtPeso(stats?.merchandise?.total_value ?? 0)}
-              color="#7c3aed"
-              to="/admin/merchandise"
-              loading={loading}
-            />
           </div>
         </section>
 
@@ -543,7 +547,7 @@ export default function AdminDashboard() {
                               className="db-skeleton"
                               style={{
                                 height: "100%",
-                                width: `${30 + Math.random() * 60}%`,
+                                width: "60%",
                               }}
                             />
                           </div>
@@ -585,14 +589,14 @@ export default function AdminDashboard() {
                   icon="fa-solid fa-clipboard-list"
                   label="Pending Event Registrations"
                   count={pending?.event_registrations ?? 0}
-                  to="/admin/registrations"
+                  to="/admin/events"
                   color="#cc0000"
                 />
                 <PendingCard
                   icon="fa-solid fa-graduation-cap"
                   label="Pending Training Registrations"
                   count={pending?.training_registrations ?? 0}
-                  to="/admin/session-registrations"
+                  to="/admin/training"
                   color="#7c3aed"
                 />
                 <PendingCard
@@ -786,19 +790,19 @@ export default function AdminDashboard() {
               <div className="db-panel__body db-quicklinks">
                 {[
                   {
-                    to: "/admin/events/new",
+                    to: "/admin/events",
                     icon: "fa-solid fa-calendar-plus",
                     label: "New Event",
                     color: "#cc0000",
                   },
                   {
-                    to: "/admin/training/new",
+                    to: "/admin/training",
                     icon: "fa-solid fa-chalkboard-user",
                     label: "New Training",
                     color: "#7c3aed",
                   },
                   {
-                    to: "/admin/announcements/new",
+                    to: "/admin/announcements",
                     icon: "fa-solid fa-bullhorn",
                     label: "New Announcement",
                     color: "#f59e0b",

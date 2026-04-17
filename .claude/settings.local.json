@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i \"s|'/user/registration\\\\.php'|'/user/events'|g\" c:/xampp/htdocs/prc-management-system/backend/api/events.php)",
+      "Bash(sed -i \"s|'/user/schedule\\\\.php'|'/user/training'|g\" c:/xampp/htdocs/prc-management-system/backend/api/training_sessions.php)",
+      "Bash(sed -i \"s|'/user/schedule\\\\.php'|'/user/training'|g\" c:/xampp/htdocs/prc-management-system/backend/api/training_requests.php)",
+      "Bash(sed -i \"s|'/user/announcements\\\\.php'|'/user/announcements'|g\" c:/xampp/htdocs/prc-management-system/backend/api/announcements.php)",
+      "Bash(mysql -u root prc_management)",
+      "Bash(/c/xampp/mysql/bin/mysql -u root prc_management -e \"UPDATE notifications SET link = '/user/events' WHERE link = '/user/registration.php'; UPDATE notifications SET link = '/user/training' WHERE link = '/user/schedule.php'; UPDATE notifications SET link = '/user/announcements' WHERE link = '/user/announcements.php'; SELECT link, COUNT\\(*\\) as n FROM notifications GROUP BY link;\")",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root prc_management -e \"UPDATE notifications SET link = '/user/events' WHERE link = '/user/registration.php'; UPDATE notifications SET link = '/user/training' WHERE link = '/user/schedule.php'; UPDATE notifications SET link = '/user/announcements' WHERE link = '/user/announcements.php'; SELECT link, COUNT\\(*\\) as n FROM notifications GROUP BY link;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"SHOW DATABASES;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root prc_system -e \"UPDATE notifications SET link = '/user/events' WHERE link = '/user/registration.php'; UPDATE notifications SET link = '/user/training' WHERE link = '/user/schedule.php'; UPDATE notifications SET link = '/user/announcements' WHERE link = '/user/announcements.php'; SELECT link, COUNT\\(*\\) as n FROM notifications GROUP BY link;\")",
+      "Bash(sed -i \"s|/admin/manage_inventory\\\\.php|/admin/inventory|g\" c:/xampp/htdocs/prc-management-system/backend/api/inventory.php c:/xampp/htdocs/prc-management-system/backend/api/merchandise.php)",
+      "Bash(sed -i \"s|/admin/manage_users\\\\.php|/admin/users|g\" c:/xampp/htdocs/prc-management-system/backend/api/register.php)",
+      "Bash(sed -i \"s|/admin/manage_events\\\\.php|/admin/events|g\" c:/xampp/htdocs/prc-management-system/backend/api/registrations.php)",
+      "Bash(sed -i \"s|/admin/manage_sessions\\\\.php|/admin/training|g\" c:/xampp/htdocs/prc-management-system/backend/api/session_registrations.php)",
+      "Bash(sed -i \"s|/admin/training_request\\\\.php|/admin/training-requests|g\" c:/xampp/htdocs/prc-management-system/backend/api/training_requests.php)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root prc_system -e ' *)",
+      "Bash(grep -n '$primary\\\\|$accent\\\\|$gray\\\\|$radius\\\\|$font\\\\|$space\\\\|$breakpoint\\\\|$z-\\\\|$shadow\\\\|$transition' c:/xampp/htdocs/prc-management-system/frontend/src/styles/variables.scss)"
+    ]
+  }
+}

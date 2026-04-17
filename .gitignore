@@ -1,2 +1,10 @@
+# Dependencies
 node_modules/
-.env/
+
+# Environment variables (covers .env, .env.local, .env.production, etc.)
+.env
+.env.*
+!.env.example
+
+# Optional: If you want to ignore all dotfiles starting with .env
+# .env*

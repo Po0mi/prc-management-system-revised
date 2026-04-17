@@ -277,8 +277,8 @@ export const getCalendarEvents = async () => {
 
     // Fetch both events and training sessions
     const [eventsRes, trainingRes] = await Promise.all([
-      api.get("/api/events.php"),
-      api.get("/api/training_sessions.php"),
+      api.get("/api/events.php", { params: { action: "list" } }),
+      api.get("/api/training_sessions.php", { params: { action: "list" } }),
     ]);
 
     const calendarEvents = [];

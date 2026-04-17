@@ -266,6 +266,20 @@ function GoogleRecaptcha({ onVerify, onExpired }) {
 
 function Register() {
   const navigate = useNavigate();
+  const [lockoutSecs, setLockoutSecs] = useState(0);
+  const lockTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (lockoutSecs <= 0) return;
+    lockTimerRef.current = setInterval(() => {
+      setLockoutSecs((s) => {
+        if (s <= 1) { clearInterval(lockTimerRef.current); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(lockTimerRef.current);
+  }, [lockoutSecs]);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     username: "",
@@ -408,6 +422,7 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (lockoutSecs > 0) return;
     setErrors({});
 
     // Validate form
@@ -454,10 +469,18 @@ function Register() {
         resetCaptcha(); // Reset captcha on error so user can try again
       }
     } catch (err) {
-      const errorMsg = err.message || "Registration failed. Please try again.";
-      setErrors({ submit: errorMsg });
-      showToast(errorMsg, "error");
-      resetCaptcha(); // Reset captcha on error
+      if (err.response?.status === 429) {
+        const retryAfter = err.response.data?.retry_after ?? 60;
+        setLockoutSecs(retryAfter);
+        const msg = err.response.data?.message || "Too many registration attempts. Please wait.";
+        setErrors({ submit: msg });
+        showToast(msg, "error");
+      } else {
+        const errorMsg = err.message || "Registration failed. Please try again.";
+        setErrors({ submit: errorMsg });
+        showToast(errorMsg, "error");
+      }
+      resetCaptcha();
     } finally {
       setLoading(false);
     }
@@ -1009,11 +1032,15 @@ function Register() {
           <button
             type="submit"
             className="btn-register"
-            disabled={loading} // Removed !captchaVerified condition
+            disabled={loading || lockoutSecs > 0}
           >
             {loading ? (
               <>
                 <i className="fas fa-spinner fa-spin"></i> Creating Account...
+              </>
+            ) : lockoutSecs > 0 ? (
+              <>
+                <i className="fas fa-lock"></i> Locked ({Math.floor(lockoutSecs / 60)}:{String(lockoutSecs % 60).padStart(2, "0")})
               </>
             ) : (
               <>
