@@ -23,7 +23,6 @@ export const getTrainingSessions = async ({
   if (archived) params.archived = "true";
 
   const { data } = await api.get(BASE, { params });
-  console.log("getTrainingSessions response:", data); // ← Add this
   if (!data.success)
     throw new Error(data.message || "Failed to fetch training sessions");
 

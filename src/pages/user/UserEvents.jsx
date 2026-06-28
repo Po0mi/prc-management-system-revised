@@ -271,10 +271,7 @@ function RegisterModal({ event, onClose, onSuccess }) {
       return;
     }
 
-    // ── DEBUG: log the event object so we can see the actual event_id ─────────
     const eventId = event.event_id || event.id;
-    console.log("[DEBUG] Event object:", JSON.stringify(event));
-    console.log("[DEBUG] Resolved event_id:", eventId);
 
     if (!eventId) {
       setErrors({
@@ -1194,11 +1191,6 @@ export default function UserEvents() {
                               <button
                                 className="ue-event-card__btn"
                                 onClick={() => {
-                                  // ── DEBUG: confirm event_id before opening modal ──
-                                  console.log(
-                                    "[DEBUG] Opening modal for event:",
-                                    JSON.stringify(evt),
-                                  );
                                   setRegisterEvent(evt);
                                 }}
                                 style={{

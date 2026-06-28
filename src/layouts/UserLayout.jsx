@@ -284,25 +284,25 @@ function UserLayout() {
                 </p>
                 <ul className="user-footer__section-links">
                   <li>
-                    <Link to="/about">
+                    <a href="https://www.redcross.org.ph" target="_blank" rel="noopener noreferrer">
                       <i className="fa-solid fa-chevron-right"></i> About Us
-                    </Link>
+                    </a>
                   </li>
                   <li>
-                    <Link to="/contact">
+                    <a href="https://www.redcross.org.ph/contact-us" target="_blank" rel="noopener noreferrer">
                       <i className="fa-solid fa-chevron-right"></i> Contact
-                    </Link>
+                    </a>
                   </li>
                   <li>
-                    <Link to="/faq">
+                    <a href="https://www.redcross.org.ph/faqs" target="_blank" rel="noopener noreferrer">
                       <i className="fa-solid fa-chevron-right"></i> FAQ
-                    </Link>
+                    </a>
                   </li>
                   <li>
-                    <Link to="/privacy">
+                    <a href="https://www.redcross.org.ph/privacy-policy" target="_blank" rel="noopener noreferrer">
                       <i className="fa-solid fa-chevron-right"></i> Privacy
                       Policy
-                    </Link>
+                    </a>
                   </li>
                 </ul>
               </div>

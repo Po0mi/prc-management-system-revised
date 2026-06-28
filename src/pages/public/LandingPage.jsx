@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import prcLogo from "../../assets/prc-logo.png";
+import axios from "axios";
+
+// Public client — no 401→/login interceptor; safe for unauthenticated pages
+const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_USE_LOCAL_API === "true"
+    ? import.meta.env.VITE_LOCAL_API_URL
+    : import.meta.env.VITE_API_URL,
+  withCredentials: false,
+});
 import "./LandingPage.scss";
 
 function LandingPage() {
@@ -31,14 +40,13 @@ function LandingPage() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch("/api/announcements.php");
-      const data = await response.json();
+      const { data } = await publicApi.get("/api/announcements.php", {
+        params: { status: "published" },
+      });
       if (data.success) {
-        // Filter only published announcements and limit to 3
-        const publishedAnnouncements = data.data
-          .filter((a) => a.status === "published")
-          .slice(0, 3);
-        setAnnouncements(publishedAnnouncements);
+        setAnnouncements(
+          (data.data || []).filter((a) => a.status === "published").slice(0, 3),
+        );
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
@@ -454,7 +462,7 @@ function LandingPage() {
                         )}
                       </span>
                       <h3>{announcement.title}</h3>
-                      <p>{announcement.content.substring(0, 120)}...</p>
+                      <p>{(announcement.content || "").substring(0, 120)}...</p>
                       <Link to="/login" className="announcements__card-link">
                         Read More <i className="fa-solid fa-arrow-right"></i>
                       </Link>

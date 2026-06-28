@@ -18,8 +18,6 @@ export const getUserStats = async () => {
   if (!userId) return null;
 
   try {
-    console.log("📡 Fetching stats for user:", userId);
-
     // Get user's event registrations
     const eventsRes = await api.get("/api/registrations.php", {
       params: { action: "my-registrations" },
@@ -39,15 +37,6 @@ export const getUserStats = async () => {
     const eventRegs = eventsRes.data?.registrations || [];
     const trainingRegs = trainingRes.data?.registrations || [];
     const userRequests = requestsRes.data?.requests || [];
-
-    console.log(
-      "📊 Stats - Events:",
-      eventRegs.length,
-      "Training:",
-      trainingRegs.length,
-      "Requests:",
-      userRequests.length,
-    );
 
     return {
       events: eventRegs.length,
@@ -80,26 +69,19 @@ export const getUserUpcomingEvents = async (limit = 5) => {
   if (!userId) return [];
 
   try {
-    console.log("📅 Fetching upcoming events for user:", userId);
-
     // Get user's registrations first
     const regsRes = await api.get("/api/registrations.php", {
       params: { action: "my-registrations" },
     });
 
-    if (!regsRes.data?.success) {
-      console.log("❌ Registrations API not successful");
-      return [];
-    }
+    if (!regsRes.data?.success) return [];
 
     const userRegs = regsRes.data.registrations || [];
-    console.log("📋 User registrations:", userRegs);
 
     // Filter approved and pending registrations
     const activeRegs = userRegs.filter(
       (reg) => reg.status === "approved" || reg.status === "pending",
     );
-    console.log("✅ Active registrations:", activeRegs);
 
     if (activeRegs.length === 0) return [];
 
@@ -116,7 +98,7 @@ export const getUserUpcomingEvents = async (limit = 5) => {
             id: event.event_id,
             title: event.title,
             date: event.event_date,
-            time: `${event.start_time?.slice(0, 5)} - ${event.end_time?.slice(0, 5)}`,
+            time: event.start_time ? `${event.start_time.slice(0, 5)} - ${event.end_time?.slice(0, 5) ?? "?"}` : null,
             location: event.location?.split("\n")[0] || event.location,
             description: event.description,
             status: reg.status,
@@ -126,29 +108,20 @@ export const getUserUpcomingEvents = async (limit = 5) => {
         }
         return null;
       } catch (error) {
-        // Handle 404 errors gracefully (event might be deleted/archived)
-        if (error.response?.status === 404) {
-          console.log(
-            `⚠️ Event ${reg.event_id} not found (may be archived), skipping`,
-          );
-          return null;
-        }
-        console.error(`❌ Error fetching event ${reg.event_id}:`, error);
+        if (error.response?.status === 404) return null;
+        console.error(`Error fetching event ${reg.event_id}:`, error);
         return null;
       }
     });
 
     const upcomingEvents = await Promise.all(eventPromises);
 
-    // Filter out null values and sort by date
-    const validEvents = upcomingEvents.filter((event) => event !== null);
-    console.log("📅 Valid events after filtering:", validEvents);
-
-    return validEvents
+    return upcomingEvents
+      .filter((event) => event !== null)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(0, limit);
   } catch (error) {
-    console.error("❌ Error in getUserUpcomingEvents:", error);
+    console.error("Error in getUserUpcomingEvents:", error);
     return [];
   }
 };
@@ -159,26 +132,19 @@ export const getUserUpcomingTraining = async (limit = 5) => {
   if (!userId) return [];
 
   try {
-    console.log("🎓 Fetching upcoming training for user:", userId);
-
     // Get user's training registrations
     const regsRes = await api.get("/api/session_registrations.php", {
       params: { action: "my-registrations" },
     });
 
-    if (!regsRes.data?.success) {
-      console.log("❌ Training registrations API not successful");
-      return [];
-    }
+    if (!regsRes.data?.success) return [];
 
     const userRegs = regsRes.data.registrations || [];
-    console.log("📋 User training registrations:", userRegs);
 
     // Filter approved and pending registrations
     const activeRegs = userRegs.filter(
       (reg) => reg.status === "approved" || reg.status === "pending",
     );
-    console.log("✅ Active training registrations:", activeRegs);
 
     if (activeRegs.length === 0) return [];
 
@@ -195,7 +161,7 @@ export const getUserUpcomingTraining = async (limit = 5) => {
             id: training.session_id,
             title: training.title,
             date: training.session_date,
-            time: `${training.start_time?.slice(0, 5)} - ${training.end_time?.slice(0, 5)}`,
+            time: training.start_time ? `${training.start_time.slice(0, 5)} - ${training.end_time?.slice(0, 5) ?? "?"}` : null,
             venue: training.venue,
             instructor: training.instructor,
             status: reg.status,
@@ -205,31 +171,20 @@ export const getUserUpcomingTraining = async (limit = 5) => {
         }
         return null;
       } catch (error) {
-        // Handle 404 errors gracefully
-        if (error.response?.status === 404) {
-          console.log(
-            `⚠️ Training session ${reg.session_id} not found, skipping`,
-          );
-          return null;
-        }
-        console.error(`❌ Error fetching training ${reg.session_id}:`, error);
+        if (error.response?.status === 404) return null;
+        console.error(`Error fetching training ${reg.session_id}:`, error);
         return null;
       }
     });
 
     const upcomingTraining = await Promise.all(trainingPromises);
 
-    // Filter out null values and sort by date
-    const validTraining = upcomingTraining.filter(
-      (training) => training !== null,
-    );
-    console.log("🎓 Valid training after filtering:", validTraining);
-
-    return validTraining
+    return upcomingTraining
+      .filter((training) => training !== null)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(0, limit);
   } catch (error) {
-    console.error("❌ Error in getUserUpcomingTraining:", error);
+    console.error("Error in getUserUpcomingTraining:", error);
     return [];
   }
 };
@@ -237,18 +192,13 @@ export const getUserUpcomingTraining = async (limit = 5) => {
 // ─── RECENT ANNOUNCEMENTS ─────────────────────────────────────────────────────
 export const getRecentAnnouncements = async (limit = 5) => {
   try {
-    console.log("📢 Fetching recent announcements...");
-
     const res = await api.get("/api/announcements.php", {
       params: { status: "published" },
     });
 
-    if (!res.data?.success) {
-      console.log("❌ Announcements API not successful");
-      return [];
-    }
+    if (!res.data?.success) return [];
 
-    const announcements = (res.data.data || [])
+    return (res.data.data || [])
       .filter((a) => a.status === "published")
       .map((a) => ({
         id: a.announcement_id,
@@ -261,11 +211,8 @@ export const getRecentAnnouncements = async (limit = 5) => {
       }))
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, limit);
-
-    console.log("📢 Announcements fetched:", announcements.length);
-    return announcements;
   } catch (error) {
-    console.error("❌ Error fetching announcements:", error);
+    console.error("Error fetching announcements:", error);
     return [];
   }
 };
@@ -273,18 +220,17 @@ export const getRecentAnnouncements = async (limit = 5) => {
 // ─── CALENDAR EVENTS ──────────────────────────────────────────────────────────
 export const getCalendarEvents = async () => {
   try {
-    console.log("🗓️ Fetching calendar events...");
-
-    // Fetch both events and training sessions
-    const [eventsRes, trainingRes] = await Promise.all([
+    const [eventsResult, trainingResult] = await Promise.allSettled([
       api.get("/api/events.php", { params: { action: "list" } }),
       api.get("/api/training_sessions.php", { params: { action: "list" } }),
     ]);
 
+    const eventsRes = eventsResult.status === "fulfilled" ? eventsResult.value : null;
+    const trainingRes = trainingResult.status === "fulfilled" ? trainingResult.value : null;
+
     const calendarEvents = [];
 
-    // Add events
-    if (eventsRes.data?.success) {
+    if (eventsRes?.data?.success) {
       const events = eventsRes.data.events || [];
       events.forEach((event) => {
         calendarEvents.push({
@@ -292,7 +238,7 @@ export const getCalendarEvents = async () => {
           title: event.title,
           start: event.event_date,
           end: event.event_end_date || event.event_date,
-          time: `${event.start_time?.slice(0, 5)} - ${event.end_time?.slice(0, 5)}`,
+          time: event.start_time ? `${event.start_time.slice(0, 5)} - ${event.end_time?.slice(0, 5) ?? "?"}` : null,
           type: "event",
           service: event.major_service,
           location: event.location,
@@ -300,8 +246,7 @@ export const getCalendarEvents = async () => {
       });
     }
 
-    // Add training sessions
-    if (trainingRes.data?.success) {
+    if (trainingRes?.data?.success) {
       const sessions = trainingRes.data.sessions || [];
       sessions.forEach((session) => {
         calendarEvents.push({
@@ -309,7 +254,7 @@ export const getCalendarEvents = async () => {
           title: session.title,
           start: session.session_date,
           end: session.session_end_date || session.session_date,
-          time: `${session.start_time?.slice(0, 5)} - ${session.end_time?.slice(0, 5)}`,
+          time: session.start_time ? `${session.start_time.slice(0, 5)} - ${session.end_time?.slice(0, 5) ?? "?"}` : null,
           type: "training",
           service: session.major_service,
           location: session.venue,
@@ -318,57 +263,118 @@ export const getCalendarEvents = async () => {
       });
     }
 
-    console.log("🗓️ Calendar events fetched:", calendarEvents.length);
     return calendarEvents;
   } catch (error) {
-    console.error("❌ Error fetching calendar events:", error);
+    console.error("Error fetching calendar events:", error);
     return [];
   }
 };
 
 // ─── DASHBOARD OVERVIEW ──────────────────────────────────────────────────────
+// Fetches all dashboard data with shared registration calls to avoid duplicates.
 export const getDashboardOverview = async () => {
-  console.log("🚀 Fetching complete dashboard overview...");
+  const userId = getCurrentUserId();
+  const empty = {
+    stats: { events: 0, training: 0, requests: 0, pending: { events: 0, training: 0, requests: 0 } },
+    upcomingEvents: [],
+    upcomingTraining: [],
+    recentAnnouncements: [],
+    calendarEvents: [],
+  };
+
+  if (!userId) return empty;
 
   try {
-    const [stats, events, training, announcements, calendar] =
-      await Promise.all([
-        getUserStats(),
-        getUserUpcomingEvents(5),
-        getUserUpcomingTraining(5),
+    // Fetch shared registration lists once — reused by stats, upcoming events, and upcoming training
+    const [eventRegsRes, trainingRegsRes, requestsRes, announcementsRes, calendarRes] =
+      await Promise.allSettled([
+        api.get("/api/registrations.php", { params: { action: "my-registrations" } }),
+        api.get("/api/session_registrations.php", { params: { action: "my-registrations" } }),
+        api.get("/api/training_requests.php", { params: { action: "my-requests" } }),
         getRecentAnnouncements(5),
         getCalendarEvents(),
       ]);
 
-    console.log("✅ Dashboard overview complete:", {
-      stats,
-      eventsCount: events.length,
-      trainingCount: training.length,
-      announcementsCount: announcements.length,
-      calendarCount: calendar.length,
-    });
+    const eventRegs = eventRegsRes.status === "fulfilled" ? (eventRegsRes.value.data?.registrations ?? []) : [];
+    const trainingRegs = trainingRegsRes.status === "fulfilled" ? (trainingRegsRes.value.data?.registrations ?? []) : [];
+    const userRequests = requestsRes.status === "fulfilled" ? (requestsRes.value.data?.requests ?? []) : [];
+
+    // Stats derived from the shared registration lists
+    const stats = {
+      events: eventRegs.length,
+      training: trainingRegs.length,
+      requests: userRequests.length,
+      pending: {
+        events: eventRegs.filter((r) => r.status === "pending").length,
+        training: trainingRegs.filter((r) => r.status === "pending").length,
+        requests: userRequests.filter((r) => r.status === "pending").length,
+      },
+    };
+
+    // Fetch event and training details for active registrations in parallel
+    const activeEventRegs = eventRegs.filter((r) => r.status === "approved" || r.status === "pending");
+    const activeTrainingRegs = trainingRegs.filter((r) => r.status === "approved" || r.status === "pending");
+
+    const [eventDetails, trainingDetails] = await Promise.all([
+      Promise.all(
+        activeEventRegs.slice(0, 5).map(async (reg) => {
+          try {
+            const res = await api.get("/api/events.php", { params: { action: "details", id: reg.event_id } });
+            if (!res.data?.success) return null;
+            const e = res.data.event;
+            return {
+              id: e.event_id,
+              title: e.title,
+              date: e.event_date,
+              time: e.start_time ? `${e.start_time.slice(0, 5)} - ${e.end_time?.slice(0, 5) ?? "?"}` : null,
+              location: e.location?.split("\n")[0] || e.location,
+              status: reg.status,
+              service: e.major_service,
+              registration_id: reg.registration_id,
+            };
+          } catch (err) {
+            if (err.response?.status === 404) return null;
+            console.error(`Error fetching event ${reg.event_id}:`, err);
+            return null;
+          }
+        }),
+      ),
+      Promise.all(
+        activeTrainingRegs.slice(0, 5).map(async (reg) => {
+          try {
+            const res = await api.get("/api/training_sessions.php", { params: { action: "details", id: reg.session_id } });
+            if (!res.data?.success) return null;
+            const t = res.data.session;
+            return {
+              id: t.session_id,
+              title: t.title,
+              date: t.session_date,
+              time: t.start_time ? `${t.start_time.slice(0, 5)} - ${t.end_time?.slice(0, 5) ?? "?"}` : null,
+              venue: t.venue,
+              instructor: t.instructor,
+              status: reg.status,
+              service: t.major_service,
+              registration_id: reg.registration_id,
+            };
+          } catch (err) {
+            if (err.response?.status === 404) return null;
+            console.error(`Error fetching training ${reg.session_id}:`, err);
+            return null;
+          }
+        }),
+      ),
+    ]);
 
     return {
       stats,
-      upcomingEvents: events,
-      upcomingTraining: training,
-      recentAnnouncements: announcements,
-      calendarEvents: calendar,
+      upcomingEvents: eventDetails.filter(Boolean).sort((a, b) => new Date(a.date) - new Date(b.date)),
+      upcomingTraining: trainingDetails.filter(Boolean).sort((a, b) => new Date(a.date) - new Date(b.date)),
+      recentAnnouncements: announcementsRes.status === "fulfilled" ? announcementsRes.value : [],
+      calendarEvents: calendarRes.status === "fulfilled" ? calendarRes.value : [],
     };
   } catch (error) {
-    console.error("❌ Error in getDashboardOverview:", error);
-    return {
-      stats: {
-        events: 0,
-        training: 0,
-        requests: 0,
-        pending: { events: 0, training: 0, requests: 0 },
-      },
-      upcomingEvents: [],
-      upcomingTraining: [],
-      recentAnnouncements: [],
-      calendarEvents: [],
-    };
+    console.error("Error in getDashboardOverview:", error);
+    return empty;
   }
 };
 

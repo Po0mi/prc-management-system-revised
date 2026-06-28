@@ -194,7 +194,7 @@ function GoogleRecaptcha({ onVerify, onExpired }) {
         try {
           window.grecaptcha.reset(window.__recaptchaWidgetId);
         } catch (e) {
-          console.log("Error resetting reCAPTCHA:", e);
+          console.error("Error resetting reCAPTCHA:", e);
         }
       }
     };
@@ -242,7 +242,7 @@ function GoogleRecaptcha({ onVerify, onExpired }) {
       try {
         window.grecaptcha.reset(window.__recaptchaWidgetId);
       } catch (e) {
-        console.log("Error resetting reCAPTCHA:", e);
+        console.error("Error resetting reCAPTCHA:", e);
       }
     }
   };

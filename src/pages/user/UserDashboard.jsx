@@ -43,11 +43,6 @@ function MiniCalendar({ events, onDateClick }) {
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const hasEventOnDate = (day) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return events.some((e) => e.start === dateStr);
-  };
-
   const getEventsForDate = (day) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     return events.filter((e) => e.start === dateStr);
@@ -123,37 +118,58 @@ function MiniCalendar({ events, onDateClick }) {
         ))}
 
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-          const hasEvent = hasEventOnDate(day);
-          const today = isToday(day);
           const eventsOnDay = getEventsForDate(day);
+          const hasEventType = eventsOnDay.some((e) => e.type === "event");
+          const hasTrainingType = eventsOnDay.some((e) => e.type === "training");
+          const hasAny = eventsOnDay.length > 0;
+          const today = isToday(day);
           const isHovered = hoveredDay === day;
 
           return (
             <button
               key={day}
-              className={`user-dashboard__calendar-day 
-                ${hasEvent ? "has-event" : ""} 
+              className={`user-dashboard__calendar-day
+                ${hasAny ? "has-event" : ""}
                 ${today ? "today" : ""}
                 ${isHovered ? "hovered" : ""}`}
-              onClick={() => onDateClick?.(day)}
+              onClick={() => {
+                const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                onDateClick?.(dateStr);
+              }}
               onMouseEnter={() => setHoveredDay(day)}
               onMouseLeave={() => setHoveredDay(null)}
             >
               <span className="day-number">{day}</span>
-              {hasEvent && (
+              {hasAny && (
                 <>
-                  <span className="event-dot"></span>
+                  <div className="event-dots">
+                    {hasEventType && (
+                      <span className="event-dot event-dot--event"></span>
+                    )}
+                    {hasTrainingType && (
+                      <span className="event-dot event-dot--training"></span>
+                    )}
+                  </div>
                   {isHovered && (
                     <div className="event-tooltip">
                       <strong>
-                        {eventsOnDay.length} event
-                        {eventsOnDay.length > 1 ? "s" : ""}
+                        {eventsOnDay.length}{" "}
+                        {eventsOnDay.length === 1 ? "item" : "items"}
                       </strong>
-                      {eventsOnDay.slice(0, 2).map((e, idx) => (
-                        <span key={idx}>{e.title}</span>
+                      {eventsOnDay.slice(0, 3).map((e, idx) => (
+                        <span key={idx}>
+                          <i
+                            className={
+                              e.type === "event"
+                                ? "fa-regular fa-calendar"
+                                : "fa-solid fa-graduation-cap"
+                            }
+                          />{" "}
+                          {e.title}
+                        </span>
                       ))}
-                      {eventsOnDay.length > 2 && (
-                        <span>+{eventsOnDay.length - 2} more</span>
+                      {eventsOnDay.length > 3 && (
+                        <span>+{eventsOnDay.length - 3} more</span>
                       )}
                     </div>
                   )}
@@ -166,8 +182,14 @@ function MiniCalendar({ events, onDateClick }) {
 
       <div className="user-dashboard__calendar-legend">
         <div className="legend-item">
-          <span className="legend-dot event-dot"></span>
-          <span>Events ({events.length})</span>
+          <span className="legend-dot event-dot--event"></span>
+          <span>Events ({events.filter((e) => e.type === "event").length})</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-dot event-dot--training"></span>
+          <span>
+            Training ({events.filter((e) => e.type === "training").length})
+          </span>
         </div>
         <div className="legend-item">
           <span className="legend-dot today-dot"></span>
@@ -270,11 +292,9 @@ function UserDashboard() {
     navigate("/user/blood-map");
   };
 
-  const handleCalendarDateClick = (day) => {
-    const dateStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const handleCalendarDateClick = (dateStr) => {
     const eventsOnDate = calendarEvents.filter((e) => e.start === dateStr);
     if (eventsOnDate.length > 0) {
-      // Could open a modal instead of alert
       navigate("/user/events", { state: { date: dateStr } });
     }
   };
@@ -460,10 +480,19 @@ function UserDashboard() {
                   <i className="fa-regular fa-calendar"></i>
                   Calendar Overview
                 </h2>
-                <Link to="/user/events" className="section-header-link">
-                  <span>View All Events</span>
-                  <i className="fa-solid fa-arrow-right"></i>
-                </Link>
+                <div className="section-header-actions">
+                  <Link to="/user/events" className="section-header-link">
+                    <span>Events</span>
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </Link>
+                  <Link
+                    to="/user/training"
+                    className="section-header-link section-header-link--training"
+                  >
+                    <span>Training</span>
+                    <i className="fa-solid fa-arrow-right"></i>
+                  </Link>
+                </div>
               </div>
               <MiniCalendar
                 events={calendarEvents}
@@ -477,13 +506,17 @@ function UserDashboard() {
                   </h4>
                   <div className="today-events">
                     {calendarEvents
-                      .filter(
-                        (e) =>
-                          e.start === new Date().toISOString().split("T")[0],
-                      )
+                      .filter((e) => {
+                        const t = new Date();
+                        const todayLocal = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+                        return e.start === todayLocal;
+                      })
                       .slice(0, 2)
                       .map((event, idx) => (
                         <div key={idx} className="today-event-item">
+                          <span
+                            className={`type-dot type-dot--${event.type}`}
+                          ></span>
                           <span className="event-time">
                             {event.time || "All day"}
                           </span>
@@ -544,7 +577,7 @@ function UserDashboard() {
                             )}
                           </div>
                           <p className="announcement-preview">
-                            {announcement.content.substring(0, 80)}...
+                            {(announcement.content || "").substring(0, 80)}...
                           </p>
                           <div className="announcement-meta">
                             <span className="date">

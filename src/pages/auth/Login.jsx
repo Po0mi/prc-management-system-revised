@@ -36,8 +36,7 @@ function Login() {
     try {
       const response = await authService.login(formData.username, formData.password);
       if (response.success) {
-        const user = response.user;
-        if (user.is_admin === 1 || user.role === "admin") {
+        if (authService.isAdmin()) {
           navigate("/admin/dashboard");
         } else {
           navigate("/user/dashboard");

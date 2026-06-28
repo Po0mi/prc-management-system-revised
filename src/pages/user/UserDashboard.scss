@@ -1,7 +1,7 @@
-@use "../../styles/variables.scss" as *;
+﻿@use "../../styles/variables.scss" as *;
 @use "sass:color";
 
-// ─── ANIMATIONS ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ ANIMATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @keyframes fadeInUp {
   from {
     transform: translateY(20px);
@@ -75,11 +75,11 @@
   }
 }
 
-// ─── USER DASHBOARD ───────────────────────────────────────────────────────────
+// â”€â”€â”€ USER DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .user-dashboard {
   padding: $space-xl 0;
   animation: fadeInUp 300ms ease;
-  background: linear-gradient(135deg, $gray-100 0%, $white 100%);
+  background: $gray-100;
   min-height: 100vh;
 
   &__container {
@@ -127,8 +127,8 @@
         transition: $transition-base;
 
         &:hover {
-          transform: scale(1.05) rotate(5deg);
-          box-shadow: $shadow-lg;
+          transform: scale(1.04);
+          box-shadow: $shadow-md;
         }
       }
 
@@ -157,11 +157,9 @@
       align-items: center;
       gap: $space-md;
       padding: $space-md $space-lg;
-      background: rgba($warning, 0.1);
+      background: rgba($warning, 0.08);
       border: 1px solid rgba($warning, 0.2);
       border-radius: $radius-lg;
-      animation: pulseGlow 2s ease-in-out infinite;
-      backdrop-filter: blur(10px);
 
       i {
         font-size: $font-size-xl;
@@ -273,15 +271,15 @@
       }
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: $shadow-lg;
+        transform: translateY(-3px);
+        box-shadow: $shadow-md;
 
         &::before {
           transform: scaleX(1);
         }
 
         .stats-card-inner .stats-card-icon {
-          transform: scale(1.1) rotate(5deg);
+          transform: scale(1.06);
         }
 
         .stats-card-link i {
@@ -417,14 +415,16 @@
     box-shadow: $shadow-sm;
     margin-bottom: $space-xl;
     border: 1px solid $gray-200;
-    transition: $transition-base;
+    transition:
+      box-shadow $transition-base,
+      border-color $transition-base;
     animation: fadeInUp 500ms ease;
     position: relative;
     overflow: hidden;
 
     &:hover {
       box-shadow: $shadow-md;
-      border-color: $primary-red;
+      border-color: rgba($primary-red, 0.2);
     }
 
     &.calendar-section {
@@ -473,8 +473,15 @@
         }
 
         &:hover i {
-          transform: rotate(5deg) scale(1.1);
+          transform: scale(1.08);
         }
+      }
+
+      .section-header-actions {
+        display: flex;
+        gap: $space-sm;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       .section-header-link {
@@ -500,6 +507,15 @@
 
           i {
             transform: translateX(4px);
+          }
+        }
+
+        &--training {
+          color: #7c3aed;
+          background: rgba(124, 58, 237, 0.05);
+
+          &:hover {
+            background: rgba(124, 58, 237, 0.1);
           }
         }
       }
@@ -541,10 +557,9 @@
           justify-content: center;
 
           &:hover {
-            background: $primary-red;
-            color: $white;
-            border-color: $primary-red;
-            transform: translateY(-2px);
+            background: rgba($primary-red, 0.06);
+            color: $primary-red;
+            border-color: rgba($primary-red, 0.3);
           }
 
           i {
@@ -571,7 +586,10 @@
         font-size: $font-size-sm;
         font-weight: $font-weight-medium;
         cursor: pointer;
-        transition: $transition-fast;
+        transition:
+          background $transition-fast,
+          color $transition-fast,
+          border-color $transition-fast;
         display: flex;
         align-items: center;
         gap: $space-xs;
@@ -579,16 +597,13 @@
         i {
           color: $primary-red;
           font-size: $font-size-sm;
+          transition: color $transition-fast;
         }
 
         &:hover {
-          background: $primary-red;
-          color: $white;
-          border-color: $primary-red;
-
-          i {
-            color: $white;
-          }
+          background: rgba($primary-red, 0.06);
+          color: $primary-red;
+          border-color: rgba($primary-red, 0.3);
         }
       }
     }
@@ -660,15 +675,28 @@
         }
       }
 
-      .event-dot {
+      .event-dots {
         position: absolute;
         bottom: 4px;
         left: 50%;
         transform: translateX(-50%);
+        display: flex;
+        gap: 2px;
+        align-items: center;
+      }
+
+      .event-dot {
         width: 4px;
         height: 4px;
         border-radius: 50%;
-        background: $primary-red;
+
+        &--event {
+          background: $primary-red;
+        }
+
+        &--training {
+          background: #7c3aed;
+        }
       }
 
       .event-tooltip {
@@ -733,10 +761,15 @@
           width: 10px;
           height: 10px;
           border-radius: 50%;
+          flex-shrink: 0;
 
-          &.event-dot {
+          &.event-dot--event {
             background: $primary-red;
-            animation: pulseGlow 2s ease-in-out infinite;
+            
+          }
+
+          &.event-dot--training {
+            background: #7c3aed;
           }
 
           &.today-dot {
@@ -779,11 +812,26 @@
     .today-event-item {
       display: flex;
       align-items: center;
-      gap: $space-md;
+      gap: $space-sm;
       padding: $space-xs $space-sm;
       background: $white;
       border-radius: $radius-sm;
       font-size: $font-size-xs;
+
+      .type-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+
+        &--event {
+          background: $primary-red;
+        }
+
+        &--training {
+          background: #7c3aed;
+        }
+      }
 
       .event-time {
         min-width: 60px;
@@ -830,16 +878,12 @@
     }
 
     &:hover {
-      transform: translateY(-2px) translateX(2px);
-      box-shadow: $shadow-md;
-      border-color: $primary-red;
+      transform: translateX(3px);
+      box-shadow: $shadow-sm;
+      border-color: rgba($primary-red, 0.3);
 
       &::before {
         transform: scaleY(1);
-      }
-
-      .announcement-icon {
-        transform: scale(1.1) rotate(5deg);
       }
     }
 
@@ -958,10 +1002,10 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: $shadow-md;
-      border-color: $info;
+      border-color: rgba($info, 0.4);
 
       .event-date-badge {
-        transform: scale(1.05) rotate(2deg);
+        transform: scale(1.03);
       }
     }
 
@@ -1106,14 +1150,14 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: $shadow-md;
-      border-color: $success;
+      border-color: rgba($success, 0.4);
 
       &::before {
         opacity: 1;
       }
 
       .training-icon {
-        transform: scale(1.1) rotate(5deg);
+        transform: scale(1.05);
       }
     }
 

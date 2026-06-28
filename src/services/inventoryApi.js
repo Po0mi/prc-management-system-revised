@@ -61,7 +61,7 @@ export const getCategories = async (type = "inventory") => {
   if (!data.success)
     throw new Error(data.message || "Failed to fetch categories");
 
-  return { success: true, data: data.data };
+  return { success: true, data: data.data ?? [] };
 };
 
 // ─── INVENTORY ITEMS ─────────────────────────────────────────────────────────

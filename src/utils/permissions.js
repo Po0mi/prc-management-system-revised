@@ -1,14 +1,10 @@
 import authService from '../services/auth.service';
 
 /**
- * Role-based permission system
- * 
- * super - Full access to everything
- * health - Health services only
- * safety - Safety services only
- * welfare - Welfare services only
- * disaster - Disaster management only
- * youth - Red Cross Youth only
+ * Role-based permission system.
+ * Backend stores roles as: super_admin, health_admin, safety_admin,
+ * welfare_admin, disaster_admin, youth_admin, user.
+ * We extract the service prefix (e.g. "safety_admin" → "safety").
  */
 
 const ROLE_PERMISSIONS = {
@@ -38,73 +34,58 @@ const ROLE_PERMISSIONS = {
   }
 };
 
+// Maps "super_admin" → "super", "safety_admin" → "safety", etc.
+const extractRoleKey = (fullRole) => {
+  if (!fullRole) return null;
+  if (fullRole === 'super_admin') return 'super';
+  const match = fullRole.match(/^(\w+)_admin$/);
+  return match ? match[1] : null;
+};
+
 export const hasPermission = (module) => {
   const user = authService.getCurrentUser();
-  
-  if (!user || !user.admin_role) {
-    return false;
-  }
+  if (!user?.role) return false;
 
-  const role = user.admin_role;
-  const permissions = ROLE_PERMISSIONS[role];
-
-  if (!permissions) {
-    return false;
-  }
-
-  // Super admin has access to everything
-  if (permissions.canAccessAll) {
-    return true;
-  }
-
-  // Check if module is in the allowed list
+  const roleKey = extractRoleKey(user.role);
+  const permissions = roleKey ? ROLE_PERMISSIONS[roleKey] : null;
+  if (!permissions) return false;
+  if (permissions.canAccessAll) return true;
   return permissions.modules.includes(module);
 };
 
 export const isSuperAdmin = () => {
   const user = authService.getCurrentUser();
-  return user?.admin_role === 'super';
+  return user?.role === 'super_admin';
 };
 
 export const getUserRole = () => {
   const user = authService.getCurrentUser();
-  return user?.admin_role || null;
+  return extractRoleKey(user?.role);
 };
 
-export const getRoleLabel = (role) => {
+export const getRoleLabel = (roleKey) => {
   const labels = {
-    super: 'Super Administrator',
-    health: 'Health Services',
-    safety: 'Safety Services',
-    welfare: 'Welfare Services',
+    super:    'Super Administrator',
+    health:   'Health Services',
+    safety:   'Safety Services',
+    welfare:  'Welfare Services',
     disaster: 'Disaster Management',
-    youth: 'Red Cross Youth'
+    youth:    'Red Cross Youth'
   };
-  return labels[role] || role;
+  return labels[roleKey] || roleKey || 'Administrator';
 };
 
-// Filter data based on user's role
 export const filterByRole = (items, roleField = 'service') => {
   const user = authService.getCurrentUser();
-  
-  if (!user || !user.admin_role) {
-    return [];
-  }
+  if (!user?.role) return [];
 
-  // Super admin sees everything
-  if (user.admin_role === 'super') {
-    return items;
-  }
+  const roleKey = extractRoleKey(user.role);
+  if (!roleKey) return [];
+  if (roleKey === 'super') return items;
 
-  // Other admins only see their service area
   return items.filter(item => {
-    // If item has no role/service field, show it
-    if (!item[roleField]) {
-      return true;
-    }
-    
-    // Match admin role with item's service area
-    return item[roleField] === user.admin_role;
+    if (!item[roleField]) return true;
+    return item[roleField].toLowerCase() === roleKey.toLowerCase();
   });
 };
 

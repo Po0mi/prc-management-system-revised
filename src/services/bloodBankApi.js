@@ -70,7 +70,7 @@ export const getLocations = async () => {
   if (!data.success)
     throw new Error(data.message || "Failed to fetch locations");
 
-  return { success: true, data: data.data };
+  return { success: true, data: data.data ?? [] };
 };
 
 // ─── CREATE INVENTORY ITEM ────────────────────────────────────────────────────

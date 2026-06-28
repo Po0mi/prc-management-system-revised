@@ -1,143 +1,36 @@
-import { useState, useEffect } from "react";
-
+import { useEffect } from "react";
 import "./UserMessages.scss";
 
-function UserMessages() {
-  const [conversations, setConversations] = useState([]);
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-
+export default function UserMessages() {
   useEffect(() => {
-    fetchConversations();
+    // Delay gives the FloatingChat widget time to finish mounting
+    const id = setTimeout(() => {
+      const btn = document.querySelector(".chat-fab");
+      if (btn) btn.click();
+    }, 300);
+    return () => clearTimeout(id);
   }, []);
 
-  const fetchConversations = async () => {
-    try {
-      // TODO: Replace with actual API call
-      const mockConversations = [
-        {
-          id: 1,
-          name: "Admin Support",
-          lastMessage: "How can I help you today?",
-          timestamp: "2026-02-17T10:30:00",
-          unread: 2,
-          avatar: "A",
-        },
-        {
-          id: 2,
-          name: "Event Coordinator",
-          lastMessage: "Your registration has been confirmed",
-          timestamp: "2026-02-16T15:20:00",
-          unread: 0,
-          avatar: "E",
-        },
-      ];
-      setConversations(mockConversations);
-    } catch (error) {
-      console.error("Error fetching conversations:", error);
-    }
-  };
-
-  const filteredConversations = conversations.filter((conv) =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } else {
-      const yesterday = new Date(now);
-      yesterday.setDate(yesterday.getDate() - 1);
-      if (date.toDateString() === yesterday.toDateString()) {
-        return "Yesterday";
-      }
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    }
-  };
-
   return (
-    <div className="user-messages">
-      <div className="container">
-        <h1>Messages</h1>
-
-        <div className="messages-layout">
-          {/* Conversations List */}
-          <div className="conversations-panel">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search conversations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <span className="search-icon">🔍</span>
-            </div>
-
-            <div className="conversations-list">
-              {filteredConversations.length === 0 ? (
-                <div className="empty-state">
-                  <p>No conversations found</p>
-                </div>
-              ) : (
-                filteredConversations.map((conv) => (
-                  <div
-                    key={conv.id}
-                    className={`conversation-item ${
-                      selectedChat?.id === conv.id ? "active" : ""
-                    }`}
-                    onClick={() => setSelectedChat(conv)}
-                  >
-                    <div className="avatar">{conv.avatar}</div>
-                    <div className="conversation-info">
-                      <div className="header">
-                        <h4>{conv.name}</h4>
-                        <span className="time">
-                          {formatTimestamp(conv.timestamp)}
-                        </span>
-                      </div>
-                      <div className="preview">
-                        <p>{conv.lastMessage}</p>
-                        {conv.unread > 0 && (
-                          <span className="unread-badge">{conv.unread}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Chat Box */}
-          <div className="chat-panel">
-            {selectedChat ? (
-              <ChatBox
-                recipientId={selectedChat.id}
-                recipientName={selectedChat.name}
-              />
-            ) : (
-              <div className="no-chat-selected">
-                <div className="icon">💬</div>
-                <h3>Select a conversation</h3>
-                <p>Choose a conversation from the list to start messaging</p>
-              </div>
-            )}
-          </div>
+    <div className="user-messages-redirect">
+      <div className="user-messages-redirect__card">
+        <div className="user-messages-redirect__icon">
+          <i className="fa-solid fa-comments" />
+        </div>
+        <h2>Messages</h2>
+        <p>
+          Your conversations are available through the chat widget at the
+          bottom-right corner of the page. Click the chat icon to open it and
+          message the admin team directly.
+        </p>
+        <div className="user-messages-redirect__tip">
+          <i className="fa-solid fa-circle-info" />
+          <span>
+            Look for the <strong>chat bubble icon</strong> at the bottom-right
+            of every page.
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
-export default UserMessages;

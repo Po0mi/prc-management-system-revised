@@ -1,7 +1,9 @@
 @use "./variables.scss" as *;
 
 // Reset & Base Styles
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -11,14 +13,37 @@ html {
   font-size: $font-size-base;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: $font-family-base;
   font-weight: $font-weight-normal;
-  line-height: 1.5;
-  color: $gray-900;
+  line-height: 1.6;
+  color: $gray-700;
   background-color: $gray-100;
+}
+
+::selection {
+  background: rgba($primary-red, 0.15);
+  color: $primary-dark;
+}
+
+// Global scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: $gray-100;
+}
+::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: $radius-full;
+  &:hover {
+    background: $gray-400;
+  }
 }
 
 // Typography
@@ -29,16 +54,19 @@ h4,
 h5,
 h6 {
   font-weight: $font-weight-bold;
-  line-height: 1.2;
+  line-height: 1.25;
   margin-bottom: $space-md;
   color: $gray-900;
+  letter-spacing: -0.01em;
 }
 
 h1 {
   font-size: $font-size-2xl;
+  letter-spacing: -0.02em;
 }
 h2 {
   font-size: $font-size-xl;
+  letter-spacing: -0.015em;
 }
 h3 {
   font-size: $font-size-lg;
@@ -49,6 +77,7 @@ h4 {
 
 p {
   margin-bottom: $space-md;
+  color: $gray-600;
 }
 
 a {
@@ -66,8 +95,13 @@ button {
   font-family: $font-family-base;
   cursor: pointer;
   border: none;
-  outline: none;
+  background: none;
   transition: all $transition-fast;
+
+  &:focus-visible {
+    outline: 2px solid $primary-red;
+    outline-offset: 2px;
+  }
 }
 
 // Inputs
@@ -76,7 +110,11 @@ textarea,
 select {
   font-family: $font-family-base;
   font-size: $font-size-base;
-  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid $primary-red;
+    outline-offset: 2px;
+  }
 }
 
 // Lists

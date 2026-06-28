@@ -11,6 +11,7 @@ import {
   getRecentEvents,
   getRecentAnnouncements,
 } from "../../services/dashboardApi";
+import authService from "../../services/auth.service";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const fmt = (n) =>
@@ -123,8 +124,9 @@ export default function AdminDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [selectedTimeRange, setSelectedTimeRange] = useState("week");
   const [activeTab, setActiveTab] = useState("people");
+
+  const adminName = authService.getCurrentUserName();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -187,7 +189,7 @@ export default function AdminDashboard() {
                 <i className="fa-solid fa-gauge-high" />
                 Admin Dashboard
               </div>
-              <h1 className="db-header__title">Welcome back, Admin</h1>
+              <h1 className="db-header__title">Welcome back, {adminName}</h1>
               <p className="db-header__subtitle">
                 Here's what's happening across your system today
               </p>
@@ -223,16 +225,6 @@ export default function AdminDashboard() {
               Last updated {timeAgo(lastRefresh)}
             </div>
             <div className="db-header__actions">
-              <select
-                className="db-header__time-range"
-                value={selectedTimeRange}
-                onChange={(e) => setSelectedTimeRange(e.target.value)}
-              >
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-              </select>
               <button
                 className="db-header__refresh-btn"
                 onClick={load}
